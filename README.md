@@ -1,29 +1,24 @@
-# CSS-only Marquee Menu Effect
+# Saumya Portfolio — single-page site
 
-A menu with a css-only marquee hover effect based on [Francesco Zagami's Dribbble shot](https://dribbble.com/shots/9524661-Homepage-Menu-Interaction).
+This is a lightweight, static portfolio page inspired by modern landing pages (hero, marquee, cards),
+but **not a copy** of any specific site.
 
-![Image Title](https://tympanus.net/codrops/wp-content/uploads/2020/03/Marquee_featured.jpg)
+## Quick customize
+1) Edit `index.html`:
+   - Replace email / GitHub / LinkedIn links under the About section
+   - Update project bullets as needed
+2) Add your PDF:
+   - Put it at `assets/Saumya_Lahera_Portfolio.pdf` (or rename in HTML)
+3) Optional: replace the background grain
+   - Replace `assets/grain.png` with any subtle noise image
 
-[Article on Codrops](https://tympanus.net/codrops/?p=48796)
+## Run locally
+Open `index.html` in a browser.
 
-[Demo](http://tympanus.net/Development/CSSMarqueeMenu/)
+## Deploy on GitHub Pages
+1) Create a repo (e.g., `saumya-portfolio`)
+2) Upload these files
+3) Settings → Pages → Deploy from branch → `main` / root
+4) Your site will be live at `https://<username>.github.io/<repo>/`
 
-## Credits
-
-- Images by [Frankie Cordoba AKA Foulster](https://www.instagram.com/byfoul/)
-- Font used: [Sofia Pro](https://fonts.adobe.com/fonts/sofia)
-- The grainy [background noise animation](https://css-tricks.com/snippets/css/animated-grainy-texture/) is by Geoff Graham
-
-## Misc
-
-Follow Codrops: [Twitter](http://www.twitter.com/codrops), [Facebook](http://www.facebook.com/codrops), [GitHub](https://github.com/codrops), [Instagram](https://www.instagram.com/codropsss/)
-
-## License
-[MIT](LICENSE)
-
-Made with :blue_heart: by [Codrops](http://www.codrops.com)
-
-
-
-
-
+If you already have a custom domain, you can point it to GitHub Pages.

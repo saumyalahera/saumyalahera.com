@@ -340,7 +340,7 @@ h1{
 .muted{color:#666666}
 .bullets{margin:0; padding-left:18px; color:rgba(0,0,0,.86); line-height:1.6}
 .card__actions{margin-top:auto}
-.link{color:var(--accent2); text-decoration:none; font-weight:600}
+.link{color:rgba(0,0,0,.82); text-decoration:none; font-weight:600}
 .link:hover{text-decoration:underline}
 
 .split{

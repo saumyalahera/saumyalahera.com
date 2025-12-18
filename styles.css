@@ -383,13 +383,35 @@ h1{
 .meta--link{
   cursor: pointer;
   text-decoration: none;
-  background:rgba(0,0,0,.02);
+  background: linear-gradient(135deg, #f3f7ff 0%, #d9e7ff 45%, #b7d0ff 100%);
   border:1px solid rgba(0,0,0,.20);
 }
 
 .meta--link:hover{
   border-color: rgba(0,0,0,.20);
+  background: linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);
 }
+
+.meta--link2{
+  cursor: pointer;
+  text-decoration: none;
+  background:linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);
+  border:1px solid rgba(0,0,0,.20);
+  font-weight:600;
+  font-size:14px;
+  color:#111111;
+}
+
+.meta--link2:hover{
+  border-color: rgba(0,0,0,.20);
+  background:linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);
+}
+
+.btn.ghost2{
+  border-color:rgba(0,0,0,.20);
+  background: linear-gradient(135deg,var(--accent),var(--accent2));
+}
+.btn.ghost2:hover{border-color:rgba(0,0,0,.18)}
 
 .about p{max-width:78ch; line-height:1.75; color:rgba(0,0,0,.88)}
 .contact{display:flex; gap:12px; flex-wrap:wrap; margin:16px 0 8px}

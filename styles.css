@@ -262,13 +262,21 @@ h1{
   opacity: 1;
 }
 
-/* Hide card content while preview is visible */
-.card[data-video]:hover > :not(video.card__preview){
+/* Hide ONLY the text body while preview is visible (keep tags + actions clickable/visible) */
+.card[data-video]:hover .card__top h3,
+.card[data-video]:hover .card__top p,
+.card[data-video]:hover .bullets{
   opacity: 0;
 }
 
 /* Smooth fade in/out for card content */
 .card > *{
+  transition: opacity .15s ease;
+}
+/* Also fade nested text elements we selectively hide */
+.card .card__top h3,
+.card .card__top p,
+.card .bullets{
   transition: opacity .15s ease;
 }
 
@@ -279,7 +287,7 @@ h1{
   border:1px solid rgba(0,0,0,.20);
   padding:6px 10px;
   color:rgba(0,0,0,.78);
-  background:rgba(0,0,0,.02);
+  background:#F5F5F5;
   width:max-content;
   text-decoration:none;
   cursor: default;
@@ -300,6 +308,15 @@ h1{
 
 .tag--link2:hover{
   background: linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);
+}
+
+.tag--link3{
+  cursor: pointer;
+  background: linear-gradient(135deg, #fff6f6 0%, #ffcccc 45%, #f4a6a6 100%);
+}
+
+.tag--link3:hover{
+  background: linear-gradient(135deg, #fff6f6 0%, #ffcccc 45%, #f4a6a6 100%);
 }
 
 /* Non-clickable tag (static) */

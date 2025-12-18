@@ -46,6 +46,31 @@ canvas?.addEventListener('mousemove', (e) => {
 });
 canvas?.addEventListener('click', () => running = !running);
 
+// --- Card hover video previews (MINIMAL) ---
+document.querySelectorAll('.card[data-video]').forEach(card => {
+  const src = card.dataset.video;
+  if (!src) return;
+
+  const video = document.createElement('video');
+  video.className = 'card__preview';
+  video.src = src;
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.preload = 'metadata';
+
+  card.prepend(video);
+
+  card.addEventListener('mouseenter', () => {
+    video.play().catch(() => {});
+  });
+
+  card.addEventListener('mouseleave', () => {
+    video.pause();
+    video.currentTime = 0;
+  });
+});
+
 function draw(){
   if(!canvas || !ctx) return;
   const w = canvas.clientWidth, h = canvas.clientHeight;

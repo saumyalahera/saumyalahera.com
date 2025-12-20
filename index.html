@@ -360,7 +360,7 @@
       </div>
 
       <div class="about">
-        <p>
+        <p id="about_summary">
           I’m a software engineer focused on real‑time graphics, performance, and interactive tooling (Swift, Metal, C++/OpenGL).
           I enjoy turning architectural constraints into design leverage — especially on mobile/embedded platforms.
         </p>
@@ -416,6 +416,12 @@
         const kickerEl = document.getElementById('text_one');
         if (kickerEl && typeof d.text_one === 'string' && d.text_one.trim().length) {
           kickerEl.textContent = d.text_one.trim();
+        }
+
+        // 4) About summary (optional)
+        const aboutEl = document.getElementById('about_summary');
+        if (aboutEl && typeof d.about_summary === 'string' && d.about_summary.trim().length) {
+          aboutEl.textContent = d.about_summary.trim();
         }
       } catch (e) {
         // Keep the fallback text if anything fails.

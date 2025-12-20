@@ -199,10 +199,16 @@ main{position:relative; z-index:1}
 .pill__icon{
   width: 16px;
   height: 16px;
+  min-width: 16px;
+  min-height: 16px;
+  max-width: 16px;
+  max-height: 16px;
+
   border-radius: 999px;
   object-fit: cover;
-  display: inline-block;
+  display: block;
   flex: 0 0 16px;
+
   border: 1px solid rgba(0,0,0,0.10);
 }
 

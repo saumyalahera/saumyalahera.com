@@ -334,7 +334,11 @@
         <div class="row">
           <div>
             <h3>Duolingo</h3>
-            <p class="muted">Actively learning Spanish, Russian, and Irish through daily Duolingo practice. Maintained a 1265‑day uninterrupted streak as of Dec 18, 2025, reflecting long‑term consistency and discipline.</p>
+            <p class="muted">
+              Actively learning Spanish, Russian, and Irish through daily Duolingo practice.
+              <span id="duolingo-streak-line">Maintaining a long‑term daily streak.</span>
+              <span id="duolingo-streak-updated" class="muted"></span>
+            </p>
           </div>
           <a class="meta meta--link2" href="https://www.duolingo.com/profile/feggagi" target="_blank">
             Profile
@@ -363,6 +367,34 @@
     </section>
   </main>
 
+  <script>
+    (async () => {
+      try {
+        const r = await fetch('/data/streak.json', { cache: 'no-store' });
+        if (!r.ok) throw new Error('streak.json not found');
+        const d = await r.json();
+
+        const streak = Number(d.streak);
+        const updated = d.updated;
+
+        const lineEl = document.getElementById('duolingo-streak-line');
+        if (lineEl && Number.isFinite(streak)) {
+          lineEl.textContent = `Maintaining a ${streak}-day streak.`;
+        }
+
+        const updatedEl = document.getElementById('duolingo-streak-updated');
+        if (updatedEl && updated) {
+          const dt = new Date(updated);
+          const pretty = isNaN(dt.getTime())
+            ? String(updated)
+            : dt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+          updatedEl.textContent = ` Updated daily • Last sync: ${pretty}`;
+        }
+      } catch (e) {
+        // Keep the fallback text if anything fails.
+      }
+    })();
+  </script>
   <script src="script.js"></script>
 </body>
 </html>

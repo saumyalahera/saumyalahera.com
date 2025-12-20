@@ -483,14 +483,17 @@ h1{
 /* Footer */
 .site-footer {
   width: 100%;
-  padding: 2.25rem 1rem 2rem;
+  padding: 2.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
   text-align: center;
+  overflow: visible;
 }
 
 /* Footer signature only (isolated font usage) */
 .footer-signature {
   margin: 0;
   font-family: 'Signerica', cursive;
+  line-height: 1.25;
+  padding-top: 0.12em;
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: 0.08em;

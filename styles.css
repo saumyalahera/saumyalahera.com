@@ -1,3 +1,31 @@
+/* Signerica (footer signature only) */
+@font-face {
+  font-family: 'Signerica';
+  src: url('assets/fonts/SignericaThin-BXv3.woff2') format('woff2'),
+       url('assets/fonts/SignericaThin-BXv3.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Signerica';
+  src: url('assets/fonts/SignericaMedium-RXOo.woff2') format('woff2'),
+       url('assets/fonts/SignericaMedium-RXOo.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Signerica';
+  src: url('assets/fonts/SignericaFat-1XOe.woff2') format('woff2'),
+       url('assets/fonts/SignericaFat-1XOe.woff') format('woff');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root{
   --bg:#ffffff;
   --panel:#f0f0f0;
@@ -450,4 +478,22 @@ h1{
   .split{grid-template-columns:1fr}
   .links{display:none}
   .menu{display:block}
+}
+
+/* Footer */
+.site-footer {
+  width: 100%;
+  padding: 2.25rem 1rem 2rem;
+  text-align: center;
+}
+
+/* Footer signature only (isolated font usage) */
+.footer-signature {
+  margin: 0;
+  font-family: 'Signerica', cursive;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.08em;
+  opacity: 0.85;
+  text-align: center;
 }

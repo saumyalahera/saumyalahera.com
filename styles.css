@@ -190,6 +190,20 @@ main{position:relative; z-index:1}
   border:1px solid var(--line);
   color:#444444;
   background:rgba(0,0,0,.02);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.pill__icon{
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: inline-block;
+  flex: 0 0 16px;
+  border: 1px solid rgba(0,0,0,0.10);
 }
 
 .hero__media{
@@ -526,4 +540,17 @@ main{position:relative; z-index:1}
   display: inline-block;
   vertical-align: middle;
   border: 1px solid rgba(0,0,0,0.12);
+}
+
+.pillrow__wrap{
+  margin-top: 14px;
+}
+
+.pillrow__title{
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  font-weight: 600;
 }

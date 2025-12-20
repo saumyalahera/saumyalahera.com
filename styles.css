@@ -527,6 +527,9 @@ main{position:relative; z-index:1}
   font-family: 'Signerica', cursive;
   line-height: 1.25;
   padding-top: 0.12em;
+  max-width: 100%;
+  padding-left: 0.18em;
+  padding-right: 0.18em;
   font-weight: 800;
   font-size: 1.25rem;
   letter-spacing: 0.08em;

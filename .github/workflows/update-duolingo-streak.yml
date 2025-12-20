@@ -16,8 +16,8 @@ jobs:
       - name: Fetch Duolingo streak
         run: |
           mkdir -p data
-          curl -s "https://www.duolingo.com/2017-06-30/users?username=feggagi" \
-          | jq '.[0] | { streak: .streak, updated: (now | todate) }' \
+         curl -s "https://www.duolingo.com/2017-06-30/users?username=feggagi" \
+         | jq '.users[0] | { streak: .streak, updated: (now | todate) }' \
           > data/streak.json
 
       - name: Commit changes

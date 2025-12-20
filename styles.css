@@ -511,5 +511,19 @@ main{position:relative; z-index:1}
   font-size: 1.25rem;
   letter-spacing: 0.08em;
   opacity: 0.85;
-  text-align: center;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.footer-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid rgba(0,0,0,0.12);
 }

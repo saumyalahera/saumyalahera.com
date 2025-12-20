@@ -1,0 +1,29 @@
+name: Update Duolingo Streak
+
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch Duolingo streak
+        run: |
+          mkdir -p data
+          curl -s "https://www.duolingo.com/2017-06-30/users?username=feggagi" \
+          | jq '.[0] | { streak: .streak, updated: (now | todate) }' \
+          > data/streak.json
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add data/streak.json
+          git commit -m "Update Duolingo streak" || echo "No changes"
+          git push

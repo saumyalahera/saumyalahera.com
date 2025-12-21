@@ -34,6 +34,15 @@
   font-display: swap;
 }
 
+/* Dengacho Signature Font */
+@font-face {
+  font-family: 'DengachoSignature';
+  src: url('assets/fonts/DengachoSignature-8OdnJ.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root{
   --bg:#ffffff;
   --panel:#f0f0f0;
@@ -558,9 +567,21 @@ main{position:relative; z-index:1}
 
 .pillrow__title{
   margin: 0 0 10px;
-  font-size: 0.85rem;
+  font-size: 1.35rem;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  /*text-transform: uppercase; */
   opacity: 0.75;
-  font-weight: 600;
+  font-weight: 700;
+  
+  text-shadow: 0 0 0 currentColor;
+  -webkit-text-stroke: 0.17px currentColor;
+}
+
+h2.about__title{
+  font-family: 'DengachoSignature', serif;
+  font-weight: 700;
+  font-size: clamp(2.45rem, 3.2vw, 2.05rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  opacity: 0.9;
 }

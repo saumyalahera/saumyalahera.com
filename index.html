@@ -366,7 +366,7 @@
       </div>
       <div class="pillrow__wrap" aria-label="Work and experience">
           <h2 class="about__title">Featured Skills</h2>
-        <div class="pillrow" aria-label="Highlights">
+        <div class="pillrow" id="featured_skills" aria-label="Featured skills">
           <span class="pill">Swift</span>
           <span class="pill">Metal API</span>
           <span class="pill">Objective-C</span>
@@ -439,6 +439,25 @@
         const aboutEl = document.getElementById('about_summary');
         if (aboutEl && typeof d.about_summary === 'string' && d.about_summary.trim().length) {
           aboutEl.textContent = d.about_summary.trim();
+        }
+
+        // 5) Featured Skills (optional)
+        const skillsEl = document.getElementById('featured_skills');
+        if (skillsEl && Array.isArray(d.featured_skills)) {
+          // Clear existing fallback pills
+          skillsEl.innerHTML = '';
+
+          // Render up to 16 skills to keep the layout clean
+          d.featured_skills.slice(0, 16).forEach((s) => {
+            if (typeof s !== 'string') return;
+            const label = s.trim();
+            if (!label) return;
+
+            const span = document.createElement('span');
+            span.className = 'pill';
+            span.textContent = label;
+            skillsEl.appendChild(span);
+          });
         }
       } catch (e) {
         // Keep the fallback text if anything fails.

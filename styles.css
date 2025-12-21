@@ -580,7 +580,7 @@ main{position:relative; z-index:1}
 h2.about__title{
   font-family: 'DengachoSignature', serif;
   font-weight: 700;
-  font-size: clamp(2.45rem, 3.2vw, 2.05rem);
+  font-size: clamp(2.05rem, 3.2vw, 2.05rem);
   line-height: 1;
   letter-spacing: 0.01em;
   opacity: 0.9;

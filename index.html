@@ -398,72 +398,91 @@
     </p>
   </footer>
 
+  <script src="script.js" defer></script>
+
   <script>
-    (async () => {
-      try {
-        const r = await fetch('https://portfolio-json.laherasaumya.workers.dev/data.json', { cache: 'no-store' });
-        if (!r.ok) throw new Error('portfolio data not found');
-        const d = await r.json();
+    window.addEventListener('load', () => {
+      // --- 1) Duolingo (from GitHub Actions file) ---
+      (async () => {
+        try {
+          const streakUrl = (location.protocol === 'file:')
+            ? 'https://saumyalahera.com/data/streak.json?ts=' + Date.now()
+            : 'data/streak.json?ts=' + Date.now();
 
-        // 1) Duolingo
-        const streak = Number(d.duolingoStreak ?? d.streak);
-        const updated = d.updatedAt ?? d.updated;
+          const r = await fetch(streakUrl, { cache: 'no-store' });
+          if (!r.ok) throw new Error('streak.json not found');
+          const d = await r.json();
 
-        const lineEl = document.getElementById('duolingo-streak-line');
-        if (lineEl && Number.isFinite(streak)) {
-          lineEl.textContent = `Maintaining a ${streak}-day streak.`;
+          const streak = Number(d.streak);
+          const updated = d.updated;
+
+          const lineEl = document.getElementById('duolingo-streak-line');
+          const updatedEl = document.getElementById('duolingo-streak-updated');
+
+          if (lineEl && Number.isFinite(streak)) {
+            lineEl.textContent = `Maintaining a ${streak}-day streak.`;
+          }
+
+          if (updatedEl) {
+            if (updated) {
+              const dt = new Date(updated);
+              const pretty = isNaN(dt.getTime())
+                ? String(updated)
+                : dt.toLocaleString(undefined, {
+                    year: 'numeric', month: 'short', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  });
+              updatedEl.textContent = ` Last sync: ${pretty}`;
+            } else {
+              updatedEl.textContent = ' Last sync: recently';
+            }
+          }
+        } catch (_) {
+          // keep fallback text
         }
+      })();
 
-        const updatedEl = document.getElementById('duolingo-streak-updated');
-        if (updatedEl && updated) {
-          const dt = new Date(updated);
-          const pretty = isNaN(dt.getTime())
-            ? String(updated)
-            : dt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-          updatedEl.textContent = ` Updated daily • Last sync: ${pretty}`;
+      // --- 2) Portfolio content (from Cloudflare) ---
+      (async () => {
+        try {
+          const portfolioUrl = 'https://portfolio-json.laherasaumya.workers.dev/data.json';
+          const r = await fetch(portfolioUrl, { cache: 'no-store' });
+          if (!r.ok) return;
+          const d = await r.json();
+
+          const summaryEl = document.getElementById('summary');
+          if (summaryEl && typeof d.summary === 'string' && d.summary.trim()) {
+            summaryEl.textContent = d.summary.trim();
+          }
+
+          const kickerEl = document.getElementById('text_one');
+          if (kickerEl && typeof d.text_one === 'string' && d.text_one.trim()) {
+            kickerEl.textContent = d.text_one.trim();
+          }
+
+          const aboutEl = document.getElementById('about_summary');
+          if (aboutEl && typeof d.about_summary === 'string' && d.about_summary.trim()) {
+            aboutEl.textContent = d.about_summary.trim();
+          }
+
+          const skillsEl = document.getElementById('featured_skills');
+          if (skillsEl && Array.isArray(d.featured_skills)) {
+            skillsEl.innerHTML = '';
+            d.featured_skills.slice(0, 16).forEach((s) => {
+              if (typeof s !== 'string') return;
+              const label = s.trim();
+              if (!label) return;
+              const span = document.createElement('span');
+              span.className = 'pill';
+              span.textContent = label;
+              skillsEl.appendChild(span);
+            });
+          }
+        } catch (_) {
+          // keep fallback text
         }
-
-        // 2) Hero summary (optional)
-        const summaryEl = document.getElementById('summary');
-        if (summaryEl && typeof d.summary === 'string' && d.summary.trim().length) {
-          summaryEl.textContent = d.summary.trim();
-        }
-
-        // 3) Hero kicker (optional)
-        const kickerEl = document.getElementById('text_one');
-        if (kickerEl && typeof d.text_one === 'string' && d.text_one.trim().length) {
-          kickerEl.textContent = d.text_one.trim();
-        }
-
-        // 4) About summary (optional)
-        const aboutEl = document.getElementById('about_summary');
-        if (aboutEl && typeof d.about_summary === 'string' && d.about_summary.trim().length) {
-          aboutEl.textContent = d.about_summary.trim();
-        }
-
-        // 5) Featured Skills (optional)
-        const skillsEl = document.getElementById('featured_skills');
-        if (skillsEl && Array.isArray(d.featured_skills)) {
-          // Clear existing fallback pills
-          skillsEl.innerHTML = '';
-
-          // Render up to 16 skills to keep the layout clean
-          d.featured_skills.slice(0, 16).forEach((s) => {
-            if (typeof s !== 'string') return;
-            const label = s.trim();
-            if (!label) return;
-
-            const span = document.createElement('span');
-            span.className = 'pill';
-            span.textContent = label;
-            skillsEl.appendChild(span);
-          });
-        }
-      } catch (e) {
-        // Keep the fallback text if anything fails.
-      }
-    })();
+      })();
+    });
   </script>
-  <script src="script.js"></script>
 </body>
 </html>

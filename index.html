@@ -376,18 +376,30 @@
         </div>
       </div>
       <br>
+     <!-- <div class="pillrow__wrap" aria-label="Work and experience">
+          <h2 class="about__title">Games i like</h2>
+        <div class="pillrow" id="featured_skills" aria-label="Featured skills">
+          <span class="pill">Silent Hill f</span>
+          <span class="pill">Silent Hill 2</span>
+          <span class="pill">The Last Of Us I & II</span>
+          <span class="pill">Watch Dogs Legion</span>
+          <span class="pill">Watch Dogs I</span>
+          <span class="pill">Alan Awake II</span>
+        </div>
+      </div>
       <br>
+      <br> -->
+     <br>
       <div class="section__head">
         <h2 class="about__title">Contact</h2>
       </div>
       <div class="about">
-        <div id="contact" class="contact">
+        <div id="contact" class="contact" aria-label="Contact links">
           <a class="btn ghost2" href="mailto:saumyalahera@gmail.com">Email</a>
           <a class="btn ghost2" href="https://www.instagram.com/saumyalahera/" target="_blank" rel="noreferrer">Instagram</a>
           <a class="btn ghost2" href="https://www.linkedin.com/in/saumya-lahera-60106086/" target="_blank" rel="noreferrer">LinkedIn</a>
         </div>
       </div>
-      
     </section>
   </main>
   <footer class="site-footer">
@@ -477,6 +489,56 @@
               span.textContent = label;
               skillsEl.appendChild(span);
             });
+          }
+
+          // Contact links (optional)
+          const contactEl = document.getElementById('contact');
+          if (contactEl) {
+            // Accept a few possible JSON shapes:
+            // 1) d.contact_links = [{ label, href }, ...]
+            // 2) d.contact = { email, instagram, linkedin, github, website, ... }
+            const links = Array.isArray(d.contact_links)
+              ? d.contact_links
+              : (d.contact && typeof d.contact === 'object')
+                ? Object.entries(d.contact).map(([k, v]) => ({ label: k, href: v }))
+                : null;
+
+            if (Array.isArray(links) && links.length) {
+              // Rebuild the buttons only when JSON provides data.
+              contactEl.innerHTML = '';
+
+              links
+                .filter((x) => x && typeof x.href === 'string' && x.href.trim().length)
+                .slice(0, 10)
+                .forEach((x) => {
+                  const a = document.createElement('a');
+                  a.className = 'btn ghost2';
+
+                  const rawLabel = (x.label ?? '').toString().trim();
+                  const label = rawLabel
+                    ? rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1)
+                    : 'Link';
+
+                  let href = x.href.trim();
+
+                  // If they pass just an email address, convert to mailto:
+                  if (href.includes('@') && !href.startsWith('mailto:') && !href.startsWith('http')) {
+                    href = 'mailto:' + href;
+                  }
+
+                  a.href = href;
+                  a.textContent = label;
+
+                  // Open external links in a new tab.
+                  const isMail = href.startsWith('mailto:');
+                  if (!isMail) {
+                    a.target = '_blank';
+                    a.rel = 'noreferrer';
+                  }
+
+                  contactEl.appendChild(a);
+                });
+            }
           }
         } catch (_) {
           // keep fallback text

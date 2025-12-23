@@ -264,8 +264,10 @@
         </div>
       </div>
     </section>
-
+<!-- Sections -->
     <section id="talks" class="section">
+      <div id="other_sections" aria-label="Other sections"></div>
+      <div id="other_sections_fallback">
       <div class="section__head">
         <h2>Research Assistantship</h2>
         <p class="muted">Got a chance to work at Carnegie Mellon University Labs</p>
@@ -352,7 +354,9 @@
           </a>
         </div>
       </div>
+      </div>
     </section>
+<!-- Sections -->
 
     <section id="about" class="section section--alt">
       <div class="section__head">
@@ -539,6 +543,100 @@
                   contactEl.appendChild(a);
                 });
             }
+          }
+
+          // Other sections (optional) — renders the entire #talks section from JSON
+          const otherRoot = document.getElementById('other_sections');
+          const otherFallback = document.getElementById('other_sections_fallback');
+
+          const other = d.other_sections;
+          if (otherRoot && Array.isArray(other) && other.length) {
+            // Hide fallback content if JSON exists
+            if (otherFallback) otherFallback.style.display = 'none';
+
+            // Clear and rebuild
+            otherRoot.innerHTML = '';
+
+            const escapeHTML = (str) => String(str)
+              .replaceAll('&', '&amp;')
+              .replaceAll('<', '&lt;')
+              .replaceAll('>', '&gt;')
+              .replaceAll('"', '&quot;')
+              .replaceAll("'", '&#39;');
+
+            other
+              .filter((sec) => sec && (sec.title || sec.subtitle || Array.isArray(sec.topics)))
+              .slice(0, 12)
+              .forEach((sec) => {
+                const sectionHead = document.createElement('div');
+                sectionHead.className = 'section__head';
+
+                const h2 = document.createElement('h2');
+                h2.textContent = (sec.title ?? '').toString();
+                sectionHead.appendChild(h2);
+
+                if (sec.subtitle) {
+                  const p = document.createElement('p');
+                  p.className = 'muted';
+                  p.textContent = sec.subtitle.toString();
+                  sectionHead.appendChild(p);
+                }
+
+                otherRoot.appendChild(sectionHead);
+
+                const list = document.createElement('div');
+                list.className = 'list';
+
+                const topics = Array.isArray(sec.topics) ? sec.topics : [];
+                topics
+                  .filter((t) => t && (t.title || t.subtitle || t.link))
+                  .slice(0, 20)
+                  .forEach((t, idx) => {
+                    if (idx > 0) {
+                      const br = document.createElement('br');
+                      list.appendChild(br);
+                    }
+
+                    const row = document.createElement('div');
+                    row.className = 'row';
+
+                    const left = document.createElement('div');
+
+                    const h3 = document.createElement('h3');
+                    h3.textContent = (t.title ?? '').toString();
+                    left.appendChild(h3);
+
+                    if (t.subtitle) {
+                      const p2 = document.createElement('p');
+                      p2.className = 'muted';
+                      p2.textContent = t.subtitle.toString();
+                      left.appendChild(p2);
+                    }
+
+                    row.appendChild(left);
+
+                    const link = (t.link ?? '').toString().trim();
+                    const btnName = (t.button_name ?? t.button ?? '').toString().trim();
+
+                    if (link) {
+                      const a = document.createElement('a');
+                      a.className = 'meta meta--link2';
+                      a.href = link;
+                      a.target = '_blank';
+                      a.rel = 'noreferrer';
+                      a.textContent = btnName || 'Link';
+                      row.appendChild(a);
+                    }
+
+                    list.appendChild(row);
+                  });
+
+                otherRoot.appendChild(list);
+
+                // Spacer between sections
+                const spacer = document.createElement('br');
+                otherRoot.appendChild(spacer);
+              });
           }
         } catch (_) {
           // keep fallback text

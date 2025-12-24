@@ -65,9 +65,15 @@ window.addEventListener('keydown', (e) => {
   if (e.key.toLowerCase() === 'p') pixelArt = !pixelArt;
 });
 
-// --- Card hover video previews (MINIMAL) ---
-document.querySelectorAll('.card[data-video]').forEach(card => {
-  const src = card.dataset.video;
+// --- Card hover video previews (works for dynamic cards too) ---
+function attachVideoPreview(card) {
+  if (!card || !(card instanceof Element)) return;
+  if (!card.matches('.card[data-video]')) return;
+
+  // Avoid duplicating previews if this runs multiple times
+  if (card.querySelector('video.card__preview')) return;
+
+  const src = card.getAttribute('data-video');
   if (!src) return;
 
   const video = document.createElement('video');
@@ -78,9 +84,17 @@ document.querySelectorAll('.card[data-video]').forEach(card => {
   video.playsInline = true;
   video.preload = 'metadata';
 
+  // If the video can't load, remove it so you don't see a blank layer
+  video.addEventListener('error', () => {
+    video.remove();
+  });
+
   card.prepend(video);
 
+  // Hover play/pause
   card.addEventListener('mouseenter', () => {
+    // Ensure we attempt to load before playing
+    try { video.load(); } catch (_) {}
     video.play().catch(() => {});
   });
 
@@ -88,7 +102,29 @@ document.querySelectorAll('.card[data-video]').forEach(card => {
     video.pause();
     video.currentTime = 0;
   });
+}
+
+function initVideoPreviews(root = document) {
+  root.querySelectorAll('.card[data-video]').forEach(attachVideoPreview);
+}
+
+// Initial pass for static HTML cards
+initVideoPreviews();
+
+// Observe for cards injected later (e.g., rendered from Cloudflare JSON)
+const previewObserver = new MutationObserver((mutations) => {
+  for (const m of mutations) {
+    for (const node of m.addedNodes) {
+      if (!(node instanceof Element)) continue;
+
+      // If the added node is a card or contains cards
+      if (node.matches?.('.card[data-video]')) attachVideoPreview(node);
+      node.querySelectorAll?.('.card[data-video]').forEach(attachVideoPreview);
+    }
+  }
 });
+
+previewObserver.observe(document.documentElement, { childList: true, subtree: true });
 
 function draw(){
   if(!canvas || !ctx || !offCtx) return;

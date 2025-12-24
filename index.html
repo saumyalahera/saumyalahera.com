@@ -117,7 +117,11 @@
         <p class="muted">Additional work across graphics tooling, interactive prototypes, and production systems. (Brief summaries; details available on request.)</p>
       </div>
 
-      <div class="grid">
+      <div class="grid" id="more_projects" aria-label="More projects from JSON"></div>
+
+      <div class="grid" id="more_projects_fallback" aria-label="More projects fallback">
+          
+        <!-- project1-->
         <article class="card" data-video="assets/previews/ml_api.mp4">
           <div class="card__top">
             <div class="tag">Tooling</div>
@@ -131,7 +135,8 @@
             <li>Used for real-time torso detection and on-device rendering in performance-critical computer vision pipelines.</li>
           </ul>
         </article>
-
+        
+        <!-- project2-->
         <article class="card">
           <div class="card__top">
             <div class="tag">Graphics</div>
@@ -145,7 +150,8 @@
             <li>Focus: visual clarity for spatial understanding.</li>
           </ul>
         </article>
-
+        
+        <!-- project3-->
         <article class="card" data-video="assets/previews/graphics_api.mp4">
           <div class="card__top">
             <div class="tag">Interaction</div>
@@ -161,7 +167,8 @@
             <li>Layered real‑time effects (blur, glow, compositing) directly into the engine pipeline.</li>
           </ul>
         </article>
-
+        
+        <!-- project4-->
         <article class="card" data-video="assets/previews/shader_playground.mp4">
           <div class="card__top">
             <div class="tag">Prototype</div>
@@ -177,7 +184,8 @@
             <li>Designed as a teaching tool to make shader programming intuitive and exploratory.</li>
           </ul>
         </article>
-
+        
+        <!-- project5-->
         <article class="card" data-video="assets/previews/3d_printer_simulation.mp4">
           <div class="card__top">
             <div class="tag">Simulation</div>
@@ -196,7 +204,8 @@
             <li>Focus: clarity and feedback loops.</li>
           </ul>
         </article>
-
+        
+        <!-- project6-->
         <article class="card" data-video="assets/previews/ios_360_video_app.mp4">
           <div class="card__top">
             <div class="tag">Production</div>
@@ -212,7 +221,8 @@
             <li>Focused on smooth playback, spatial orientation, and performance under mobile constraints.</li>
           </ul>
         </article>
-
+        
+        <!-- project7-->
         <article class="card">
           <div class="card__top">
             <div class="tag tag--static">Personal</div>
@@ -663,6 +673,117 @@
 
             // Re-run after JSON render so the dynamic Duolingo row (if present) gets filled.
             updateDuolingoStreak();
+          }
+
+          // JSON schema expected:
+          // d.more_projects = [
+          //   {
+          //     title: "...",
+          //     description: "...",
+          //     video: "assets/previews/....mp4" (optional),
+          //     tags: [ { text: "Tooling", variant: "tag" }, { text: "Demo", variant: "link2", href: "https://..." }, ... ],
+          //     bullets: ["...", "...", "..."]
+          //   },
+          //   ...
+          // ]
+
+          // More projects (optional) — render cards in #more-work from JSON
+          const moreProjectsRoot = document.getElementById('more_projects');
+          const moreProjectsFallback = document.getElementById('more_projects_fallback');
+          const moreProjects = d.more_projects;
+
+          if (moreProjectsRoot && Array.isArray(moreProjects) && moreProjects.length) {
+            if (moreProjectsFallback) moreProjectsFallback.style.display = 'none';
+            moreProjectsRoot.innerHTML = '';
+
+            const tagElFor = (tag) => {
+              const text = (tag?.text ?? tag?.label ?? '').toString().trim();
+              if (!text) return null;
+
+              const variant = (tag?.variant ?? tag?.type ?? 'tag').toString().trim();
+              const href = (tag?.href ?? tag?.link ?? '').toString().trim();
+
+              // Variants map to your existing CSS classes:
+              // - tag        -> div.tag
+              // - alt        -> span.tag.tag--alt
+              // - static     -> div.tag.tag--static
+              // - link2      -> a.tag.tag--link2
+              // - link3      -> a.tag.tag--link3
+              let el;
+              if (href) {
+                el = document.createElement('a');
+                el.href = href;
+                el.target = '_blank';
+                el.rel = 'noreferrer';
+              } else {
+                el = document.createElement(variant === 'alt' ? 'span' : 'div');
+              }
+
+              el.className = 'tag';
+              if (variant === 'alt') el.className += ' tag--alt';
+              if (variant === 'static') el.className += ' tag--static';
+              if (variant === 'link2') el.className += ' tag--link2';
+              if (variant === 'link3') el.className += ' tag--link3';
+
+              el.textContent = text;
+              return el;
+            };
+
+            moreProjects
+              .filter((p) => p && (p.title || p.description || Array.isArray(p.bullets)))
+              .slice(0, 24)
+              .forEach((p) => {
+                const card = document.createElement('article');
+                card.className = 'card';
+
+                const video = (p.video ?? p.data_video ?? '').toString().trim();
+                if (video) card.setAttribute('data-video', video);
+
+                const top = document.createElement('div');
+                top.className = 'card__top';
+
+                // Tag row for consistent spacing/wrapping in JSON-rendered cards
+                const tagRow = document.createElement('div');
+                tagRow.className = 'card__tags';
+
+                const tags = Array.isArray(p.tags) ? p.tags : [];
+                tags.slice(0, 6).forEach((tg) => {
+                  const el = tagElFor(tg);
+                  if (el) tagRow.appendChild(el);
+                });
+
+                if (tagRow.childElementCount) top.appendChild(tagRow);
+
+                const h3 = document.createElement('h3');
+                h3.textContent = (p.title ?? '').toString();
+                top.appendChild(h3);
+
+                if (p.description) {
+                  const desc = document.createElement('p');
+                  desc.className = 'muted';
+                  desc.textContent = p.description.toString();
+                  top.appendChild(desc);
+                }
+
+                card.appendChild(top);
+
+                const bullets = Array.isArray(p.bullets) ? p.bullets : [];
+                if (bullets.length) {
+                  const ul = document.createElement('ul');
+                  ul.className = 'bullets';
+                  bullets.slice(0, 8).forEach((b) => {
+                    if (typeof b !== 'string') return;
+                    const t = b.trim();
+                    if (!t) return;
+                    const li = document.createElement('li');
+                    li.textContent = t;
+                    ul.appendChild(li);
+                  });
+                  card.appendChild(ul);
+                }
+
+                moreProjectsRoot.appendChild(card);
+              });
           }
         } catch (_) {
           // keep fallback text

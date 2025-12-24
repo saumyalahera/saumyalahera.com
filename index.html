@@ -419,7 +419,7 @@
   <script>
     window.addEventListener('load', () => {
       // --- 1) Duolingo (from GitHub Actions file) ---
-      (async () => {
+      async function updateDuolingoStreak() {
         try {
           const streakUrl = (location.protocol === 'file:')
             ? 'https://saumyalahera.com/data/streak.json?ts=' + Date.now()
@@ -456,7 +456,10 @@
         } catch (_) {
           // keep fallback text
         }
-      })();
+      }
+
+      // Run once on load (works with fallback HTML)
+      updateDuolingoStreak();
 
       // --- 2) Portfolio content (from Cloudflare) ---
       (async () => {
@@ -606,10 +609,30 @@
                     h3.textContent = (t.title ?? '').toString();
                     left.appendChild(h3);
 
-                    if (t.subtitle) {
+                    const isDuolingo = (String(t.title ?? '').toLowerCase().trim() === 'duolingo');
+
+                    if (t.subtitle || isDuolingo) {
                       const p2 = document.createElement('p');
                       p2.className = 'muted';
-                      p2.textContent = t.subtitle.toString();
+
+                      if (t.subtitle) {
+                        p2.appendChild(document.createTextNode(t.subtitle.toString() + ' '));
+                      }
+
+                      if (isDuolingo) {
+                        const lineSpan = document.createElement('span');
+                        lineSpan.id = 'duolingo-streak-line';
+                        lineSpan.textContent = 'Maintaining a long‑term daily streak.';
+
+                        const updatedSpan = document.createElement('span');
+                        updatedSpan.id = 'duolingo-streak-updated';
+                        updatedSpan.className = 'muted';
+
+                        p2.appendChild(lineSpan);
+                        p2.appendChild(document.createTextNode(' '));
+                        p2.appendChild(updatedSpan);
+                      }
+
                       left.appendChild(p2);
                     }
 
@@ -637,6 +660,9 @@
                 const spacer = document.createElement('br');
                 otherRoot.appendChild(spacer);
               });
+
+            // Re-run after JSON render so the dynamic Duolingo row (if present) gets filled.
+            updateDuolingoStreak();
           }
         } catch (_) {
           // keep fallback text

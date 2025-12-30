@@ -67,6 +67,10 @@ window.addEventListener('keydown', (e) => {
 
 // --- Card hover video previews (works for dynamic cards too) ---
 function attachVideoPreview(card) {
+  // No real hover on touch devices; iOS can fire mouseenter without mouseleave.
+  // Mobile uses the Preview button flow instead.
+  if (window.matchMedia && window.matchMedia('(hover: none)').matches) return;
+
   if (!card || !(card instanceof Element)) return;
   if (!card.matches('.card[data-video]')) return;
 
@@ -99,8 +103,8 @@ function attachVideoPreview(card) {
   });
 
   card.addEventListener('mouseleave', () => {
-    video.pause();
-    video.currentTime = 0;
+    try { video.pause(); } catch(_) {}
+    try { video.currentTime = 0; } catch(_) {}
   });
 }
 
@@ -238,3 +242,129 @@ function draw(){
   requestAnimationFrame(draw);
 }
 draw();
+
+// Mobile: add Preview button to cards with data-video (tap-to-play)
+(function addTapPreviewButtons(){
+  // Only enable on phones/tablets
+  if (window.matchMedia && window.matchMedia('(hover: hover)').matches) return;
+
+  let active = null; // { card, btn, layer, video, src }
+
+  function hardStop(entry){
+    if (!entry) return;
+    const { card, btn, layer, video } = entry;
+
+    if (video) {
+      try { video.pause(); } catch(_) {}
+      try { video.currentTime = 0; } catch(_) {}
+      // Hard stop: drop src, load, then remove element (most reliable on iOS)
+      try { video.removeAttribute('src'); } catch(_) {}
+      try { video.src = ''; } catch(_) {}
+      try { video.load(); } catch(_) {}
+      try { video.remove(); } catch(_) {}
+    }
+
+    if (layer) {
+      layer.innerHTML = '';
+      layer.style.display = 'none';
+    }
+    if (card) card.classList.remove('card--previewing');
+    if (btn) btn.textContent = 'Preview';
+  }
+
+  function ensureButton(card){
+    if (!card || !(card instanceof Element)) return;
+    if (!card.matches('.card[data-video]')) return;
+    if (card.querySelector('.card__previewBtn')) return;
+
+    const src = card.getAttribute('data-video');
+    if (!src) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'card__previewLayer';
+    layer.style.display = 'none';
+
+    // Layer only; create the <video> on-demand when user taps Preview.
+    card.appendChild(layer);
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'card__previewBtn';
+    btn.textContent = 'Preview';
+
+    btn.addEventListener('click', async () => {
+      const isOpen = card.classList.contains('card--previewing');
+
+      if (isOpen) {
+        // Close: stop and remove the active video for this card
+        const currentVideo = layer.querySelector('video');
+        hardStop({ card, btn, layer, video: currentVideo });
+        if (active && active.card === card) active = null;
+        return;
+      }
+
+      // If another card is open, stop it first
+      if (active && active.card !== card) {
+        const prevLayer = active.layer;
+        const prevVideo = prevLayer ? prevLayer.querySelector('video') : null;
+        hardStop({ card: active.card, btn: active.btn, layer: prevLayer, video: prevVideo });
+        active = null;
+      }
+
+      // Create a fresh video element every time we open (most reliable stop/play on iOS)
+      layer.innerHTML = '';
+      const video = document.createElement('video');
+      video.muted = true;
+      video.defaultMuted = true;
+      video.volume = 0;
+      video.loop = true;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('webkit-playsinline', '');
+      video.disablePictureInPicture = true;
+      video.setAttribute('disablepictureinpicture', '');
+      video.preload = 'metadata';
+      video.src = src;
+      layer.appendChild(video);
+
+      active = { card, btn, layer, video, src };
+      card.classList.add('card--previewing');
+      layer.style.display = 'block';
+      btn.textContent = 'Close';
+
+      try { await video.play(); } catch (_) {}
+    });
+
+    card.appendChild(btn);
+  }
+
+  function init(root = document){
+    root.querySelectorAll('.card[data-video]').forEach(ensureButton);
+  }
+
+  // initial + JSON-injected cards
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => init());
+  } else {
+    init();
+  }
+
+  const mo = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      for (const node of m.addedNodes) {
+        if (!(node instanceof Element)) continue;
+        if (node.matches?.('.card[data-video]')) ensureButton(node);
+        node.querySelectorAll?.('.card[data-video]').forEach(ensureButton);
+      }
+    }
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'hidden') return;
+    if (!active) return;
+    const v = active.layer ? active.layer.querySelector('video') : active.video;
+    hardStop({ card: active.card, btn: active.btn, layer: active.layer, video: v });
+    active = null;
+  });
+})();

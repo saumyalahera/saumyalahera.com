@@ -153,6 +153,10 @@ main{position:relative; z-index:1}
 .hero-name {
   font-family: 'Charlotte', serif;
   font-size: 2.42em;
+  font-weight: 500;
+  font-synthesis: weight;
+  text-shadow: 0 0 0 currentColor;
+  -webkit-text-stroke: 0.95px currentColor;
 }
 .accent{
   background:linear-gradient(135deg,var(--accent),var(--accent2));

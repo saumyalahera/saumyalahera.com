@@ -58,7 +58,7 @@
     </section>
     <!-- Banner -->
     <section class="marquee" aria-label="Marquee">
-      <div class="marquee__track">
+      <div class="marquee__track" id="marquee_track">
         <span>low latency</span><span>tile‑based GPUs</span><span>Metal</span><span>tooling</span><span>interactive pipelines</span><span>real‑time</span>
         <span>low latency</span><span>tile‑based GPUs</span><span>Metal</span><span>tooling</span><span>interactive pipelines</span><span>real‑time</span>
       </div>
@@ -507,6 +507,31 @@
               span.textContent = label;
               skillsEl.appendChild(span);
             });
+          }
+
+          // Marquee (optional)
+          // Expected JSON shapes (either works):
+          // - d.marquee = ["low latency", "tile‑based GPUs", ...]
+          // - d.marquee_items = ["low latency", "tile‑based GPUs", ...]
+          const marqueeTrack = document.getElementById('marquee_track');
+          const marqueeItems = Array.isArray(d.marquee) ? d.marquee : (Array.isArray(d.marquee_items) ? d.marquee_items : null);
+
+          if (marqueeTrack && Array.isArray(marqueeItems) && marqueeItems.length) {
+            const clean = marqueeItems
+              .map((x) => (typeof x === 'string' ? x.trim() : ''))
+              .filter(Boolean)
+              .slice(0, 24);
+
+            if (clean.length) {
+              // Duplicate once for seamless loop (matches your current HTML pattern)
+              const all = clean.concat(clean);
+              marqueeTrack.innerHTML = '';
+              all.forEach((txt) => {
+                const sp = document.createElement('span');
+                sp.textContent = txt;
+                marqueeTrack.appendChild(sp);
+              });
+            }
           }
 
           // Contact links (optional)

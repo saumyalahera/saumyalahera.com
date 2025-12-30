@@ -21,9 +21,68 @@ if(menuBtn && links){
   });
 }
 
-/* Tiny canvas shader-esque animation (no WebGL, works everywhere) */
-const canvas = document.getElementById('shader');
-const ctx = canvas?.getContext('2d');
+/* Tiny canvas shader-esque animation (2D default; optional WebGL GLSL override) */
+let canvas = document.getElementById('shader');
+let ctx = null;   // 2D
+let gl = null;    // WebGL
+
+function ensure2D() {
+  if (!canvas) return null;
+
+  // If we were running WebGL, stop it before taking a 2D context.
+  if (gl || __glState) {
+    try { stopWebGLShader(); } catch (_) {}
+    gl = null;
+  }
+
+  if (!ctx) {
+    // NOTE: creating a 2D context prevents WebGL on the same canvas.
+    ctx = canvas.getContext('2d');
+  }
+
+  // Critical: apply DPR transform after switching/cloning
+  try { resize(); } catch (_) {}
+
+  return ctx;
+}
+
+function replaceCanvasPreservingLayout() {
+  if (!canvas) return;
+  const parent = canvas.parentNode;
+  if (!parent) return;
+
+  // Clone the element to get a fresh canvas without an existing context.
+  const fresh = canvas.cloneNode(false);
+  fresh.id = canvas.id; // keep id="shader"
+  fresh.className = canvas.className;
+  // Keep explicit attributes if present
+  if (canvas.getAttribute('width')) fresh.setAttribute('width', canvas.getAttribute('width'));
+  if (canvas.getAttribute('height')) fresh.setAttribute('height', canvas.getAttribute('height'));
+
+  parent.replaceChild(fresh, canvas);
+  canvas = fresh;
+  ctx = null;
+  gl = null;
+
+  // Rebind pointer events on the new canvas
+  bindCanvasInput();
+  resize();
+}
+
+function ensureWebGL() {
+  if (!canvas) return null;
+
+  // If we already created a 2D ctx, we must swap the canvas to allow WebGL.
+  if (ctx && !gl) {
+    replaceCanvasPreservingLayout();
+  }
+
+  if (!gl) {
+    gl = canvas.getContext('webgl', { antialias: true, alpha: true, premultipliedAlpha: false })
+      || canvas.getContext('experimental-webgl');
+  }
+  return gl;
+}
 
 // Offscreen buffer for pixelated / "AR pixel" look
 const off = document.createElement('canvas');
@@ -34,31 +93,250 @@ let pixelArt = true; // palette + dither (pixel-art look)
 let t = 0;
 let running = true;
 let mx = 0.5, my = 0.5;
+let __defaultShaderEnabled = true;
+
+// ------------------------------------------------------------
+// Custom shader override (from Cloudflare JSON)
+// If `shader_fragment` exists in data.json, run it.
+// The custom code is expected to be plain JS that draws into the same
+// `canvas/ctx/off/offCtx` variables (like your previous injected draw() snippet).
+// ------------------------------------------------------------
+let __customShaderApplied = false;
+
+// --- WebGL GLSL runner -------------------------------------------------
+let __glState = null;
+
+function looksLikeGLSL(code) {
+  const s = String(code || '').trim();
+  if (!s) return false;
+  // Heuristics: GLSL usually has precision/uniform/void main and no `function` keyword.
+  const glslHints = /(precision\s+\w+\s+float\s*;|uniform\s+|void\s+main\s*\(|gl_FragColor\s*=)/;
+  const jsHints = /(function\s+|=>|document\.|window\.|ctx\.|offCtx\.|requestAnimationFrame\s*\()/;
+  return glslHints.test(s) && !jsHints.test(s);
+}
+
+function compileShader(gl, type, source) {
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, source);
+  gl.compileShader(sh);
+  if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+    const info = gl.getShaderInfoLog(sh) || 'Unknown shader compile error';
+    gl.deleteShader(sh);
+    throw new Error(info);
+  }
+  return sh;
+}
+
+function createProgram(gl, vsSrc, fsSrc) {
+  const vs = compileShader(gl, gl.VERTEX_SHADER, vsSrc);
+  const fs = compileShader(gl, gl.FRAGMENT_SHADER, fsSrc);
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs);
+  gl.attachShader(prog, fs);
+  gl.linkProgram(prog);
+  gl.deleteShader(vs);
+  gl.deleteShader(fs);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    const info = gl.getProgramInfoLog(prog) || 'Unknown program link error';
+    gl.deleteProgram(prog);
+    throw new Error(info);
+  }
+  return prog;
+}
+
+function startWebGLShader(fragmentSource) {
+  const glx = ensureWebGL();
+  if (!glx) throw new Error('WebGL not available');
+
+  // Fullscreen triangle (no attributes needed)
+  const vsSrc = `attribute vec2 aPos;\nvoid main(){ gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
+  // Allow users to omit precision; we’ll inject a safe default.
+  const fsHeader = `precision highp float;\nuniform vec2 iResolution;\nuniform float iTime;\nuniform vec2 iMouse;\n`;
+  const fsSrc = fragmentSource.includes('precision') ? fragmentSource : (fsHeader + fragmentSource);
+
+  const prog = createProgram(glx, vsSrc, fsSrc);
+
+  const buf = glx.createBuffer();
+  glx.bindBuffer(glx.ARRAY_BUFFER, buf);
+  // triangle covering clip space
+  glx.bufferData(glx.ARRAY_BUFFER, new Float32Array([
+    -1, -1,
+     3, -1,
+    -1,  3
+  ]), glx.STATIC_DRAW);
+
+  const aPos = glx.getAttribLocation(prog, 'aPos');
+  glx.useProgram(prog);
+  glx.enableVertexAttribArray(aPos);
+  glx.vertexAttribPointer(aPos, 2, glx.FLOAT, false, 0, 0);
+
+  const uRes = glx.getUniformLocation(prog, 'iResolution');
+  const uTime = glx.getUniformLocation(prog, 'iTime');
+  const uMouse = glx.getUniformLocation(prog, 'iMouse');
+
+  __glState = {
+    gl: glx,
+    prog,
+    buf,
+    uRes,
+    uTime,
+    uMouse,
+    start: performance.now(),
+    raf: 0,
+  };
+
+  resize();
+
+  const tick = () => {
+    if (!__glState) return;
+    const now = performance.now();
+    const secs = (now - __glState.start) / 1000;
+
+    __glState.gl.useProgram(__glState.prog);
+    if (__glState.uRes) __glState.gl.uniform2f(__glState.uRes, canvas.width, canvas.height);
+    if (__glState.uTime) __glState.gl.uniform1f(__glState.uTime, secs);
+    if (__glState.uMouse) __glState.gl.uniform2f(__glState.uMouse, mx * canvas.width, (1.0 - my) * canvas.height);
+
+    __glState.gl.drawArrays(__glState.gl.TRIANGLES, 0, 3);
+    __glState.raf = requestAnimationFrame(tick);
+  };
+
+  cancelAnimationFrame(__glState.raf);
+  __glState.raf = requestAnimationFrame(tick);
+}
+
+function stopWebGLShader() {
+  if (!__glState) return;
+  try { cancelAnimationFrame(__glState.raf); } catch(_) {}
+  try {
+    const glx = __glState.gl;
+    if (__glState.prog) glx.deleteProgram(__glState.prog);
+    if (__glState.buf) glx.deleteBuffer(__glState.buf);
+  } catch(_) {}
+  __glState = null;
+}
+
+function applyCustomShader(rawCode){
+  const code = (typeof rawCode === 'string') ? rawCode.trim() : '';
+  if (!code) return false;
+  if (__customShaderApplied) return true;
+
+  // Stop default loop before switching
+  __defaultShaderEnabled = false;
+
+  // Clear the canvas once so the transition is clean
+  try {
+    const w = canvas?.clientWidth || 0;
+    const h = canvas?.clientHeight || 0;
+    if (ctx) ctx.clearRect(0, 0, w, h);
+  } catch (_) {}
+
+  try {
+    window.__PORTFOLIO_ACTIVE_SHADER__ = 'custom';
+    window.__PORTFOLIO_SHADER_ERROR__ = '';
+
+    // If it looks like GLSL, run WebGL.
+    if (looksLikeGLSL(code)) {
+      // Ensure we are not running an old WebGL program
+      stopWebGLShader();
+      startWebGLShader(code);
+      __customShaderApplied = true;
+      return true;
+    }
+
+    // Otherwise treat as JS that draws into 2D.
+    ensure2D();
+
+    const fn = new Function(
+      'canvas','ctx','off','offCtx','mx','my','t','running','pixelate','pixelArt',
+      code
+    );
+    fn(canvas, ctx, off, offCtx, mx, my, t, running, pixelate, pixelArt);
+
+    __customShaderApplied = true;
+    return true;
+  } catch (e) {
+    const msg = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+    window.__PORTFOLIO_SHADER_ERROR__ = msg;
+    try { console.error('Custom shader failed:', msg); } catch (_) {}
+
+    // If WebGL failed, clean it up.
+    stopWebGLShader();
+
+    window.__PORTFOLIO_ACTIVE_SHADER__ = 'default';
+    __customShaderApplied = false;
+    startDefaultShader();
+    return false;
+  }
+}
+
+// Try from global (set by index.html) first; fetch is fallback.
+async function tryApplyShaderFromJSON(){
+  try {
+    const r = await fetch('https://portfolio-json.laherasaumya.workers.dev/data.json', { cache: 'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+
+    // Apply shader if present
+    applyCustomShader(d.shader_fragment);
+  } catch (_) {
+    // ignore; keep default
+  }
+}
+
+// Listen for index.html publishing the shader from JSON
+window.addEventListener('portfolio:shader', (e) => {
+  const code = e?.detail;
+  applyCustomShader(code);
+});
+
+// If index.html already set the global before script.js runs, apply immediately
+if (typeof window.__PORTFOLIO_SHADER_FRAGMENT__ === 'string') {
+  applyCustomShader(window.__PORTFOLIO_SHADER_FRAGMENT__);
+}
 
 function resize(){
   if(!canvas) return;
   const rect = canvas.getBoundingClientRect();
   const dpr = Math.min(2, window.devicePixelRatio || 1);
+
   canvas.width = Math.floor(rect.width * dpr);
   canvas.height = Math.floor(rect.height * dpr);
-  ctx?.setTransform(dpr,0,0,dpr,0,0);
+
+  // 2D scale
+  if (ctx) {
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  // WebGL viewport
+  if (gl) {
+    gl.viewport(0, 0, canvas.width, canvas.height);
+  }
 }
 window.addEventListener('resize', resize);
 resize();
 
-canvas?.addEventListener('mousemove', (e) => {
-  const r = canvas.getBoundingClientRect();
-  mx = (e.clientX - r.left) / r.width;
-  my = (e.clientY - r.top) / r.height;
-});
-// Click: pause/play animation. Shift+Click: toggle pixelation.
-canvas?.addEventListener('click', (e) => {
-  if (e.shiftKey) {
-    pixelate = !pixelate;
-    return;
-  }
-  running = !running;
-});
+function bindCanvasInput() {
+  if (!canvas) return;
+
+  canvas.addEventListener('mousemove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    mx = (e.clientX - r.left) / r.width;
+    my = (e.clientY - r.top) / r.height;
+  });
+
+  // Click: pause/play animation. Shift+Click: toggle pixelation.
+  canvas.addEventListener('click', (e) => {
+    if (e.shiftKey) {
+      pixelate = !pixelate;
+      return;
+    }
+    running = !running;
+  });
+}
+
+bindCanvasInput();
 
 // Keyboard: P toggles pixel-art palette/dither.
 window.addEventListener('keydown', (e) => {
@@ -131,6 +409,8 @@ const previewObserver = new MutationObserver((mutations) => {
 previewObserver.observe(document.documentElement, { childList: true, subtree: true });
 
 function draw(){
+  if(!__defaultShaderEnabled) return;
+  ensure2D();
   if(!canvas || !ctx || !offCtx) return;
 
   const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -241,7 +521,31 @@ function draw(){
   if(running) t += 1;
   requestAnimationFrame(draw);
 }
-draw();
+function startDefaultShader(){
+  stopWebGLShader();
+
+  // Force 2D mode + correct DPR scaling BEFORE drawing
+  ensure2D();
+
+  __defaultShaderEnabled = true;
+  __customShaderApplied = false;
+  window.__PORTFOLIO_ACTIVE_SHADER__ = 'default';
+
+  resize();
+  draw();
+}
+
+startDefaultShader();
+
+// Attempt override after DOM is ready (and after initial layout)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // small delay helps ensure canvas has correct size
+    setTimeout(tryApplyShaderFromJSON, 50);
+  });
+} else {
+  setTimeout(tryApplyShaderFromJSON, 50);
+}
 
 // Mobile: add Preview button to cards with data-video (tap-to-play)
 (function addTapPreviewButtons(){

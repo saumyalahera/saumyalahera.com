@@ -440,6 +440,13 @@
           if (!r.ok) throw new Error('streak.json not found');
           const d = await r.json();
 
+          // Expose optional custom shader code to script.js
+          // If present, script.js should switch from the default shader to this code.
+          window.__PORTFOLIO_SHADER_FRAGMENT__ = (typeof d.shader_fragment === 'string') ? d.shader_fragment : '';
+          window.dispatchEvent(new CustomEvent('portfolio:shader', {
+            detail: window.__PORTFOLIO_SHADER_FRAGMENT__
+          }));
+
           const streak = Number(d.streak);
           const updated = d.updated;
 

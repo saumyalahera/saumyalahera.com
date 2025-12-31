@@ -158,6 +158,13 @@ main{position:relative; z-index:1}
   text-shadow: 0 0 0 currentColor;
   -webkit-text-stroke: 0.95px currentColor;
 }
+
+.hero-native{
+  font-family: Avenir, "Avenir Next", "Avenir Next LT Pro", system-ui, -apple-system, sans-serif;
+  font-style: normal;
+  font-weight: 620;
+}
+
 .accent{
   background:linear-gradient(135deg,var(--accent),var(--accent2));
   -webkit-background-clip:text;

@@ -391,7 +391,7 @@ main{position:relative; z-index:1}
 
 .tag--link3{
   cursor: pointer;
-  background: linear-gradient(135deg, #fff6f6 0%, #ffcccc 45%, #f4a6a6 100%);
+  background: linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);
 }
 
 .tag--link3:hover{

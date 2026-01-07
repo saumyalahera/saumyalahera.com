@@ -426,7 +426,7 @@
     <br/>
     <p class="footer-websiteupdate">
       <span>LAST</span>
-      <span> JAN,6 2026</span>
+      <span id="footer-updated-date">JAN,6 2026</span>
       <span>UPDATED WITH THE APP</span>
     </p>
     
@@ -494,6 +494,22 @@
           const r = await fetch(portfolioUrl, { cache: 'no-store' });
           if (!r.ok) return;
           const d = await r.json();
+          // Footer date (from JSON)
+          // Expects d.updatedAt like: "2025-12-23T12:52:59.793Z"
+          const footerDateEl = document.getElementById('footer-updated-date');
+          if (footerDateEl && d.updatedAt) {
+            const dt = new Date(d.updatedAt);
+            if (!isNaN(dt.getTime())) {
+              const month = dt.toLocaleString(undefined, { month: 'short' }).toUpperCase();
+              const day = dt.getDate();
+              const year = dt.getFullYear();
+              const time = dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+              footerDateEl.textContent = `${month},${day} ${year} • ${time}`;
+            } else {
+              // If updatedAt is not parseable, show it as-is
+              footerDateEl.textContent = String(d.updatedAt);
+            }
+          }
 
           const summaryEl = document.getElementById('summary');
           if (summaryEl && typeof d.summary === 'string' && d.summary.trim()) {

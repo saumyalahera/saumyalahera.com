@@ -573,6 +573,55 @@
 }
 
 /*footer ends*/
+/*Section starts*/
+.section__head p{
+    margin:0;
+    color:#444444;
+    max-width:70ch;
+    line-height:1.6;
+    font-size:16px;
+    
+    font-weight: 350;
+    
+    /*text-decoration:none;
+    text-transform: uppercase;
+    white-space: nowrap;
+    font-family: inherit;
+     
+    font-synthesis: weight;*/
+}
+
+.section__head h2{
+  margin:0 0 10px;
+  font-size:26px;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+}
+/*Section ends*/
+/*link starts*/
+.link{
+    color:rgba(0,0,0,.89);
+    text-decoration:none;
+    font-weight:700;
+    font-size:9.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    
+    
+}
+.link:hover{
+    text-decoration:underline;
+}
+/*link ends*/
+.muted{
+    color:rgba(0,0,0,.89);
+    /*text-decoration:none;
+    font-weight:500;
+    font-size:14px;
+    letter-spacing: 0.02em;*/
+    
+}
 
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -715,8 +764,6 @@ main{position:relative; z-index:1}
   border-bottom:1px solid var(--line);
 }
 
-.section__head p{margin:0; color:#444444; max-width:70ch; line-height:1.6}
-
 .grid{
   display:grid;
   grid-template-columns:repeat(3, 1fr);
@@ -724,10 +771,10 @@ main{position:relative; z-index:1}
   margin-top:18px;
 }
 .card{
-  border:1px solid var(--line);
+  border:0.2px solid rgba(0,0,0,.4);
   border-radius:var(--r);
-  background:rgba(240,240,244,.70);
-  box-shadow:0 20px 60px rgba(0,0,0,.15);
+  background:rgba(240,240,244,.070);
+  box-shadow:0 20px 60px rgba(0,0,0,.02);
   padding:18px;
   display:flex;
   flex-direction:column;
@@ -783,11 +830,8 @@ main{position:relative; z-index:1}
 }
 
 .card h3{margin:8px 0 6px; font-size:18px}
-.muted{color:#666666}
 .bullets{margin:0; padding-left:18px; color:rgba(0,0,0,.86); line-height:1.6}
 .card__actions{margin-top:auto}
-.link{color:rgba(0,0,0,.82); text-decoration:none; font-weight:600}
-.link:hover{text-decoration:underline}
 
 .split{
   display:grid;
@@ -809,11 +853,12 @@ main{position:relative; z-index:1}
   display:flex;
   justify-content:space-between;
   gap:14px;
-  border:1px solid var(--line);
   border-radius:var(--r);
   padding:16px 18px;
-  background:rgba(240,240,244,.55);
+  background:rgba(240,240,244,.3);
+  border:0.2px solid rgba(0,0,0,.25);
 }
+/*saumya*/
 .row h3{margin:0 0 6px}
 .row p{margin:0}
 
@@ -837,13 +882,6 @@ main{position:relative; z-index:1}
   .split{grid-template-columns:1fr}
   .links{display:none}
   .menu{display:block}
-}
-
-.section__head h2{
-  margin:0 0 10px;
-  font-size:26px;
-  letter-spacing: 0.02em;
-  font-weight: 700;
 }
 
 h2.about__title{

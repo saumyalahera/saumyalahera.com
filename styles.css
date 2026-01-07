@@ -249,6 +249,50 @@
   border: 0.1px solid rgba(0,0,0,0.20);
 }
 /*pill ends*/
+/* Preview button */
+.card__previewBtn{
+  
+  position: absolute;
+  right: 14px;
+  z-index: 3;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 999px;
+  padding:10px 14px;
+  font-size: 9px;
+  cursor: default;
+  padding:10px 14px;
+  background: rgba(204,199,255,.15);
+  color: #4C38F0;
+  border: 0.1px solid rgba(76,56,240,.18);
+  letter-spacing: 0.28em;
+  text-decoration:none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: inherit;
+  font-weight: 650; /* semibold */
+  font-synthesis: weight;
+  line-height: 1;
+  box-shadow: none;
+  
+}
+.card__previewBtn::before{
+  content:"";
+  position:absolute;
+  inset:-0.5px;
+  border-radius:6px;
+  background:rgba(204,199,255,.15);
+  z-index:-20;
+}
+
+.card__previewBtn::after{
+  content:"";
+  position:absolute;
+  inset:1px;
+  border-radius:inherit;
+  background: rgba(204,199,255,.15);
+}
+/*Preview ends*/
 /*tags start*/
 .tag{
   display:inline-block;
@@ -271,7 +315,9 @@
   text-decoration:none;
   text-transform: uppercase;
   white-space: nowrap;
-  font-weight: 650;          /* semibold */
+  font-family: inherit;
+  font-weight: 650; /* semibold */
+  font-synthesis: weight;
   
   line-height: 1;
     /* lilac fill */
@@ -832,23 +878,6 @@ h2.about__title{
 .card__actions {
   position: relative;
   z-index: 2;
-}
-
-/* Preview button */
-.card__previewBtn{
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 3;
-  border:1px solid rgba(0,0,0,.20);
-  background:#F5F5F5;
-  color:rgba(0,0,0,.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 999px;
-  padding:6px 10px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 /* Video layer behind content */

@@ -73,8 +73,6 @@
 /*accent starts*/
 .accent{
   /*background:linear-gradient(135deg,var(--accent),var(--accent2));*/
-  
-  
   -webkit-background-clip:text;
   /*background-clip:text;*/
   font-weight: 500;          /* semibold */
@@ -88,9 +86,19 @@
 .hero-native{
   /*font-family: Avenir, "Avenir Next", "Avenir Next LT Pro", system-ui, -apple-system, sans-serif;*/
   /*font-family: "TimesNewRomanPSMT", "Times New Roman", Times, serif;*/
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.48em;
+  font-size:11px;
+  background: rgba(0,0,0,.0);
+  color:rgba(0,0,0,.9);
+  
+}
+.hero-native2{
+  /*font-family: Avenir, "Avenir Next", "Avenir Next LT Pro", system-ui, -apple-system, sans-serif;*/
+  /*font-family: "TimesNewRomanPSMT", "Times New Roman", Times, serif;*/
+  font-weight: 600;
   letter-spacing: 0.18em;
-  font-size:16px;
+  font-size:14px;
   background: rgba(0,0,0,.0);
   color:rgba(0,0,0,.9);
   

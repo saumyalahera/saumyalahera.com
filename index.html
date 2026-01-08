@@ -673,6 +673,53 @@
             }
           }
 
+          // Miscellaneous mini cards (optional)
+          // Expected JSON shape:
+          // d.miscellaneous = [ { title: "...", meta: "...", image: "assets/misc/..png" }, ... ]
+          const miscRoot = document.getElementById('miscellaneous');
+          const miscFallback = document.getElementById('miscellaneous_fallback');
+          const misc = d.miscellaneous;
+
+          if (miscRoot && Array.isArray(misc) && misc.length) {
+            if (miscFallback) miscFallback.style.display = 'none';
+            miscRoot.innerHTML = '';
+
+            misc
+              .filter((it) => it && (it.title || it.meta || it.image))
+              .slice(0, 24)
+              .forEach((item) => {
+                const card = document.createElement('article');
+                card.className = 'mini-card';
+
+                const imgSrc = (item.image ?? item.img ?? item.src ?? '').toString().trim();
+                if (imgSrc) {
+                  const img = document.createElement('img');
+                  img.className = 'mini-card__img';
+                  img.src = imgSrc;
+                  img.alt = (item.title ?? '').toString();
+                  img.loading = 'lazy';
+                  card.appendChild(img);
+                }
+
+                const body = document.createElement('div');
+                body.className = 'mini-card__body';
+
+                const title = document.createElement('div');
+                title.className = 'mini-card__title';
+                title.textContent = (item.title ?? '').toString();
+
+                const meta = document.createElement('div');
+                meta.className = 'mini-card__meta';
+                meta.textContent = (item.meta ?? item.subtitle ?? '').toString();
+
+                body.appendChild(title);
+                body.appendChild(meta);
+
+                card.appendChild(body);
+                miscRoot.appendChild(card);
+              });
+          }
+
           // Other sections (optional) — renders the entire #talks section from JSON
           const otherRoot = document.getElementById('other_sections');
           const otherFallback = document.getElementById('other_sections_fallback');

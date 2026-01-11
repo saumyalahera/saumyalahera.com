@@ -639,34 +639,38 @@
 /* --- Miscellaneous mini cards (compact) --- */
 .mini-grid{
   display:grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(8, minmax(0, 1fr)); /* was 6 */
+  gap: 8px; /* was 10 */
 }
 
 @media (max-width: 1100px){
-  .mini-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .mini-grid{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px){
-  .mini-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mini-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 520px){
-  .mini-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mini-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 .mini-card{
   position: relative;
-  border-radius: 14px;
+  border-radius: 0px;
+  padding: 0;
 
-  /* Clean card */
-  background: #ffffff;
-  border: 0.1px solid rgba(0,0,0,.18);
+  border: 0.0px solid rgba(0,0,0,.18);
 
-  /* spacer so the image doesn't touch the border */
-  padding: 10px;
+  /* allow layered overlays */
+  overflow: hidden;
+
+  /* purple-ish base layer INSIDE card */
+  background: rgba(204,199,255,0);
 
   box-shadow: none;
+  
+ 
 }
 
 /* subtle “plate” under the card (button-like layer) */
@@ -674,30 +678,40 @@
   content:"";
   position:absolute;
   inset: -1px;
-  border-radius: 8px;            /* boxy plate */
-  background: rgba(204,199,255,.15);
-  transform: translateY(1px);    /* looks like a layer under */
+  border-radius: 8px;
+  background: rgba(1,1,1,.0);
+  transform: translateY(1px);
   z-index: -1;
-  box-shadow: 0 1px 0 rgba(0,0,0,.08);
+  box-shadow: 0 1px 0 rgba(0,0,0,.00);
+}
+
+.mini-card::after{
+  content:"";
+  position:absolute;
+  inset: 0;
+  background: url("assets/paper.svg") no-repeat 0 0 / 100% 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.95;
+}
+.mini-card > *{
+  position: relative;
+  z-index: 1; /* content above the stamp background */
 }
 
 /* IMPORTANT: delete your old .mini-card::after entirely */
 
 /* image: inset + no border look */
 .mini-card__img{
-  width:100%;
-  height: 92px;
+  margin: 10px; /* was 20px */
+  width: calc(100% - 20px); /* was -40px */
+  height: 80px; /* was 132px */
   object-fit: cover;
   display:block;
-
-  /* clean: no image border / outline */
   border: 0;
   outline: 0;
   box-shadow: none;
-
-  /* clip cleanly without the weird inner seams */
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 10px; /* slightly tighter */
   transform: translateZ(0);
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
@@ -711,14 +725,15 @@
 
 /* spacer between image and text */
 .mini-card__body{
-  padding: 10px 6px 6px;
+  margin: 2px;
+  padding: 0 10px 10px;  /* <-- bottom padding after meta */
 }
 
 .mini-card > *{ min-width: 0; }
 
 .mini-card__title{
   font-weight: 650;
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.12em;
   margin: 0 0 8px; /* more space before meta */
   line-height: 1.2;
@@ -727,12 +742,14 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-align: center;
 }
 
 .mini-card__meta{
-  margin: 0;            /* title already provides spacing */
+  margin: 0;
+  margin-top: 0;
   font-weight: 450;
-  font-size: 8px;
+  font-size: 7px;
   letter-spacing: 0.18em;
   opacity: 0.85;
   line-height: 1.2;
@@ -741,6 +758,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-align: center;
 }
 /*.btn{
   position: relative;

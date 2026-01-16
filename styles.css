@@ -885,9 +885,11 @@ main{position:relative; z-index:1}
 .pillrow{display:flex; gap:10px; flex-wrap:wrap}
 
 .hero__media{
-  border-radius:var(--r);
-  border:1px solid var(--line);
-  background: #f0f0f4;
+/*  border-radius:var(--r);*/
+/*  border:1px solid var(--line);*/
+/*  background: #f0f0f4;*/
+/*  box-shadow:var(--shadow);*/
+  border:0.1px solid var(--line);
   box-shadow:var(--shadow);
   overflow:hidden;
   position:relative;

@@ -1174,3 +1174,93 @@ h2.about__title{
 @media (hover: hover) {
   .card__previewBtn { display: none; }
 }
+
+/* Duolingo = stacked mini-card */
+.mini-card.duo-card{
+  max-width: none;   /* fill column */
+  margin: 0;         /* no centering gap */
+}
+
+/* Push image section to bottom of card */
+.duo-card__imageWrap{
+  display: flex;
+  align-items: flex-end;         /* 🔥 anchor image to bottom */
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Actual image */
+.duo-card__img{
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  display: block;
+}
+
+/* Text block */
+.duo-card__text{
+  padding: 18px 10px 6px;  /* ↑ more top air */
+  text-align: center;
+}
+
+/* Title */
+.duo-card__title{
+  font-weight: 650;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  line-height: 1.25;
+  margin-bottom: 6px;
+
+  display:-webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:hidden;
+}
+
+/* Subtitle */
+.duo-card__subtitle{
+  font-size: 9.5px;
+  font-weight: 450;
+  letter-spacing: 0.18em;
+  opacity: 0.75;
+  line-height: 1.2;
+
+  display:-webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow:hidden;
+}
+
+/* Bottom image */
+.mini-card.duo-card .duo-card__img{
+  margin: 8px 10px 1px;
+  width: calc(100% - 20px);
+  height: auto;                 /* key */
+  max-height: 120px;            /* keeps card compact */
+  object-fit: contain;          /* key */
+  border-radius: 10px;
+  display:block;
+/*  border: 0.2px solid rgba(0,0,0,.25);*/
+}
+
+/* Duolingo grid (tight, 4-up on desktop) */
+.duo-grid{
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;              /* close spacing */
+  align-items: stretch;
+}
+
+/* breakpoints */
+@media (max-width: 1100px){
+  .duo-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px){
+  .duo-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px){
+  .duo-grid{ grid-template-columns: 1fr; }
+}

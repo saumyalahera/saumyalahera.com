@@ -349,29 +349,28 @@
         </div>
       </div>
       <br>
-      <div class="section__head">
-        <h2>Language Learning</h2>
-        <p class="muted">Consistent language learning through daily practice</p>
-      </div>
-      <div class="list">
-        <div class="row">
-          <div>
-            <h3>Duolingo</h3>
-            <p class="muted">
-              Actively learning Spanish, Russian, and Irish through daily Duolingo practice.
-              <span id="duolingo-streak-line">Maintaining a long‑term daily streak.</span>
-              <span id="duolingo-streak-updated" class="muted"></span>
-            </p>
-          </div>
-          <a class="meta meta--link2" href="https://www.duolingo.com/profile/feggagi" target="_blank">
-            Profile
-          </a>
-        </div>
-      </div>
+<!--      <div class="section__head">-->
+<!--        <h2>Language Learning</h2>-->
+<!--        <p class="muted">Consistent language learning through daily practice</p>-->
+<!--      </div>-->
+<!--      <div class="list">-->
+<!--        <div class="row">-->
+<!--          <div>-->
+<!--            <h3>Duolingo</h3>-->
+<!--            <p class="muted">-->
+<!--              Actively learning Spanish, Russian, and Irish through daily Duolingo practice.-->
+<!--              <span id="duolingo-streak-line">Maintaining a long‑term daily streak.</span>-->
+<!--              <span id="duolingo-streak-updated" class="muted"></span>-->
+<!--            </p>-->
+<!--          </div>-->
+<!--          <a class="meta meta--link2" href="https://www.duolingo.com/profile/feggagi" target="_blank">-->
+<!--            Profile-->
+<!--          </a>-->
+<!--        </div>-->
+<!--      </div>-->
       </div>
     </section>
 <!-- Sections -->
-
     <section id="about" class="section section--alt">
       <div class="section__head">
         <h2 class="about__title">About</h2>
@@ -413,7 +412,6 @@
         <h2 class="about__title">Miscellaneous</h2>
         <p class="muted"></p>
       </div>
-
       <div class="about">
         <div id="miscellaneous" class="mini-grid" aria-label="Miscellaneous cards"></div>
 
@@ -458,9 +456,88 @@
               <div class="mini-card__meta">PAST LOCATION</div>
             </div>
           </article>
-          
         </div>
       </div>
+      
+      <!-- Duolingo Cells -->
+      <!-- Duolingo -->
+      <br/><br/>
+      <div class="section__head">
+        <h2 class="about__title">Duolingo</h2>
+      </div>
+
+      <div class="about">
+        <p class="muted">
+          <span class="duo-streak-line">Maintaining a long-term daily streak.</span>
+          <span class="duo-streak-updated muted"></span>.
+          These are the languages I am learning.
+        </p>
+      </div>
+
+      <div class="duo-grid" id="duolingo_grid" aria-label="Duolingo grid">
+        <!-- Static fallback card (later: generated from JSON) -->
+        <article class="mini-card duo-card">
+          <div class="duo-card__text">
+            <div class="duo-card__title">SPANISH</div>
+            <div class="duo-card__subtitle">Hola, ¿cómo estás? ¿Qué tal?</div>
+          </div>
+          <div class="duo-card__imageWrap">
+          <img
+            class="duo-card__img"
+            src="assets/duolingo/spanish_building.png"
+            alt=""
+            loading="lazy"
+          />
+          </div>
+        </article>
+
+        <article class="mini-card duo-card">
+          <div class="duo-card__text">
+            <div class="duo-card__title">RUSSIAN</div>
+            <div class="duo-card__subtitle">Привет, как дела? Как поживаете?</div>
+          </div>
+          <div class="duo-card__imageWrap">
+          <img
+            class="duo-card__img"
+            src="assets/duolingo/russian_building.png"
+            alt=""
+            loading="lazy"
+          />
+          </div>
+        </article>
+
+        <article class="mini-card duo-card">
+          <div class="duo-card__text">
+            <div class="duo-card__title">TURKISH</div>
+            <div class="duo-card__subtitle">Merhaba, nasılsınız? Ne haber?</div>
+          </div>
+          <div class="duo-card__imageWrap">
+          <img
+            class="duo-card__img"
+            src="assets/duolingo/turkish_building.png"
+            alt=""
+            loading="lazy"
+          />
+          </div>
+        </article>
+        
+        <article class="mini-card duo-card">
+          <div class="duo-card__text">
+            <div class="duo-card__title">IRISH</div>
+            <div class="duo-card__subtitle">Haigh, is breá liom Saoirse.</div>
+          </div>
+          <div class="duo-card__imageWrap">
+          <img
+            class="duo-card__img"
+            src="assets/duolingo/irish_building.png"
+            alt=""
+            loading="lazy"
+          />
+          </div>
+        </article>
+      </div>
+    <!-- Contact Me -->
+      <br/>
       <br/>
       <div class="section__head">
         <h2 class="about__title">Contact</h2>
@@ -512,27 +589,36 @@
           const streak = Number(d.streak);
           const updated = d.updated;
 
-          const lineEl = document.getElementById('duolingo-streak-line');
-          const updatedEl = document.getElementById('duolingo-streak-updated');
+          const lineEls = document.querySelectorAll(
+            '#duolingo-streak-line, .duo-streak-line'
+          );
+          const updatedEls = document.querySelectorAll(
+            '#duolingo-streak-updated, .duo-streak-updated'
+          );
 
-          if (lineEl && Number.isFinite(streak)) {
-            lineEl.textContent = `Maintaining a ${streak}-day streak.`;
+          if (Number.isFinite(streak)) {
+            lineEls.forEach(el => {
+              el.textContent = `Maintaining a ${streak}-day streak.`;
+            });
           }
 
-          if (updatedEl) {
-            if (updated) {
-              const dt = new Date(updated);
-              const pretty = isNaN(dt.getTime())
-                ? String(updated)
-                : dt.toLocaleString(undefined, {
-                    year: 'numeric', month: 'short', day: 'numeric',
-                    hour: '2-digit', minute: '2-digit'
-                  });
-              updatedEl.textContent = ` Last sync: ${pretty}`;
-            } else {
-              updatedEl.textContent = ' Last sync: recently';
-            }
+          let updatedText = ' Last sync: recently';
+          if (updated) {
+            const dt = new Date(updated);
+            const pretty = isNaN(dt.getTime())
+              ? String(updated)
+              : dt.toLocaleString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+            updatedText = ` Last sync: ${pretty}`;
           }
+          updatedEls.forEach(el => {
+            el.textContent = updatedText;
+          });
         } catch (_) {
           // keep fallback text
         }

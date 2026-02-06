@@ -1265,3 +1265,19 @@ h2.about__title{
     .duo-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
+/* Hero avatar (circle image above name) */
+.hero-avatar{
+  display: block;
+  width: 88px;
+  height: 88px;
+  margin: 14px 0 10px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid rgba(0,0,0,0.08);
+}
+
+/* Slightly smaller on very small screens */
+@media (max-width: 420px){
+  .hero-avatar{ width: 72px; height: 72px; }
+}
+

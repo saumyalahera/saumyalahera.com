@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Deep Dive — Neural Garment Rendering</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Libre+Baskerville:wght@400;700&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --paper: #f5f0e6;
+      --ink: #141312;
+      --ink2:#2b2824;
+      --muted:#5f5851;
+      --rule:#cfc6b8;
+      --accent:#b3412f;
+      --accent2:#1e3a5f;
+      --max: 980px;
+      --radius: 10px;
+    }
+    *{ box-sizing:border-box; }
+    
+    body{
+      margin:0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Libre Baskerville", Georgia, serif;
+      line-height: 1.5;
+    }
+    body:before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 800px at 20% 0%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(900px 600px at 80% 10%, rgba(255,255,255,.35), transparent 55%),
+        linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03)),
+        repeating-linear-gradient(90deg, rgba(0,0,0,.018) 0 1px, transparent 1px 6px),
+        repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 1px, transparent 1px 5px);
+      mix-blend-mode:multiply;
+      opacity:.55;
+    }
+    a{ color:inherit; text-decoration:none; border-bottom:1px solid rgba(20,19,18,.25); }
+    a:hover{ border-bottom-color: rgba(20,19,18,.7); }
+
+    .page{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 34px 18px 80px;
+      position:relative;
+    }
+
+    .frame{
+      border: 2px solid rgba(20,19,18,.65);
+      padding: 18px;
+      background: rgba(255,255,255,.12);
+      box-shadow: 0 10px 30px rgba(0,0,0,.10);
+    }
+    .frame-inner{
+      border: 1px solid rgba(20,19,18,.35);
+      padding: 22px 18px 18px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .mast{
+      display:grid;
+      gap:10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(20,19,18,.25);
+      margin-bottom: 14px;
+    }
+    .mast-top{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .kicker{
+      font-family: "Oswald", system-ui, sans-serif;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .date{
+      font-family: "Oswald", system-ui, sans-serif;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+      white-space:nowrap;
+    }
+
+    .headline{
+      margin: 0;
+      font-family: "DM Serif Display", Georgia, serif;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      font-size: clamp(30px, 4.3vw, 54px);
+      line-height: 1.02;
+      text-transform: uppercase;
+    }
+    .headline .accent{ color: var(--accent); }
+
+    .subline{
+      font-family: "Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--ink2);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 16px;
+      margin-top: 16px;
+      align-items:start;
+    }
+    @media (max-width: 860px){
+      .layout{ grid-template-columns: 1fr; }
+    }
+
+    .hero-media{
+      border: 1px solid rgba(20,19,18,.35);
+      border-radius: var(--radius);
+      overflow:hidden;
+      background: rgba(0,0,0,.06);
+    }
+    video{ display:block; width:100%; height:auto; }
+
+    .pullquote{
+      border: 1px solid rgba(20,19,18,.35);
+      border-radius: var(--radius);
+      padding: 14px 14px 12px;
+      background: rgba(255,255,255,.14);
+    }
+    .pullquote .big{
+      font-family: "DM Serif Display", Georgia, serif;
+      font-size: 20px;
+      line-height: 1.15;
+      margin: 0 0 8px 0;
+      color: var(--ink);
+    }
+    .pullquote .big .red{ color: var(--accent); }
+    .pullquote .small{
+      margin:0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+
+    .stamp-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .stamp{
+      font-family:"Oswald", system-ui, sans-serif;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(20,19,18,.45);
+      background: rgba(255,255,255,.10);
+    }
+    .stamp.red{
+      color: var(--accent);
+      border-color: rgba(179,65,47,.65);
+    }
+
+    .cols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 860px){
+      .cols{ grid-template-columns: 1fr; }
+    }
+
+    .block{
+      border-top: 1px solid rgba(20,19,18,.25);
+      padding-top: 12px;
+    }
+    .block h2{
+      margin:0 0 8px 0;
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.12em;
+      font-size: 13px;
+      color: var(--ink2);
+    }
+    .block p{
+      margin: 0 0 10px 0;
+      font-size: 14.5px;
+      color: var(--ink2);
+    }
+    .block ul{
+      margin: 8px 0 0 18px;
+      padding:0;
+      color: var(--ink2);
+      font-size: 14.5px;
+    }
+    .block li{ margin: 6px 0; }
+
+    .rule{
+      height:1px;
+      background: rgba(20,19,18,.22);
+      margin: 16px 0 0;
+    }
+
+    .banner{
+      margin-top: 16px;
+      border: 1px solid rgba(20,19,18,.35);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      background: rgba(255,255,255,.12);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:baseline;
+    }
+    .banner .left{
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.12em;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .banner .right{ font-size: 13px; color: var(--muted); }
+
+    .caption{ margin-top: 8px; font-size: 12.5px; color: var(--muted); }
+
+    .caps{
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.10em;
+      font-size: 12.5px;
+      color: var(--ink);
+    }
+    .red{ color: var(--accent); }
+
+    /* NEW: journey timeline */
+    .timeline{ display:grid; gap:10px; margin-top: 10px; }
+    .step{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:12px;
+      padding: 12px;
+      border: 1px solid rgba(20,19,18,.28);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.10);
+    }
+    @media (max-width: 680px){
+      .step{ grid-template-columns: 1fr; }
+    }
+    .when{
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.12em;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .what{
+      font-size: 14.5px;
+      color: var(--ink2);
+    }
+    .what b{ color: var(--ink); }
+    
+    /* Data flow diagram (inserted after Scalability section) */
+    .flow2{
+      display:grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 16px;
+      margin-top: 16px;
+      align-items:start;
+    }
+    @media (max-width: 860px){
+      .flow2{ grid-template-columns: 1fr; }
+    }
+    .diagram{
+      border: 1px solid rgba(20,19,18,.35);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.12);
+      padding: 14px;
+    }
+    .diagram h2{
+      margin:0 0 8px 0;
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.12em;
+      font-size: 13px;
+      color: var(--ink2);
+    }
+    .svg-wrap{
+      border: 1px solid rgba(20,19,18,.22);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.08);
+      padding: 10px;
+    }
+    .legend{
+      margin-top: 10px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .legend b{ color: var(--ink); }
+    .flow-notes{
+      border-top: 1px solid rgba(20,19,18,.25);
+      padding-top: 12px;
+    }
+    .flow-notes h3{
+      margin:0 0 8px 0;
+      font-family:"Oswald", system-ui, sans-serif;
+      text-transform: uppercase;
+      letter-spacing:.12em;
+      font-size: 13px;
+      color: var(--ink2);
+    }
+    .flow-notes ul{
+      margin: 8px 0 0 18px;
+      padding:0;
+      color: var(--ink2);
+      font-size: 14.5px;
+    }
+    .flow-notes li{ margin: 6px 0; }
+    
+    /* Prevent videos from growing unpredictably */
+    .hero-media,
+    .video,
+    .hero-media video,
+    .hero-media source {
+      max-width: 100%;
+    }
+
+    /* Force predictable sizing inside grids */
+    .layout > div,
+    .cols > div {
+      min-width: 0; /* critical for CSS grid overflow/stretch bugs */
+    }
+
+    /* Keep videos contained and consistent */
+    .hero-media video {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Make the supporting video row NOT reuse .cols (which is for text blocks) */
+    .supporting-videos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .supporting-videos {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* HARD FIX: prevent “runaway” video height */
+    .hero-media {
+      max-height: 420px;           /* hero cap */
+    }
+
+    .supporting-videos .hero-media{
+      max-height: 220px;           /* small caps */
+    }
+
+    /* ensure the video never exceeds its container */
+    .hero-media video{
+      width: 100%;
+      height: 100%;
+      max-height: inherit;
+      object-fit: cover;           /* or 'contain' if you prefer letterboxing */
+    }
+
+    /* avoid grid children forcing expansion */
+    .layout > div,
+    .supporting-videos > div{
+      min-width: 0;
+      min-height: 0;
+    }
+    
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <div class="frame">
+      <div class="frame-inner">
+
+        <header class="mast">
+          <div class="mast-top">
+            <div class="kicker">Project Deep Dive</div>
+            <div class="date">iOS Systems • Real-Time • ML Runtime</div>
+          </div>
+
+          <h1 class="headline">
+            Live <span class="accent">Garment</span> Overlay on iPhone
+          </h1>
+
+          <div class="subline">
+            My journey: requirement → custom ML API → device hardening → drawing tools → concurrency correctness.
+          </div>
+        </header>
+
+        <!-- UPDATED: VIDEO ORDER (Hero + two supporting) -->
+        <section class="layout" aria-label="Hero section">
+          <div>
+            <div class="hero-media" aria-label="Video 1 (hero)">
+              <video controls playsinline muted preload="metadata">
+                <source src="assets/project/video1.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="caption">
+              <span class="caps">Video:</span> Core pipeline — capture → ML runtime → stable garment placement.
+            </div>
+          </div>
+
+          <aside class="pullquote" aria-label="Key summary">
+            <p class="big">
+              “The requirement wasn’t just <span class="red">on-device ML</span> — it was <span class="red">deterministic frame time</span>
+              and correctness across devices.”
+            </p>
+            <p class="small">
+              I built a TensorFlow-like ML API on iOS (tensor composition, dense/sparse handling, execution lifecycle),
+              accelerated critical ops with Metal Performance Shaders, and hardened the pipeline against stale overwrites and races.
+            </p>
+
+            <div class="stamp-row" aria-label="Highlights">
+              <span class="stamp red">Custom ML API</span>
+              <span class="stamp">MPS-Accelerated</span>
+              <span class="stamp">Thermal-Aware Scaling</span>
+              <span class="stamp">Race-Free Pipeline</span>
+              <span class="stamp">Metal Drawing</span>
+            </div>
+          </aside>
+        </section>
+
+        <div class="cols" aria-label="Details">
+          <section class="block">
+            <h2>Requirement</h2>
+            <p>
+              Deliver a <span class="red">simple iOS API</span> that captures camera frames in real time and renders a shirt
+              aligned to a person’s body. Under the hood it’s ML + graphics, but the product requirement was reliability:
+              stable latency, cancellation, and compatibility across iPhones.
+            </p>
+            <ul>
+              <li>Stable capture + buffering from AVFoundation</li>
+              <li>Consistent per-frame lifecycle (IDs, timestamps, cancellation)</li>
+              <li>Immutable “frame state” handed to rendering</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>Architecture</h2>
+            <p>
+              Layered modular architecture with a <span class="red">real-time pipeline core</span>. Each stage owns a single responsibility
+              and communicates through explicit value contracts (not shared mutable state).
+            </p>
+            <ul>
+              <li>Capture → Preprocess → Inference → Postprocess → Render</li>
+              <li>Backpressure + drop/skip policy to protect UI</li>
+              <li>Instrumentation for p50/p95 latency and frame drops</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>Why a custom ML API</h2>
+            <p>
+              TFLite or Core ML can “run a model.” My problem was an iOS system that needed predictable latency and pipeline control.
+              I needed a stable API surface that could manage tensor composition, sparse/dense representations, and execution policy.
+            </p>
+            <ul>
+              <li><span class="caps">Tensor composition:</span> shape/stride/layout + batching</li>
+              <li><span class="caps">Sparse + dense:</span> handle intermediate ops efficiently</li>
+              <li><span class="caps">Execution policy:</span> cancellation, timeouts, backpressure</li>
+              <li><span class="caps">Backend swap:</span> keep call-sites stable as internals evolve</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>MPS integration</h2>
+            <p>
+              Used <span class="caps">Metal Performance Shaders</span> to accelerate key ops and keep the pipeline GPU-friendly,
+              improving latency and power/performance on Apple silicon.
+            </p>
+            <ul>
+              <li>Reduced CPU work → protected the main thread</li>
+              <li>More stable frame times on supported devices</li>
+              <li>Better sustained performance under thermal constraints</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>Device issues: heating + performance variance</h2>
+            <p>
+              After functional correctness, the hardest part was shipping behavior across iPhones. Older devices heated sooner and
+              couldn’t sustain the same frame budget, so I built graceful degradation.
+            </p>
+            <ul>
+              <li>Capability tiers (device-aware configs)</li>
+              <li>Dynamic input scaling under load</li>
+              <li>Thermal-aware quality reduction before throttling</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>Drawing tools: CoreGraphics → Metal</h2>
+            <p>
+              I prototyped drawing on the shirt with CoreGraphics, but moved to Metal to support textured tools (pencil grain,
+              paint opacity) and correct mapping onto the garment surface.
+            </p>
+            <ul>
+              <li><span class="caps">Why texture mapping:</span> each tool samples a different brush texture</li>
+              <li>GPU compositing for consistent blending on the shirt</li>
+              <li>Scalable: add tools by adding textures/shaders, not CPU raster hacks</li>
+            </ul>
+          </section>
+
+          <section class="block">
+            <h2>Scalability + correctness (races, stale overwrite)</h2>
+            <p>
+              Real-time pipelines fail via subtle bugs: out-of-order completion, stale results overwriting newer frames, and shared
+              mutable buffers. I enforced correctness through IDs, cancellation, and single-writer state.
+            </p>
+            <ul>
+              <li>Frame IDs to reject stale inference outputs</li>
+              <li>Cancel in-flight work when newer frames arrive</li>
+              <li>Single-writer updates; immutable frame state to rendering</li>
+            </ul>
+          </section>
+          
+          <section class="block">
+            <h2>Roadmap (the journey)</h2>
+            <p class="muted">
+              This roadmap matches how I present the story in interviews: start from requirements, then prove engineering maturity.
+            </p>
+
+            <div class="timeline" role="list">
+              <div class="step" role="listitem">
+                <div class="when">Phase 1</div>
+                <div class="what"><b>Requirement + API shape:</b> define frame contracts, lifecycle, and stage boundaries.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Phase 2</div>
+                <div class="what"><b>ML runtime:</b> tensors (dense/sparse), composition, execution policy, instrumentation.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Phase 3</div>
+                <div class="what"><b>Acceleration:</b> integrate MPS where it improved latency/power.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Phase 4</div>
+                <div class="what"><b>Cross-device shipping:</b> capability tiers, scaling, thermal policy, fallbacks.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Phase 5</div>
+                <div class="what"><b>Drawing tools:</b> CoreGraphics prototype → Metal for texture-mapped brushes.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Phase 6</div>
+                <div class="what"><b>Concurrency hardening:</b> prevent stale overwrite, fix races, enforce cancellation.</div>
+              </div>
+              <div class="step" role="listitem">
+                <div class="when">Next</div>
+                <div class="what"><b>Extensions:</b> occlusion, more garments, deeper telemetry, QA harness.</div>
+              </div>
+            </div>
+          </section>
+        </div>
+        
+        <section class="flow2" aria-label="Data flow diagram">
+          <aside class="diagram" aria-label="Pipeline diagram">
+            <h2>Data Flow</h2>
+
+            <div class="svg-wrap">
+              <svg viewBox="0 0 360 560" width="100%" height="auto" role="img" aria-label="Camera to render pipeline diagram">
+                <defs>
+                  <style>
+                    .box{ fill: rgba(255,255,255,.28); stroke: rgba(20,19,18,.45); stroke-width:1.2; }
+                    .t{ font-family: Oswald, system-ui, sans-serif; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; fill: #141312; }
+                    .s{ font-family: "Libre Baskerville", Georgia, serif; font-size: 11px; fill: #5f5851; }
+                    .arrow{ stroke: rgba(20,19,18,.55); stroke-width:1.2; fill:none; marker-end:url(#m); }
+                  </style>
+                  <marker id="m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="rgba(20,19,18,.55)"></path>
+                  </marker>
+                </defs>
+
+                <!-- 1 -->
+                <rect class="box" x="22" y="18"  rx="10" ry="10" width="316" height="62"></rect>
+                <text class="t" x="40" y="44">1) Capture</text>
+                <text class="s" x="40" y="62">AVFoundation frames + timestamps</text>
+
+                <!-- arrow -->
+                <path class="arrow" d="M 180 80 L 180 104"></path>
+
+                <!-- 2 -->
+                <rect class="box" x="22" y="104" rx="10" ry="10" width="316" height="70"></rect>
+                <text class="t" x="40" y="132">2) Preprocess</text>
+                <text class="s" x="40" y="150">CVPixelBuffer → tensor buffers</text>
+                <text class="s" x="40" y="166">resize / normalize (policy-driven)</text>
+
+                <!-- arrow -->
+                <path class="arrow" d="M 180 174 L 180 204"></path>
+
+                <!-- 3 -->
+                <rect class="box" x="22" y="204" rx="10" ry="10" width="316" height="86"></rect>
+                <text class="t" x="40" y="234">3) ML Runtime</text>
+                <text class="s" x="40" y="252">tensor composition (dense/sparse)</text>
+                <text class="s" x="40" y="268">execution + cancellation + backpressure</text>
+                <text class="s" x="40" y="284">MPS acceleration where applicable</text>
+
+                <!-- arrow -->
+                <path class="arrow" d="M 180 290 L 180 320"></path>
+
+                <!-- 4 -->
+                <rect class="box" x="22" y="320" rx="10" ry="10" width="316" height="76"></rect>
+                <text class="t" x="40" y="350">4) Domain Mapping</text>
+                <text class="s" x="40" y="368">smoothing + constraints</text>
+                <text class="s" x="40" y="384">immutable frame-state</text>
+
+                <!-- arrow -->
+                <path class="arrow" d="M 180 396 L 180 426"></path>
+
+                <!-- 5 -->
+                <rect class="box" x="22" y="426" rx="10" ry="10" width="316" height="70"></rect>
+                <text class="t" x="40" y="454">5) Render + UI</text>
+                <text class="s" x="40" y="472">Metal render pass + tools overlay</text>
+                <text class="s" x="40" y="488">present on main thread</text>
+
+                <!-- arrow -->
+                <path class="arrow" d="M 180 496 L 180 526"></path>
+
+                <!-- 6 -->
+                <rect class="box" x="22" y="526" rx="10" ry="10" width="316" height="60"></rect>
+                <text class="t" x="40" y="552">Policies</text>
+                <text class="s" x="40" y="570">device tier • thermal • fps • backpressure</text>
+              </svg>
+            </div>
+
+            <div class="legend">
+              <b>How to present this:</b> walk top-to-bottom. Emphasize that <b>frame-state is immutable</b> and correctness is enforced by
+              <b>IDs + cancellation + single-writer updates</b>.
+            </div>
+          </aside>
+
+          <div class="flow-notes" aria-label="Speaker notes">
+            <h3>What I highlight while explaining</h3>
+            <ul>
+              <li><b>Isolation:</b> each stage owns its data; no shared mutable buffers across threads.</li>
+              <li><b>Correctness:</b> results carry a frame ID; stale inference outputs are discarded.</li>
+              <li><b>Responsiveness:</b> cancellation + backpressure prevent UI stalls.</li>
+              <li><b>Scalability:</b> “Policies” are pluggable—device tiers and thermal limits don’t leak into business logic.</li>
+              <li><b>Testability:</b> each stage can be unit tested with recorded frames and deterministic inputs.</li>
+            </ul>
+          </div>
+        </section>
+
+        <div class="banner" aria-label="Footer banner">
+          <div class="left">Execution</div>
+          <div class="right">
+            Runs on physical iPhones • 3 demo videos attached • Focus: iOS architecture, performance, and correctness (with graphics as leverage)
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</body>
+</html>

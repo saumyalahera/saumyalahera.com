@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Triangle Sector Visualizer</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: #eee;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 24px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      max-width: 1000px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 160px;
+    }
+
+    canvas {
+      background: #000;
+      border: 1px solid #444;
+    }
+
+    .notes {
+      max-width: 1000px;
+      margin-top: 14px;
+      line-height: 1.5;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    code {
+      color: #8fd3ff;
+    }
+  </style>
+</head>
+<body>
+  <h1>Triangle from sector + projection</h1>
+
+  <div class="controls">
+    <label>
+      Edge constant C
+      <input id="cSlider" type="range" min="0.05" max="0.9" step="0.01" value="0.4" />
+      <span id="cValue">0.40</span>
+    </label>
+
+    <label>
+      Edge thickness
+      <input id="epsSlider" type="range" min="0.005" max="0.06" step="0.001" value="0.02" />
+      <span id="epsValue">0.020</span>
+    </label>
+
+    <label>
+      Sample pixel x
+      <input id="pxSlider" type="range" min="-1" max="1" step="0.01" value="0.35" />
+      <span id="pxValue">0.35</span>
+    </label>
+
+    <label>
+      Sample pixel y
+      <input id="pySlider" type="range" min="-1" max="1" step="0.01" value="0.25" />
+      <span id="pyValue">0.25</span>
+    </label>
+  </div>
+
+  <canvas id="canvas" width="760" height="760"></canvas>
+
+  <div class="notes">
+    <div><strong>What this is showing:</strong></div>
+    <div>For each pixel <code>p = (x, y)</code>, compute its angle <code>a</code>.</div>
+    <div>Pick the nearest triangle direction: <code>0°</code>, <code>120°</code>, or <code>240°</code>.</div>
+    <div>Then compute <code>d = dot(p, dir)</code>.</div>
+    <div>Pixels with <code>d ≈ C</code> become the bright edge band.</div>
+    <div>Inside a single sector, <code>dot(p, dir) = C</code> is a line. Three sectors give three lines. Those three lines form the triangle.</div>
+    <div>The red point is one sample pixel. The green segment is its projection onto the selected direction.</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const cSlider = document.getElementById("cSlider");
+    const epsSlider = document.getElementById("epsSlider");
+    const pxSlider = document.getElementById("pxSlider");
+    const pySlider = document.getElementById("pySlider");
+
+    const cValue = document.getElementById("cValue");
+    const epsValue = document.getElementById("epsValue");
+    const pxValue = document.getElementById("pxValue");
+    const pyValue = document.getElementById("pyValue");
+
+    const TWO_PI = Math.PI * 2;
+    const N = 3;
+    const sectorAngle = TWO_PI / N;
+    const directions = [0, 2 * Math.PI / 3, 4 * Math.PI / 3];
+
+    function toCanvasX(x) {
+      return (x + 1) * 0.5 * canvas.width;
+    }
+
+    function toCanvasY(y) {
+      return (1 - (y + 1) * 0.5) * canvas.height;
+    }
+
+    function dot(ax, ay, bx, by) {
+      return ax * bx + ay * by;
+    }
+
+    function wrapTo0To2PI(a) {
+      while (a < 0) a += TWO_PI;
+      while (a >= TWO_PI) a -= TWO_PI;
+      return a;
+    }
+
+    function nearestDirectionAngle(a) {
+      const idx = Math.floor(0.5 + a / sectorAngle) % N;
+      return idx * sectorAngle;
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = "#1f1f1f";
+      ctx.lineWidth = 1;
+      const steps = 20;
+      for (let i = 0; i <= steps; i++) {
+        const x = (i / steps) * canvas.width;
+        const y = (i / steps) * canvas.height;
+
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+    }
+
+    function drawAxes() {
+      ctx.strokeStyle = "#555";
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+      ctx.moveTo(0, toCanvasY(0));
+      ctx.lineTo(canvas.width, toCanvasY(0));
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(0), 0);
+      ctx.lineTo(toCanvasX(0), canvas.height);
+      ctx.stroke();
+    }
+
+    function drawDirections() {
+      for (const theta of directions) {
+        const dx = Math.cos(theta);
+        const dy = Math.sin(theta);
+
+        ctx.strokeStyle = "#3b82f6";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(toCanvasX(0), toCanvasY(0));
+        ctx.lineTo(toCanvasX(dx * 0.95), toCanvasY(dy * 0.95));
+        ctx.stroke();
+      }
+    }
+
+    function drawTriangleEdges(C) {
+      for (const theta of directions) {
+        const dx = Math.cos(theta);
+        const dy = Math.sin(theta);
+
+        // line: dx*x + dy*y = C
+        const px = dx * C;
+        const py = dy * C;
+
+        const tx = -dy;
+        const ty = dx;
+
+        const p1x = px - tx * 3;
+        const p1y = py - ty * 3;
+        const p2x = px + tx * 3;
+        const p2y = py + ty * 3;
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(toCanvasX(p1x), toCanvasY(p1y));
+        ctx.lineTo(toCanvasX(p2x), toCanvasY(p2y));
+        ctx.stroke();
+      }
+    }
+
+    function drawPixels(C, eps) {
+      const gridN = 41;
+      const radius = 5;
+
+      for (let iy = 0; iy < gridN; iy++) {
+        for (let ix = 0; ix < gridN; ix++) {
+          const x = -1 + (ix / (gridN - 1)) * 2;
+          const y = -1 + (iy / (gridN - 1)) * 2;
+
+          let a = Math.atan2(y, x);
+          a = wrapTo0To2PI(a);
+
+          const theta = nearestDirectionAngle(a);
+          const dx = Math.cos(theta);
+          const dy = Math.sin(theta);
+
+          const d = dot(x, y, dx, dy);
+
+          if (Math.abs(d - C) < eps) {
+            ctx.fillStyle = "#ffffff"; // edge band
+          } else if (d < C) {
+            ctx.fillStyle = "#5b5b5b"; // inside
+          } else {
+            ctx.fillStyle = "#171717"; // outside
+          }
+
+          ctx.beginPath();
+          ctx.arc(toCanvasX(x), toCanvasY(y), radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawSamplePixel(C) {
+      const x = parseFloat(pxSlider.value);
+      const y = parseFloat(pySlider.value);
+
+      let a = Math.atan2(y, x);
+      a = wrapTo0To2PI(a);
+
+      const theta = nearestDirectionAngle(a);
+      const dx = Math.cos(theta);
+      const dy = Math.sin(theta);
+
+      const d = dot(x, y, dx, dy);
+
+      const projX = dx * d;
+      const projY = dy * d;
+
+      // red sample vector
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(0), toCanvasY(0));
+      ctx.lineTo(toCanvasX(x), toCanvasY(y));
+      ctx.stroke();
+
+      // green projection vector
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(0), toCanvasY(0));
+      ctx.lineTo(toCanvasX(projX), toCanvasY(projY));
+      ctx.stroke();
+
+      // helper from pixel to its projection point
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(x), toCanvasY(y));
+      ctx.lineTo(toCanvasX(projX), toCanvasY(projY));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // selected direction highlight
+      ctx.strokeStyle = "#f59e0b";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(0), toCanvasY(0));
+      ctx.lineTo(toCanvasX(dx * 1.0), toCanvasY(dy * 1.0));
+      ctx.stroke();
+
+      // sample point
+      ctx.fillStyle = "#ef4444";
+      ctx.beginPath();
+      ctx.arc(toCanvasX(x), toCanvasY(y), 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // projection point
+      ctx.fillStyle = "#22c55e";
+      ctx.beginPath();
+      ctx.arc(toCanvasX(projX), toCanvasY(projY), 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // labels
+      ctx.fillStyle = "#eee";
+      ctx.font = "16px Arial";
+      ctx.fillText(`sample p = (${x.toFixed(2)}, ${y.toFixed(2)})`, 16, 24);
+      ctx.fillText(`a = atan2(y, x) = ${(a * 180 / Math.PI).toFixed(1)}°`, 16, 46);
+      ctx.fillText(`chosen theta = ${(theta * 180 / Math.PI).toFixed(1)}°`, 16, 68);
+      ctx.fillText(`dir = (${dx.toFixed(3)}, ${dy.toFixed(3)})`, 16, 90);
+      ctx.fillText(`d = dot(p, dir) = ${d.toFixed(3)}`, 16, 112);
+      ctx.fillText(`edge line in this sector: dot(p, dir) = ${C.toFixed(3)}`, 16, 134);
+
+      const eps = parseFloat(epsSlider.value);
+      let state = "";
+      if (Math.abs(d - C) < eps) state = "sample pixel is ON the edge band";
+      else if (d < C) state = "sample pixel is INSIDE";
+      else state = "sample pixel is OUTSIDE";
+      ctx.fillText(state, 16, 156);
+    }
+
+    function draw() {
+      const C = parseFloat(cSlider.value);
+      const eps = parseFloat(epsSlider.value);
+
+      cValue.textContent = C.toFixed(2);
+      epsValue.textContent = eps.toFixed(3);
+      pxValue.textContent = parseFloat(pxSlider.value).toFixed(2);
+      pyValue.textContent = parseFloat(pySlider.value).toFixed(2);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      drawAxes();
+      drawPixels(C, eps);
+      drawTriangleEdges(C);
+      drawDirections();
+      drawSamplePixel(C);
+    }
+
+    [cSlider, epsSlider, pxSlider, pySlider].forEach(el => {
+      el.addEventListener("input", draw);
+    });
+
+    draw();
+  </script>
+</body>
+</html>

@@ -567,7 +567,12 @@
       <!--
       Games Ends
       -->
-      
+
+      <br/>
+      <br/>
+
+
+
       <br/>
       <br/>
       <div class="section__head" id="learn-for-free">
@@ -616,6 +621,12 @@
       <span id="footer-updated-date">JAN,6 2026</span>
       <span>VIA THE APP</span>
     </p>
+    <button class="coffee-trigger" id="coffee-trigger" aria-label="Explore coffee">
+      <span class="coffee-trigger__label">Explore</span>
+      <svg class="coffee-trigger__chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
+        <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </footer>
 
   <script src="script.js" defer></script>
@@ -690,18 +701,20 @@
           // Footer date (from JSON)
           // Expects d.updatedAt like: "2025-12-23T12:52:59.793Z"
           const footerDateEl = document.getElementById('footer-updated-date');
-          if (footerDateEl && d.updatedAt) {
+          const overlayDateEl = document.getElementById('overlay-updated-date');
+          if (d.updatedAt) {
             const dt = new Date(d.updatedAt);
-            if (!isNaN(dt.getTime())) {
-              const month = dt.toLocaleString(undefined, { month: 'short' }).toUpperCase();
-              const day = dt.getDate();
-              const year = dt.getFullYear();
-              const time = dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-              footerDateEl.textContent = `${month},${day} ${year} • ${time}`;
-            } else {
-              // If updatedAt is not parseable, show it as-is
-              footerDateEl.textContent = String(d.updatedAt);
-            }
+            const dateText = !isNaN(dt.getTime())
+              ? (() => {
+                  const month = dt.toLocaleString(undefined, { month: 'short' }).toUpperCase();
+                  const day = dt.getDate();
+                  const year = dt.getFullYear();
+                  const time = dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                  return `${month},${day} ${year} • ${time}`;
+                })()
+              : String(d.updatedAt);
+            if (footerDateEl) footerDateEl.textContent = dateText;
+            if (overlayDateEl) overlayDateEl.textContent = dateText;
           }
 
           const summaryEl = document.getElementById('summary');
@@ -1088,6 +1101,221 @@
         }
       })();
     });
+  </script>
+
+
+  <!-- Coffee Fullscreen Overlay -->
+  <div class="coffee-overlay" id="coffee-overlay" role="dialog" aria-modal="true" aria-label="Coffee" aria-hidden="true">
+    <div class="coffee-overlay__bar">
+      <p class="footer-signature">
+        <span>Saumya</span>
+        <img class="footer-avatar" src="assets/avatar.jpg" alt="Saumya Lahera" />
+        <span>Lahera</span>
+      </p>
+      <br/>
+      <p class="footer-websiteupdate">
+        <span>LAST UPDATED</span>
+        <span id="overlay-updated-date">JAN,6 2026</span>
+        <span>VIA THE APP</span>
+      </p>
+      <button class="coffee-overlay__close" id="coffee-close" aria-label="Close coffee">
+        <span class="coffee-overlay__close-label">Close</span>
+        <svg class="coffee-overlay__close-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
+          <path d="M4 10L8 6L12 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="coffee-overlay__scroll">
+      <div class="coffee-overlay__content">
+
+        <h2 class="about__title">Coffee</h2>
+        <p class="muted" style="margin:8px 0 0;">Some coffees I keep returning to — each with its own character and ritual.</p>
+        <br/>
+
+        <div class="coffee-explorer">
+          <div class="coffee-explorer__sidebar" id="coffee-sidebar">
+            <button class="coffee-list__item coffee-list__item--active" data-key="espresso">
+              <span class="coffee-list__num">01</span><span class="coffee-list__name">Espresso</span>
+            </button>
+            <button class="coffee-list__item" data-key="cappuccino">
+              <span class="coffee-list__num">02</span><span class="coffee-list__name">Cappuccino</span>
+            </button>
+            <button class="coffee-list__item" data-key="latte">
+              <span class="coffee-list__num">03</span><span class="coffee-list__name">Latte</span>
+            </button>
+            <button class="coffee-list__item" data-key="americano">
+              <span class="coffee-list__num">04</span><span class="coffee-list__name">Americano</span>
+            </button>
+            <button class="coffee-list__item" data-key="pourover">
+              <span class="coffee-list__num">05</span><span class="coffee-list__name">Pour Over</span>
+            </button>
+            <button class="coffee-list__item" data-key="coldbrew">
+              <span class="coffee-list__num">06</span><span class="coffee-list__name">Cold Brew</span>
+            </button>
+            <button class="coffee-list__item" data-key="cortado">
+              <span class="coffee-list__num">07</span><span class="coffee-list__name">Cortado</span>
+            </button>
+            <button class="coffee-list__item" data-key="flatwhite">
+              <span class="coffee-list__num">08</span><span class="coffee-list__name">Flat White</span>
+            </button>
+          </div>
+          <div class="coffee-explorer__detail" id="coffee-detail" aria-live="polite"></div>
+        </div>
+
+        <br/>
+
+        <div class="coffee-sub-section">
+          <p class="kicker">Ultra-Premium · Rare</p>
+          <h3 class="coffee-sub-title">Animal-Refined Coffee Beans</h3>
+          <p class="coffee-sub-intro">These rare coffees rely on animals selecting the ripest cherries. Natural enzymes during chewing or digestion chemically alter the beans, producing an exceptionally smooth cup with almost no bitterness.</p>
+          <div class="coffee-bean-grid">
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Black Ivory</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Asian Elephant</span><span class="tag tag--alt">Thailand</span>
+              </div>
+              <p class="coffee-bean-card__desc">Very delicate, tea-like, smooth — notes of cacao and malt.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Kopi Luwak</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Asian Palm Civet</span><span class="tag tag--alt">Indonesia</span>
+              </div>
+              <p class="coffee-bean-card__desc">Earthy, heavy-bodied, syrupy and sweet with hints of dark chocolate.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Jacu Bird</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Jacu Bird</span><span class="tag tag--alt">Brazil</span>
+              </div>
+              <p class="coffee-bean-card__desc">Mildly acidic, nutty sweetness — notes of milk chocolate and aniseed.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Monkey Spit</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Rhesus Monkey</span><span class="tag tag--alt">India · Taiwan</span>
+              </div>
+              <p class="coffee-bean-card__desc">Heavy-bodied and sweet — distinct hints of vanilla, citrus, and nuts.</p>
+            </div>
+          </div>
+          <p class="coffee-sub-note">While animals eat the fruit, the hard coffee seed remains intact — then thoroughly washed, sterilized, and roasted at high temperatures.</p>
+        </div>
+
+        <br/>
+
+        <div class="coffee-sub-section">
+          <p class="kicker">Botanical</p>
+          <h3 class="coffee-sub-title">Plant-Only Varieties</h3>
+          <p class="coffee-sub-intro">Standard botanical cultivars of the Coffea plant, with no animal involvement. Their unique flavors come entirely from terroir — regional soil, altitude, climate, and genetics.</p>
+          <div class="coffee-bean-grid coffee-bean-grid--5">
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Geisha</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Arabica</span><span class="tag tag--alt">Panama</span>
+              </div>
+              <p class="coffee-bean-card__desc">Highly aromatic, floral (jasmine), tea-like with clean citrus.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Bourbon</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Arabica</span><span class="tag tag--alt">Rwanda · Brazil</span>
+              </div>
+              <p class="coffee-bean-card__desc">Rich, complex, buttery sweetness with notes of caramel and fruit.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Typica</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Arabica</span><span class="tag tag--alt">Worldwide</span>
+              </div>
+              <p class="coffee-bean-card__desc">Sweet, mild, clean — approachable with chocolate and nut tones.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Maragogype</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Arabica</span><span class="tag tag--alt">Nicaragua</span>
+              </div>
+              <p class="coffee-bean-card__desc">Delicate, balanced, creamy — light acidity with citrus notes.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Canephora</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Robusta</span><span class="tag tag--alt">Vietnam</span>
+              </div>
+              <p class="coffee-bean-card__desc">Bold, intensely bitter, earthy, woody — with a dark chocolate finish.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ---- Coffee Explorer ---- */
+    (function(){
+      var coffees = {
+        espresso:   { name:'Espresso',   region:'Italy',                  method:'Pressure Extraction',     description:'The foundation of modern coffee culture. Hot water forced through finely-ground beans at ~9 bars produces a concentrated, layered shot with a hazelnut crema on top. Quick to make, slow to forget.',                                                                                       notes:['Intense','Bold','Caramel','Dark Chocolate'],     spec:'7g · 25–30 sec · 88–93\u00b0C' },
+        cappuccino: { name:'Cappuccino', region:'Italy · Vienna',         method:'Espresso + Microfoam',    description:'Equal thirds: espresso, steamed milk, and dense microfoam. The foam is not decoration \u2014 it insulates, softens the espresso\u2019s edge, and changes the mouthfeel while keeping its core character intact.',                                                                         notes:['Creamy','Rich','Balanced','Velvety'],             spec:'1 shot · ~150ml · Serve immediately' },
+        latte:      { name:'Latte',      region:'Italy · USA',            method:'Espresso + Steamed Milk', description:'Caff\u00e8 latte \u2014 coffee with milk. Mostly steamed milk poured over one or two shots, topped with a thin layer of microfoam. Mild and approachable, the milk\u2019s natural sweetness takes center stage.',                                                                         notes:['Mild','Silky','Sweet','Smooth'],                  spec:'1\u20132 shots · ~240ml · Thin foam' },
+        americano:  { name:'Americano',  region:'Italy · WWII Era',       method:'Espresso + Hot Water',    description:'Born when American soldiers in wartime Italy diluted espresso to approximate the drip coffee they knew back home. Cleaner and brighter than drip, with more body and a lingering crema layer.',                                                                                       notes:['Clean','Bright','Classic','Light'],               spec:'1\u20132 shots + 2\u20134oz water · Pour espresso first' },
+        pourover:   { name:'Pour Over',  region:'Japan · Germany',        method:'Manual Drip',             description:'Full manual control over every variable: grind, temperature, pour speed, bloom time. The result is exceptionally clean \u2014 the coffee\u2019s origin and processing speak clearly and transparently through the cup.',                                                                notes:['Bright','Nuanced','Floral','Clean'],              spec:'15g : 250ml · 93\u00b0C · 3\u20134 min' },
+        coldbrew:   { name:'Cold Brew',  region:'Japan · New Orleans',    method:'Cold Water Steeping',     description:'Coarsely ground coffee steeped in cold water for 12\u201324 hours. No heat changes the chemistry entirely \u2014 the result is low-acid, naturally sweet, and smooth with a lightly chocolatey finish.',                                                                                notes:['Smooth','Low-Acid','Sweet','Chocolatey'],         spec:'1:8 ratio · 12\u201324 hrs · 4\u00b0C' },
+        cortado:    { name:'Cortado',    region:'Spain',                  method:'Espresso + Warm Milk',    description:'Cortado means \u201ccut\u201d in Spanish \u2014 the milk cuts the espresso\u2019s acidity. Equal parts espresso and lightly steamed milk, very little foam. Direct, honest, and beautifully balanced in a small glass.',                                                                notes:['Balanced','Direct','Bold','Warm'],                spec:'1 shot : 1oz milk · ~60ml total' },
+        flatwhite:  { name:'Flat White', region:'Australia · New Zealand',method:'Ristretto + Velvety Milk',description:'Made with a ristretto \u2014 a shorter, more concentrated pull \u2014 poured into a small 160ml cup with velvety microfoam that fully integrates with the espresso. Dense, cohesive, and deeply satisfying.',                                                                       notes:['Velvety','Integrated','Strong','Dense'],          spec:'Ristretto · ~160ml · 4\u20136mm microfoam' }
+      };
+      var detailEl  = document.getElementById('coffee-detail');
+      var sidebarEl = document.getElementById('coffee-sidebar');
+      function render(key) {
+        var c = coffees[key]; if (!c) return;
+        detailEl.style.opacity = '0';
+        setTimeout(function() {
+          detailEl.innerHTML =
+              '<div class="coffee-detail__name">' + c.name + '</div>'
+            + '<div class="coffee-tag-row"><span class="tag tag--alt">' + c.region + '</span><span class="tag">' + c.method + '</span></div>'
+            + '<p class="coffee-detail__desc">' + c.description + '</p>'
+            + '<div class="coffee-detail__notes-label">Flavor Notes</div>'
+            + '<div class="coffee-detail__notes">' + c.notes.map(function(n){ return '<span class="tag">'+n+'</span>'; }).join('') + '</div>'
+            + '<div class="coffee-detail__spec">' + c.spec + '</div>';
+          detailEl.style.opacity = '1';
+        }, 100);
+      }
+      sidebarEl.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-key]'); if (!btn) return;
+        var items = sidebarEl.querySelectorAll('.coffee-list__item');
+        for (var i = 0; i < items.length; i++) items[i].classList.remove('coffee-list__item--active');
+        btn.classList.add('coffee-list__item--active');
+        render(btn.dataset.key);
+      });
+      render('espresso');
+    })();
+
+    /* ---- Coffee Overlay open / close ---- */
+    (function(){
+      var trigger  = document.getElementById('coffee-trigger');
+      var overlay  = document.getElementById('coffee-overlay');
+      var closeBtn = document.getElementById('coffee-close');
+      function openCoffee() {
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden','false');
+        trigger.classList.add('is-hidden');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeCoffee() {
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden','true');
+        trigger.classList.remove('is-hidden');
+        document.body.style.overflow = '';
+        setTimeout(function(){
+          var s = overlay.querySelector('.coffee-overlay__scroll');
+          if (s) s.scrollTop = 0;
+        }, 680);
+      }
+      trigger.addEventListener('click', openCoffee);
+      closeBtn.addEventListener('click', closeCoffee);
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCoffee();
+      });
+    })();
   </script>
 </body>
 </html>

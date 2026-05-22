@@ -1345,14 +1345,13 @@ h2.about__title{
   transform: translateY(0);
 }
 
-/* Top bar — full footer replica (signature + date + close button), no border */
-.coffee-overlay__bar{
-  flex-shrink: 0;
+/* Scrollable header — footer replica at the top of coffee content, scrolls with the page */
+.coffee-overlay__header{
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 28px 22px 20px;
+  padding: 0 0 28px;
 }
 
 /* Close button — mirrors the Explore trigger: text on top, chevron below */

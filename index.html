@@ -1244,6 +1244,36 @@
             </div>
           </div>
         </div>
+        <br/>
+        <br/>
+
+        <!-- Coffee Quiz -->
+        <div class="coffee-quiz" id="coffee-quiz">
+
+          <!-- Intro -->
+          <div class="coffee-quiz__panel" id="cq-intro">
+            <p class="kicker" style="text-align:center;">Interactive</p>
+            <h3 class="coffee-sub-title" style="margin:6px 0 10px;">What’s Your Coffee?</h3>
+            <p class="coffee-sub-intro" style="max-width:420px;">No coffee knowledge needed. Answer five quick questions about how you feel and what you like — we’ll find the cup that’s made for you.</p>
+            <button class="cq-btn cq-btn--fill" id="cq-start">Find my coffee →</button>
+          </div>
+
+          <!-- Game -->
+          <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="cq-game" aria-hidden="true">
+            <div class="cq-track"><div class="cq-track__fill" id="cq-fill"></div></div>
+            <div class="cq-counter" id="cq-counter">1 ⁄ 5</div>
+            <div class="cq-question" id="cq-question"></div>
+            <div class="cq-options" id="cq-options"></div>
+          </div>
+
+          <!-- Result -->
+          <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="cq-result" aria-hidden="true">
+            <p class="kicker" style="text-align:center;margin-bottom:14px;">Your match</p>
+            <div class="cq-card" id="cq-card"></div>
+            <button class="cq-btn cq-btn--ghost" id="cq-restart" style="margin-top:20px;">Try again</button>
+          </div>
+
+        </div>
 
       </div>
     </div>
@@ -1315,6 +1345,151 @@
         if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCoffee();
       });
     })();
+
+    /* ---- Coffee Quiz ---- */
+    (function(){
+      var Qs = [
+        { q: 'How do you like to start your day?',
+          opts: [
+            { t: 'Slowly, with intention',       s: {latte:2, pourover:2, cappuccino:1} },
+            { t: 'Full speed ahead',              s: {espresso:2, flatwhite:2, cortado:2} },
+            { t: 'Somewhere in between',          s: {americano:2, cappuccino:1} },
+            { t: 'It completely depends',         s: {coldbrew:2, cortado:1, latte:1} }
+          ]
+        },
+        { q: 'Pick a flavor you already love',
+          opts: [
+            { t: 'Dark chocolate',                s: {espresso:3, coldbrew:2, cortado:1} },
+            { t: 'Caramel or vanilla',            s: {latte:2, cappuccino:2, flatwhite:1} },
+            { t: 'Citrus or fresh fruit',         s: {pourover:3, americano:2} },
+            { t: 'Honey and toasted nuts',        s: {pourover:2, cappuccino:1, latte:1} }
+          ]
+        },
+        { q: 'What’s your relationship with milk?',
+          opts: [
+            { t: 'Love it — the more the better',   s: {latte:3, cappuccino:2} },
+            { t: 'Just a small amount',           s: {flatwhite:3, cortado:3, cappuccino:1} },
+            { t: 'None — keep it pure',      s: {espresso:3, americano:2, pourover:2} },
+            { t: 'Only if it’s cold',        s: {coldbrew:4, latte:1} }
+          ]
+        },
+        { q: 'Temperature?',
+          opts: [
+            { t: 'Hot — always',             s: {espresso:1, cappuccino:2, latte:1, americano:1, pourover:1, cortado:2, flatwhite:2} },
+            { t: 'Iced or cold',                  s: {coldbrew:5} }
+          ]
+        },
+        { q: 'How do you want to feel after?',
+          opts: [
+            { t: 'Sharp and focused',             s: {espresso:2, pourover:2, flatwhite:1} },
+            { t: 'Calm and unhurried',            s: {latte:3, cappuccino:1} },
+            { t: 'Fired up and ready to go',      s: {americano:3, espresso:1} },
+            { t: 'Warm and comfortable',          s: {cappuccino:3, latte:1, cortado:1} }
+          ]
+        }
+      ];
+
+      var COFFEES = {
+        espresso:   {name:'Espresso',   region:'Italy',                   method:'Pressure Extraction',      desc:'The foundation of modern coffee culture. Intense, layered, and alive with a hazelnut crema — it’s the shortest cup with the loudest personality.',                                               notes:['Intense','Bold','Caramel','Dark Chocolate'],  spec:'7g · 25–30 sec · 88–93°C'},
+        cappuccino: {name:'Cappuccino', region:'Italy · Vienna',     method:'Espresso + Microfoam',     desc:'Equal thirds of espresso, steamed milk, and dense microfoam. The foam softens the espresso’s edge while keeping its full character intact.',                                                       notes:['Creamy','Rich','Balanced','Velvety'],         spec:'1 shot · ~150ml · Serve immediately'},
+        latte:      {name:'Latte',      region:'Italy · USA',        method:'Espresso + Steamed Milk',  desc:'Mostly steamed milk poured over espresso, with a thin layer of microfoam on top. Mild and approachable — the milk’s natural sweetness takes center stage.',                                  notes:['Mild','Silky','Sweet','Smooth'],              spec:'1–2 shots · ~240ml · Thin foam'},
+        americano:  {name:'Americano',  region:'Italy · WWII Era',   method:'Espresso + Hot Water',     desc:'Born when American soldiers diluted espresso to approximate the drip coffee they knew back home. Cleaner and brighter than drip, with more body and lingering crema.',                                 notes:['Clean','Bright','Classic','Light'],           spec:'1–2 shots + 2–4oz water · Pour espresso first'},
+        pourover:   {name:'Pour Over',  region:'Japan · Germany',    method:'Manual Drip',              desc:'Full manual control over every variable. The result is exceptionally clean — the coffee’s origin and processing speak clearly and transparently through the cup.',                            notes:['Bright','Nuanced','Floral','Clean'],          spec:'15g : 250ml · 93°C · 3–4 min'},
+        coldbrew:   {name:'Cold Brew',  region:'Japan · New Orleans',method:'Cold Water Steeping',      desc:'Coarsely ground coffee steeped in cold water for 12–24 hours. No heat changes the chemistry entirely — low-acid, naturally sweet, smooth, with a chocolatey finish.',                       notes:['Smooth','Low-Acid','Sweet','Chocolatey'],     spec:'1:8 ratio · 12–24 hrs · 4°C'},
+        cortado:    {name:'Cortado',    region:'Spain',                   method:'Espresso + Warm Milk',     desc:'Cortado means “cut” in Spanish — the milk cuts the espresso’s acidity. Equal parts, very little foam. Direct, honest, and beautifully balanced in a small glass.',               notes:['Balanced','Direct','Bold','Warm'],            spec:'1 shot : 1oz milk · ~60ml total'},
+        flatwhite:  {name:'Flat White', region:'Australia · NZ',     method:'Ristretto + Velvety Milk', desc:'A ristretto — shorter, more concentrated — poured into a small cup with velvety microfoam that fully integrates with the espresso. Dense, cohesive, deeply satisfying.',                    notes:['Velvety','Integrated','Strong','Dense'],      spec:'Ristretto · ~160ml · 4–6mm microfoam'}
+      };
+
+      var scores, current;
+      var introEl  = document.getElementById('cq-intro');
+      var gameEl   = document.getElementById('cq-game');
+      var resultEl = document.getElementById('cq-result');
+      var fillEl   = document.getElementById('cq-fill');
+      var counterEl= document.getElementById('cq-counter');
+      var qEl      = document.getElementById('cq-question');
+      var optsEl   = document.getElementById('cq-options');
+      var cardEl   = document.getElementById('cq-card');
+
+      function fadeOut(el, cb){
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(-10px)';
+        setTimeout(function(){ el.classList.add('coffee-quiz__panel--hidden'); el.setAttribute('aria-hidden','true'); if(cb) cb(); }, 280);
+      }
+      function fadeIn(el){
+        el.classList.remove('coffee-quiz__panel--hidden');
+        el.removeAttribute('aria-hidden');
+        el.offsetHeight; // reflow
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }
+
+      function renderQ(idx){
+        var q = Qs[idx];
+        fillEl.style.width = (idx / Qs.length * 100) + '%';
+        counterEl.textContent = (idx + 1) + ' ⁄ ' + Qs.length;
+        qEl.style.opacity = '0';
+        optsEl.style.opacity = '0';
+        setTimeout(function(){
+          qEl.textContent = q.q;
+          optsEl.innerHTML = '';
+          q.opts.forEach(function(opt){
+            var btn = document.createElement('button');
+            btn.className = 'cq-option';
+            btn.textContent = opt.t;
+            btn.addEventListener('click', function(){
+              Object.keys(opt.s).forEach(function(k){ scores[k] = (scores[k]||0) + opt.s[k]; });
+              btn.classList.add('cq-option--picked');
+              setTimeout(function(){
+                current++;
+                if(current < Qs.length){ renderQ(current); } else { showResult(); }
+              }, 260);
+            });
+            optsEl.appendChild(btn);
+          });
+          qEl.style.opacity = '1';
+          optsEl.style.opacity = '1';
+        }, 200);
+      }
+
+      function showResult(){
+        fillEl.style.width = '100%';
+        var winner = Object.keys(scores).reduce(function(a,b){ return scores[a]>=scores[b]?a:b; });
+        var c = COFFEES[winner];
+        fadeOut(gameEl, function(){
+          cardEl.innerHTML =
+            '<div class="cq-card__name">' + c.name + '</div>'
+            + '<div class="cq-card__tags">'
+              + '<span class="tag tag--alt">' + c.region + '</span>'
+              + '<span class="tag">' + c.method + '</span>'
+            + '</div>'
+            + '<p class="cq-card__desc">' + c.desc + '</p>'
+            + '<div class="cq-card__notes-label">Flavor Notes</div>'
+            + '<div class="cq-card__notes">' + c.notes.map(function(n){ return '<span class="tag">'+n+'</span>'; }).join('') + '</div>'
+            + '<div class="cq-card__spec">' + c.spec + '</div>';
+          fadeIn(resultEl);
+        });
+      }
+
+      document.getElementById('cq-start').addEventListener('click', function(){
+        scores = {espresso:0,cappuccino:0,latte:0,americano:0,pourover:0,coldbrew:0,cortado:0,flatwhite:0};
+        current = 0;
+        fadeOut(introEl, function(){ renderQ(0); fadeIn(gameEl); });
+      });
+      document.getElementById('cq-restart').addEventListener('click', function(){
+        fadeOut(resultEl, function(){
+          fillEl.style.width = '0%';
+          fadeIn(introEl);
+        });
+      });
+
+      // Init CSS transitions on panels
+      [introEl, gameEl, resultEl].forEach(function(el){
+        el.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
+        el.style.opacity = el.classList.contains('coffee-quiz__panel--hidden') ? '0' : '1';
+        el.style.transform = 'translateY(0)';
+      });
+    })();
+
   </script>
 </body>
 </html>

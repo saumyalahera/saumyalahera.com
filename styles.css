@@ -1646,3 +1646,192 @@ h2.about__title{
 }
 /* ===== /Coffee Section ===== */
 
+
+/* ================================================================
+   Coffee Quiz
+   ================================================================ */
+.coffee-quiz{
+  margin-top: 52px;
+  border: 0.2px solid rgba(0,0,0,.13);
+  border-radius: var(--r);
+  background: rgba(248,248,252,.55);
+  padding: 44px 32px 48px;
+}
+
+/* Panel system — each state is a panel */
+.coffee-quiz__panel{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* transitions are set in JS after init */
+}
+
+.coffee-quiz__panel--hidden{
+  display: none !important;
+}
+
+/* ── Buttons ─────────────────────────────────── */
+.cq-btn{
+  margin-top: 22px;
+  padding: 11px 28px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .2s ease, background .2s ease, transform .15s ease;
+}
+.cq-btn--fill{
+  background: #111111;
+  color: #ffffff;
+  border: none;
+}
+.cq-btn--fill:hover{ opacity: .72; transform: translateY(-1px); }
+.cq-btn--ghost{
+  background: none;
+  color: #111111;
+  border: 0.9px solid rgba(0,0,0,.22);
+}
+.cq-btn--ghost:hover{ background: rgba(0,0,0,.04); }
+
+/* ── Progress track ──────────────────────────── */
+.cq-track{
+  width: 100%;
+  max-width: 340px;
+  height: 2px;
+  background: rgba(0,0,0,.07);
+  border-radius: 999px;
+  margin-bottom: 22px;
+  overflow: hidden;
+}
+.cq-track__fill{
+  height: 100%;
+  width: 0%;
+  background: #4C38F0;
+  border-radius: 999px;
+  transition: width 0.55s cubic-bezier(0.16,1,0.3,1);
+}
+
+/* ── Counter ─────────────────────────────────── */
+.cq-counter{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.36);
+  margin-bottom: 18px;
+}
+
+/* ── Question ────────────────────────────────── */
+.cq-question{
+  font-size: clamp(17px, 2.6vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.28;
+  color: #111111;
+  margin-bottom: 28px;
+  max-width: 480px;
+  transition: opacity 0.2s ease;
+}
+
+/* ── Options ─────────────────────────────────── */
+.cq-options{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  max-width: 560px;
+  transition: opacity 0.2s ease;
+}
+.cq-option{
+  padding: 10px 20px;
+  border-radius: 999px;
+  border: 0.9px solid rgba(0,0,0,.18);
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(0,0,0,.68);
+  cursor: pointer;
+  transition: border-color .15s ease, background .15s ease, color .15s ease, transform .12s ease;
+}
+.cq-option:hover{
+  border-color: rgba(76,56,240,.4);
+  background: rgba(204,199,255,.12);
+  color: #4C38F0;
+  transform: translateY(-1px);
+}
+.cq-option--picked{
+  border-color: #4C38F0;
+  background: rgba(204,199,255,.2);
+  color: #4C38F0;
+  pointer-events: none;
+}
+
+/* ── Result card ─────────────────────────────── */
+.cq-card{
+  width: 100%;
+  max-width: 460px;
+  border: 0.9px solid rgba(76,56,240,.28);
+  border-radius: var(--r);
+  background: #ffffff;
+  padding: 30px 28px 26px;
+  text-align: left;
+  animation: cq-card-in 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+@keyframes cq-card-in{
+  from{ opacity:0; transform:translateY(16px); }
+  to  { opacity:1; transform:translateY(0);    }
+}
+.cq-card__name{
+  font-size: clamp(28px, 4.5vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: #111111;
+  margin-bottom: 10px;
+}
+.cq-card__tags{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.cq-card__desc{
+  font-size: 13px;
+  line-height: 1.68;
+  color: rgba(0,0,0,.60);
+  margin-bottom: 16px;
+}
+.cq-card__notes-label{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.36);
+  margin-bottom: 8px;
+}
+.cq-card__notes{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.cq-card__spec{
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: rgba(0,0,0,.38);
+  border-top: 0.5px solid rgba(0,0,0,.08);
+  padding-top: 14px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 480px){
+  .coffee-quiz{ padding: 32px 18px 36px; }
+  .cq-card{ padding: 22px 18px 20px; }
+}

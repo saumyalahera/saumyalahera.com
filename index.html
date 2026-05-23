@@ -1126,6 +1126,11 @@
             </svg>
           </button>
         </div>
+        <!-- Coffee WebGL Shader -->
+        <div class="coffee-shader-wrap">
+          <canvas id="coffee-shader" class="coffee-shader"></canvas>
+          <div class="coffee-shader__hint">move cursor · touch to stir</div>
+        </div>
 
         <h2 class="about__title">Coffee</h2>
         <p class="muted" style="margin:8px 0 0;">Some coffees I keep returning to — each with its own character and ritual.</p>
@@ -1488,6 +1493,167 @@
         el.style.opacity = el.classList.contains('coffee-quiz__panel--hidden') ? '0' : '1';
         el.style.transform = 'translateY(0)';
       });
+    })();
+
+    /* ---- Coffee Shader ---- */
+    (function(){
+      var canvas = document.getElementById('coffee-shader');
+      if (!canvas) return;
+      var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) { canvas.parentElement.style.display = 'none'; return; }
+
+      var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+
+      var FS = [
+        'precision highp float;',
+        'uniform float u_t;',
+        'uniform vec2 u_r;',
+        'uniform vec2 u_m;',
+
+        // value noise
+        'float h(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+19.19);return fract(p.x*p.y);}',
+        'float n(vec2 p){',
+        '  vec2 i=floor(p),f=fract(p);',
+        '  f=f*f*(3.0-2.0*f);',
+        '  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);',
+        '}',
+        // fractional brownian motion
+        'float fbm(vec2 p){',
+        '  float v=0.0,a=0.5;',
+        '  mat2 m=mat2(1.6,1.2,-1.2,1.6);',
+        '  for(int i=0;i<6;i++){v+=a*n(p);p=m*p;a*=0.5;}',
+        '  return v;',
+        '}',
+
+        'void main(){',
+        '  vec2 uv=gl_FragCoord.xy/u_r;',
+        '  float ar=u_r.x/u_r.y;',
+        '  vec2 p=vec2(uv.x*ar,uv.y);',
+        '  float t=u_t*0.055;',
+
+        // mouse stir
+        '  vec2 mp=vec2(u_m.x/u_r.x*ar,(u_r.y-u_m.y)/u_r.y);',
+        '  float md=length(p-mp);',
+        '  float stir=smoothstep(0.45,0.0,md);',
+
+        // domain warping — two layers
+        '  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)+t*0.8));',
+        '  vec2 r=vec2(',
+        '    fbm(p+4.0*q+vec2(1.7,9.2)+0.15*t),',
+        '    fbm(p+4.0*q+vec2(8.3,2.8)+0.12*t)',
+        '  );',
+        '  r+=stir*0.35*vec2(sin(t*5.0+md*10.0),cos(t*4.0+md*8.0));',
+        '  float f=fbm(p+4.0*r);',
+        '  float ff=f*1.4+0.12*length(q);',
+
+        // coffee colour palette
+        '  vec3 espresso=vec3(0.05,0.020,0.007);',
+        '  vec3 dark    =vec3(0.18,0.075,0.025);',
+        '  vec3 mid     =vec3(0.45,0.230,0.085);',
+        '  vec3 crema   =vec3(0.76,0.500,0.215);',
+        '  vec3 cream   =vec3(0.91,0.760,0.500);',
+
+        '  vec3 col=espresso;',
+        '  col=mix(col,dark, smoothstep(0.00,0.28,ff));',
+        '  col=mix(col,mid,  smoothstep(0.22,0.52,ff));',
+        '  col=mix(col,crema,smoothstep(0.42,0.72,ff));',
+        '  col=mix(col,cream,smoothstep(0.62,0.88,ff));',
+
+        // stir highlight + vignette
+        '  col+=stir*0.08*vec3(1.0,0.8,0.5);',
+        '  float vig=1.0-0.4*dot(uv*2.0-1.0,uv*2.0-1.0);',
+        '  col*=vig;',
+        '  gl_FragColor=vec4(col,1.0);',
+        '}'
+      ].join('\n');
+
+      function mkShader(type, src){
+        var s=gl.createShader(type);
+        gl.shaderSource(s,src);
+        gl.compileShader(s);
+        if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
+          console.warn('Shader error:',gl.getShaderInfoLog(s));
+          return null;
+        }
+        return s;
+      }
+
+      var vs=mkShader(gl.VERTEX_SHADER,VS);
+      var fs=mkShader(gl.FRAGMENT_SHADER,FS);
+      if(!vs||!fs) return;
+
+      var prog=gl.createProgram();
+      gl.attachShader(prog,vs);
+      gl.attachShader(prog,fs);
+      gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ console.warn('Link error'); return; }
+      gl.useProgram(prog);
+
+      var buf=gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1, 1,-1,-1,1, 1,1]),gl.STATIC_DRAW);
+      var aLoc=gl.getAttribLocation(prog,'a');
+      gl.enableVertexAttribArray(aLoc);
+      gl.vertexAttribPointer(aLoc,2,gl.FLOAT,false,0,0);
+
+      var uT=gl.getUniformLocation(prog,'u_t');
+      var uR=gl.getUniformLocation(prog,'u_r');
+      var uM=gl.getUniformLocation(prog,'u_m');
+
+      var mouse={x:0,y:0};
+      var raf=null, t0=null, active=false;
+
+      function resize(){
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        var w=canvas.clientWidth, h=canvas.clientHeight;
+        canvas.width=Math.round(w*dpr);
+        canvas.height=Math.round(h*dpr);
+        gl.viewport(0,0,canvas.width,canvas.height);
+        mouse.x=canvas.width*0.5; mouse.y=canvas.height*0.5;
+      }
+
+      function draw(ts){
+        if(!active) return;
+        if(!t0) t0=ts;
+        gl.uniform1f(uT,(ts-t0)*0.001);
+        gl.uniform2f(uR,canvas.width,canvas.height);
+        gl.uniform2f(uM,mouse.x,mouse.y);
+        gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+        raf=requestAnimationFrame(draw);
+      }
+
+      canvas.addEventListener('mousemove',function(e){
+        var rect=canvas.getBoundingClientRect();
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        mouse.x=(e.clientX-rect.left)*dpr;
+        mouse.y=(e.clientY-rect.top)*dpr;
+      });
+      canvas.addEventListener('touchmove',function(e){
+        e.preventDefault();
+        var rect=canvas.getBoundingClientRect();
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        var touch=e.touches[0];
+        mouse.x=(touch.clientX-rect.left)*dpr;
+        mouse.y=(touch.clientY-rect.top)*dpr;
+      },{passive:false});
+
+      function startShader(){
+        if(active) return;
+        active=true; t0=null;
+        resize();
+        raf=requestAnimationFrame(draw);
+      }
+      function stopShader(){
+        active=false;
+        if(raf){ cancelAnimationFrame(raf); raf=null; }
+      }
+
+      document.getElementById('coffee-trigger').addEventListener('click',function(){
+        setTimeout(startShader,120);
+      });
+      document.getElementById('coffee-close').addEventListener('click',stopShader);
+
+      window.addEventListener('resize',function(){ if(active) resize(); });
     })();
 
   </script>

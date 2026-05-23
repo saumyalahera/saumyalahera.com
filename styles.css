@@ -1835,3 +1835,43 @@ h2.about__title{
   .coffee-quiz{ padding: 32px 18px 36px; }
   .cq-card{ padding: 22px 18px 20px; }
 }
+
+/* ================================================================
+   Coffee Shader
+   ================================================================ */
+.coffee-shader-wrap{
+  position: relative;
+  width: 100%;
+  border-radius: var(--r);
+  overflow: hidden;
+  margin: 24px 0 36px;
+  background: #0d0502;   /* fallback while WebGL loads */
+  /* subtle glow matching the crema palette */
+  box-shadow: 0 4px 32px rgba(120, 60, 10, 0.18);
+}
+
+.coffee-shader{
+  display: block;
+  width: 100%;
+  height: 220px;
+  cursor: crosshair;
+  /* pixel dimensions set by JS via devicePixelRatio */
+}
+
+/* "move cursor" hint — bottom-right corner */
+.coffee-shader__hint{
+  position: absolute;
+  bottom: 11px;
+  right: 14px;
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.28);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 480px){
+  .coffee-shader{ height: 160px; }
+}

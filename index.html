@@ -1106,6 +1106,11 @@
 
   <!-- Coffee Fullscreen Overlay -->
   <div class="coffee-overlay" id="coffee-overlay" role="dialog" aria-modal="true" aria-label="Coffee" aria-hidden="true">
+    <!-- Full-page background shader — sits behind all content -->
+    <div class="coffee-shader-wrap">
+      <canvas id="coffee-shader" class="coffee-shader"></canvas>
+      <div class="coffee-shader__hint">move cursor · touch to stir</div>
+    </div>
     <div class="coffee-overlay__scroll">
       <div class="coffee-overlay__content">
         <div class="coffee-overlay__header">
@@ -1126,12 +1131,6 @@
             </svg>
           </button>
         </div>
-        <!-- Coffee WebGL Shader -->
-        <div class="coffee-shader-wrap">
-          <canvas id="coffee-shader" class="coffee-shader"></canvas>
-          <div class="coffee-shader__hint">move cursor · touch to stir</div>
-        </div>
-
         <h2 class="about__title">Coffee</h2>
         <p class="muted" style="margin:8px 0 0;">Some coffees I keep returning to — each with its own character and ritual.</p>
         <br/>
@@ -1444,6 +1443,8 @@
             btn.addEventListener('click', function(){
               Object.keys(opt.s).forEach(function(k){ scores[k] = (scores[k]||0) + opt.s[k]; });
               btn.classList.add('cq-option--picked');
+              // shift shader tint toward this option's coffee intensity
+              if(window._coffeeQuizPick) window._coffeeQuizPick(opt.s);
               setTimeout(function(){
                 current++;
                 if(current < Qs.length){ renderQ(current); } else { showResult(); }
@@ -1459,6 +1460,8 @@
       function showResult(){
         fillEl.style.width = '100%';
         var winner = Object.keys(scores).reduce(function(a,b){ return scores[a]>=scores[b]?a:b; });
+        // lock the shader tint to the winning coffee's character
+        if(window._coffeeResultTint) window._coffeeResultTint(winner);
         var c = COFFEES[winner];
         fadeOut(gameEl, function(){
           cardEl.innerHTML =
@@ -1481,6 +1484,7 @@
         fadeOut(introEl, function(){ renderQ(0); fadeIn(gameEl); });
       });
       document.getElementById('cq-restart').addEventListener('click', function(){
+        if(window._coffeeResetTint) window._coffeeResetTint();
         fadeOut(resultEl, function(){
           fillEl.style.width = '0%';
           fadeIn(introEl);
@@ -1509,6 +1513,7 @@
         'uniform float u_t;',
         'uniform vec2 u_r;',
         'uniform vec2 u_m;',
+        'uniform vec3 u_tint;',
 
         // value noise
         'float h(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+19.19);return fract(p.x*p.y);}',
@@ -1529,7 +1534,7 @@
         '  vec2 uv=gl_FragCoord.xy/u_r;',
         '  float ar=u_r.x/u_r.y;',
         '  vec2 p=vec2(uv.x*ar,uv.y);',
-        '  float t=u_t*0.055;',
+        '  float t=u_t*0.044;',
 
         // mouse stir
         '  vec2 mp=vec2(u_m.x/u_r.x*ar,(u_r.y-u_m.y)/u_r.y);',
@@ -1542,28 +1547,28 @@
         '    fbm(p+4.0*q+vec2(1.7,9.2)+0.15*t),',
         '    fbm(p+4.0*q+vec2(8.3,2.8)+0.12*t)',
         '  );',
-        '  r+=stir*0.35*vec2(sin(t*5.0+md*10.0),cos(t*4.0+md*8.0));',
+        '  r+=stir*0.18*vec2(sin(t*5.0+md*10.0),cos(t*4.0+md*8.0));',
         '  float f=fbm(p+4.0*r);',
-        '  float ff=f*1.4+0.12*length(q);',
+        '  float ff=f*0.22+0.01*length(q);',
 
-        // coffee colour palette
-        '  vec3 espresso=vec3(0.05,0.020,0.007);',
-        '  vec3 dark    =vec3(0.18,0.075,0.025);',
-        '  vec3 mid     =vec3(0.45,0.230,0.085);',
-        '  vec3 crema   =vec3(0.76,0.500,0.215);',
-        '  vec3 cream   =vec3(0.91,0.760,0.500);',
+        // coffee colour palette — very light, steamed-milk feel
+        '  vec3 espresso=vec3(0.975,0.950,0.915);',  // near-white warm base
+        '  vec3 dark    =vec3(0.955,0.920,0.870);',  // faint cream ripple
+        '  vec3 mid     =vec3(0.928,0.880,0.805);',  // light latte wash
+        '  vec3 crema   =vec3(0.898,0.838,0.738);',  // soft caramel hint
+        '  vec3 cream   =vec3(0.862,0.788,0.658);',  // warmest swirl (rarest)
 
         '  vec3 col=espresso;',
-        '  col=mix(col,dark, smoothstep(0.00,0.28,ff));',
-        '  col=mix(col,mid,  smoothstep(0.22,0.52,ff));',
-        '  col=mix(col,crema,smoothstep(0.42,0.72,ff));',
-        '  col=mix(col,cream,smoothstep(0.62,0.88,ff));',
+        '  col=mix(col,dark, smoothstep(0.04,0.13,ff));',
+        '  col=mix(col,mid,  smoothstep(0.09,0.18,ff));',
+        '  col=mix(col,crema,smoothstep(0.14,0.23,ff));',
+        '  col=mix(col,cream,smoothstep(0.19,0.30,ff));',
 
         // stir highlight + vignette
-        '  col+=stir*0.08*vec3(1.0,0.8,0.5);',
-        '  float vig=1.0-0.4*dot(uv*2.0-1.0,uv*2.0-1.0);',
+        '  col+=stir*0.03*vec3(1.00,0.95,0.88);',
+        '  float vig=1.0-0.10*dot(uv*2.0-1.0,uv*2.0-1.0);',
         '  col*=vig;',
-        '  gl_FragColor=vec4(col,1.0);',
+        '  gl_FragColor=vec4(col*u_tint,1.0);',
         '}'
       ].join('\n');
 
@@ -1599,9 +1604,29 @@
       var uT=gl.getUniformLocation(prog,'u_t');
       var uR=gl.getUniformLocation(prog,'u_r');
       var uM=gl.getUniformLocation(prog,'u_m');
+      var uTint=gl.getUniformLocation(prog,'u_tint');
 
       var mouse={x:0,y:0};
       var raf=null, t0=null, active=false;
+      var targetTint=[1.0,1.0,1.0], currentTint=[1.0,1.0,1.0];
+
+      // coffee intensity weights — used to map quiz picks to a warm tint
+      var COFFEE_INTENSITY={espresso:3,cortado:3,flatwhite:2.5,cappuccino:2,coldbrew:2,americano:1.5,latte:1,pourover:1};
+      function intensityToTint(intensity){
+        var t=Math.min(1,Math.max(0,(intensity-1)/2));
+        return [1.0-t*0.014, 1.0-t*0.034, 1.0-t*0.065];
+      }
+      // Called by quiz each time an option is picked
+      window._coffeeQuizPick=function(optScores){
+        var total=0,wt=0;
+        Object.keys(optScores).forEach(function(k){var v=optScores[k];total+=v;wt+=(COFFEE_INTENSITY[k]||1.5)*v;});
+        targetTint=intensityToTint(total>0?wt/total:1.5);
+      };
+      // Called when quiz result is shown — snap to final coffee's tint
+      var RESULT_TINTS={espresso:[0.984,0.962,0.933],cortado:[0.986,0.966,0.937],flatwhite:[0.989,0.973,0.949],cappuccino:[0.992,0.980,0.963],coldbrew:[0.993,0.979,0.958],americano:[0.996,0.987,0.974],latte:[0.998,0.992,0.983],pourover:[1.0,0.997,0.991]};
+      window._coffeeResultTint=function(key){ targetTint=RESULT_TINTS[key]||[1.0,1.0,1.0]; };
+      // Called on quiz restart
+      window._coffeeResetTint=function(){ targetTint=[1.0,1.0,1.0]; };
 
       function resize(){
         var dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1615,27 +1640,31 @@
       function draw(ts){
         if(!active) return;
         if(!t0) t0=ts;
+        // smoothly lerp toward target tint
+        for(var i=0;i<3;i++) currentTint[i]+=(targetTint[i]-currentTint[i])*0.018;
         gl.uniform1f(uT,(ts-t0)*0.001);
         gl.uniform2f(uR,canvas.width,canvas.height);
         gl.uniform2f(uM,mouse.x,mouse.y);
+        gl.uniform3f(uTint,currentTint[0],currentTint[1],currentTint[2]);
         gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
         raf=requestAnimationFrame(draw);
       }
 
-      canvas.addEventListener('mousemove',function(e){
+      // Listen on the full overlay so any mouse movement stirs the shader
+      var overlayEl=document.getElementById('coffee-overlay');
+      overlayEl.addEventListener('mousemove',function(e){
         var rect=canvas.getBoundingClientRect();
         var dpr=Math.min(window.devicePixelRatio||1,2);
         mouse.x=(e.clientX-rect.left)*dpr;
         mouse.y=(e.clientY-rect.top)*dpr;
       });
-      canvas.addEventListener('touchmove',function(e){
-        e.preventDefault();
+      overlayEl.addEventListener('touchmove',function(e){
         var rect=canvas.getBoundingClientRect();
         var dpr=Math.min(window.devicePixelRatio||1,2);
         var touch=e.touches[0];
         mouse.x=(touch.clientX-rect.left)*dpr;
         mouse.y=(touch.clientY-rect.top)*dpr;
-      },{passive:false});
+      },{passive:true});
 
       function startShader(){
         if(active) return;

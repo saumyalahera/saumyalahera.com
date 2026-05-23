@@ -1331,7 +1331,7 @@ h2.about__title{
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: var(--bg);
+  background: #F7F3EE;  /* matches shader fallback bg */
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1389,11 +1389,13 @@ h2.about__title{
   50%     { transform: translateY(-4px); }
 }
 
-/* Scrollable content area */
+/* Scrollable content area — sits on top of the background shader */
 .coffee-overlay__scroll{
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  position: relative;
+  z-index: 1;
 }
 
 .coffee-overlay__content{
@@ -1406,15 +1408,17 @@ h2.about__title{
 .coffee-explorer{
   display: grid;
   grid-template-columns: 186px 1fr;
-  border: 0.2px solid rgba(0,0,0,.22);
+  border: 0.2px solid rgba(100,65,30,.18);
   border-radius: var(--r);
   overflow: hidden;
-  background: rgba(248,248,252,.55);
+  background: rgba(255,254,251,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   min-height: 300px;
 }
 
 .coffee-explorer__sidebar{
-  border-right: 0.2px solid rgba(0,0,0,.10);
+  border-right: 0.2px solid rgba(100,65,30,.12);
   padding: 12px 0;
   display: flex;
   flex-direction: column;
@@ -1437,14 +1441,14 @@ h2.about__title{
 }
 
 .coffee-list__item:hover{
-  color: rgba(0,0,0,.72);
-  background: rgba(0,0,0,.025);
+  color: rgba(60,30,10,.80);
+  background: rgba(140,80,30,.06);
 }
 
 .coffee-list__item--active{
-  border-left-color: #4C38F0;
-  color: #4C38F0;
-  background: rgba(204,199,255,.10);
+  border-left-color: #5D3315;
+  color: #5D3315;
+  background: rgba(120,70,28,.10);
 }
 
 .coffee-list__num{
@@ -1555,9 +1559,9 @@ h2.about__title{
   }
 
   .coffee-list__item--active{
-    border-color: rgba(76,56,240,.30);
-    background: rgba(204,199,255,.20);
-    color: #4C38F0;
+    border-color: rgba(93,51,21,.32);
+    background: rgba(120,70,28,.11);
+    color: #5D3315;
   }
 
   .coffee-list__num{ display: none; }
@@ -1606,10 +1610,12 @@ h2.about__title{
 }
 
 .coffee-bean-card{
-  border: 0.2px solid rgba(0,0,0,.20);
+  border: 0.2px solid rgba(100,65,30,.16);
   border-radius: 14px;
   padding: 16px;
-  background: rgba(248,248,252,.55);
+  background: rgba(255,254,251,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1652,9 +1658,11 @@ h2.about__title{
    ================================================================ */
 .coffee-quiz{
   margin-top: 52px;
-  border: 0.2px solid rgba(0,0,0,.13);
+  border: 0.2px solid rgba(100,65,30,.16);
   border-radius: var(--r);
-  background: rgba(248,248,252,.55);
+  background: rgba(255,254,251,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 44px 32px 48px;
 }
 
@@ -1710,7 +1718,7 @@ h2.about__title{
 .cq-track__fill{
   height: 100%;
   width: 0%;
-  background: #4C38F0;
+  background: #5D3315;
   border-radius: 999px;
   transition: width 0.55s cubic-bezier(0.16,1,0.3,1);
 }
@@ -1760,15 +1768,15 @@ h2.about__title{
   transition: border-color .15s ease, background .15s ease, color .15s ease, transform .12s ease;
 }
 .cq-option:hover{
-  border-color: rgba(76,56,240,.4);
-  background: rgba(204,199,255,.12);
-  color: #4C38F0;
+  border-color: rgba(93,51,21,.35);
+  background: rgba(120,70,28,.09);
+  color: #5D3315;
   transform: translateY(-1px);
 }
 .cq-option--picked{
-  border-color: #4C38F0;
-  background: rgba(204,199,255,.2);
-  color: #4C38F0;
+  border-color: #5D3315;
+  background: rgba(120,70,28,.11);
+  color: #5D3315;
   pointer-events: none;
 }
 
@@ -1776,7 +1784,7 @@ h2.about__title{
 .cq-card{
   width: 100%;
   max-width: 460px;
-  border: 0.9px solid rgba(76,56,240,.28);
+  border: 0.9px solid rgba(93,51,21,.22);
   border-radius: var(--r);
   background: #ffffff;
   padding: 30px 28px 26px;
@@ -1840,38 +1848,86 @@ h2.about__title{
    Coffee Shader
    ================================================================ */
 .coffee-shader-wrap{
-  position: relative;
+  /* Full-page background — sits behind all content */
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   width: 100%;
-  border-radius: var(--r);
+  height: 100%;
+  margin: 0;
+  border-radius: 0;
   overflow: hidden;
-  margin: 24px 0 36px;
-  background: #0d0502;   /* fallback while WebGL loads */
-  /* subtle glow matching the crema palette */
-  box-shadow: 0 4px 32px rgba(120, 60, 10, 0.18);
+  pointer-events: none;           /* let clicks pass through to content */
+  background: #F7F3EE;            /* warm fallback while WebGL loads */
 }
 
 .coffee-shader{
   display: block;
   width: 100%;
-  height: 220px;
-  cursor: crosshair;
+  height: 100%;                   /* fills the absolute wrapper */
   /* pixel dimensions set by JS via devicePixelRatio */
 }
 
-/* "move cursor" hint — bottom-right corner */
+/* "move cursor" hint — bottom-right corner of the full overlay */
 .coffee-shader__hint{
   position: absolute;
-  bottom: 11px;
-  right: 14px;
+  bottom: 14px;
+  right: 18px;
   font-size: 8px;
   font-weight: 650;
   letter-spacing: 0.20em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.28);
+  color: rgba(120,70,20,0.20);    /* faint warm brown on light bg */
   pointer-events: none;
   user-select: none;
 }
 
-@media (max-width: 480px){
-  .coffee-shader{ height: 160px; }
+/* Override portfolio purple inside the coffee overlay — all tag variants */
+.coffee-overlay .tag--alt,
+.coffee-overlay span.tag--alt,
+.coffee-overlay div.tag--alt{
+  color: #6B3A18 !important;
+  background: rgba(140,80,30,.10) !important;
+  border-color: rgba(107,58,24,.22) !important;
+}
+
+/* Plain tags in coffee overlay get warm neutral tone */
+.coffee-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3){
+  color: rgba(0,0,0,.62);
+  background: rgba(255,252,247,.90);
+  border-color: rgba(100,65,30,.18);
+}
+
+/* Quiz option base: warm border on cream bg */
+.coffee-overlay .cq-option{
+  border-color: rgba(100,65,30,.18);
+  background: rgba(255,252,247,.90);
+}
+
+/* Result card: warm border */
+.coffee-overlay .cq-card{
+  background: rgba(255,254,251,.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Bean cards: warm tone */
+.coffee-overlay .coffee-bean-card{
+  background: rgba(255,254,251,.86);
+  border-color: rgba(100,65,30,.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.coffee-overlay .coffee-sub-section{
+  background: none;
+}
+
+/* ── Entrance animation — content fades up when overlay opens ── */
+@keyframes coffee-content-in{
+  from{ opacity:0; transform:translateY(22px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+.coffee-overlay.is-open .coffee-overlay__content{
+  animation: coffee-content-in 0.55s cubic-bezier(0.16,1,0.3,1) both;
+  animation-delay: 0.18s; /* let the slide-up animation settle first */
 }

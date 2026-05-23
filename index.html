@@ -1165,6 +1165,51 @@
           <div class="coffee-explorer__detail" id="coffee-detail" aria-live="polite"></div>
         </div>
 
+        <!-- Roast Spectrum Slider -->
+        <div class="coffee-roast">
+          <p class="kicker">The Spectrum</p>
+          <h3 class="coffee-sub-title">Roast Levels</h3>
+          <p class="coffee-sub-intro">Every bean starts green. Drag to explore how heat transforms it.</p>
+
+          <div class="roast-slider">
+            <div class="roast-slider__labels">
+              <span data-idx="0">Light</span>
+              <span data-idx="1">Medium</span>
+              <span data-idx="2">Medium-Dark</span>
+              <span data-idx="3">Dark</span>
+            </div>
+            <div class="roast-slider__track" id="roast-track">
+              <div class="roast-slider__gradient"></div>
+              <div class="roast-slider__handle" id="roast-handle" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="Roast level">
+                <div class="roast-slider__handle-dot" id="roast-handle-dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="roast-detail" id="roast-detail">
+            <div class="roast-detail__left">
+              <div class="roast-detail__swatch" id="roast-swatch"></div>
+              <div>
+                <div class="roast-detail__name" id="roast-name"></div>
+                <div class="roast-detail__temp" id="roast-temp"></div>
+              </div>
+            </div>
+            <div class="roast-detail__right">
+              <div class="roast-detail__flavors" id="roast-flavors"></div>
+              <div class="roast-meters">
+                <div class="roast-meter">
+                  <span class="roast-meter__label">Acidity</span>
+                  <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-acidity"></div></div>
+                </div>
+                <div class="roast-meter">
+                  <span class="roast-meter__label">Body</span>
+                  <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-body"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <br/>
 
         <div class="coffee-sub-section">
@@ -1683,6 +1728,100 @@
       document.getElementById('coffee-close').addEventListener('click',stopShader);
 
       window.addEventListener('resize',function(){ if(active) resize(); });
+    })();
+
+    /* ---- Roast Slider ---- */
+    (function(){
+      var ROASTS = [
+        { name:'Light',       temp:'180 – 205°C', color:'#C8914A', flavors:'Floral · Citrus · Berry · Tea-like',       acidity:88, body:22 },
+        { name:'Medium',      temp:'210 – 220°C', color:'#9B5E2F', flavors:'Caramel · Hazelnut · Chocolate · Balanced',acidity:55, body:55 },
+        { name:'Medium-Dark', temp:'225 – 230°C', color:'#5D3218', flavors:'Bittersweet · Dark Chocolate · Spice',     acidity:28, body:78 },
+        { name:'Dark',        temp:'230 – 245°C', color:'#1E0F08', flavors:'Smoky · Bitter · Charred · Bold',          acidity:12, body:96 }
+      ];
+      var POSITIONS = [0, 1/3, 2/3, 1];
+
+      var track    = document.getElementById('roast-track');
+      var handle   = document.getElementById('roast-handle');
+      var handleDot= document.getElementById('roast-handle-dot');
+      var detail   = document.getElementById('roast-detail');
+      var swatch   = document.getElementById('roast-swatch');
+      var nameEl   = document.getElementById('roast-name');
+      var tempEl   = document.getElementById('roast-temp');
+      var flavorsEl= document.getElementById('roast-flavors');
+      var acidityEl= document.getElementById('roast-acidity');
+      var bodyEl   = document.getElementById('roast-body');
+      var labels   = document.querySelectorAll('.roast-slider__labels span');
+      if(!track) return;
+
+      var current = -1;
+      var dragging = false;
+
+      function nearest(x){
+        var idx = 0, best = Infinity;
+        POSITIONS.forEach(function(p,i){ var d=Math.abs(x-p); if(d<best){best=d;idx=i;} });
+        return idx;
+      }
+
+      function update(idx, skipAnim){
+        if(idx === current) return;
+        current = idx;
+        var r = ROASTS[idx];
+
+        /* handle position */
+        handle.style.left = (POSITIONS[idx]*100)+'%';
+        handle.setAttribute('aria-valuenow', idx);
+
+        /* handle color matches roast */
+        handle.style.background = r.color;
+
+        /* active label */
+        labels.forEach(function(l,i){ l.classList.toggle('is-active', i===idx); });
+
+        /* detail panel content */
+        if(!skipAnim){
+          detail.classList.add('is-changing');
+          setTimeout(function(){ detail.classList.remove('is-changing'); }, 250);
+        }
+        swatch.style.background = r.color;
+        nameEl.textContent  = r.name;
+        tempEl.textContent  = r.temp;
+        flavorsEl.textContent = r.flavors;
+        acidityEl.style.width = r.acidity+'%';
+        bodyEl.style.width    = r.body+'%';
+      }
+
+      function xToNorm(clientX){
+        var rect = track.getBoundingClientRect();
+        return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      }
+
+      /* mouse drag */
+      handle.addEventListener('mousedown', function(e){ dragging=true; e.preventDefault(); });
+      document.addEventListener('mousemove', function(e){ if(dragging) update(nearest(xToNorm(e.clientX))); });
+      document.addEventListener('mouseup',   function(){ dragging=false; });
+
+      /* click anywhere on track */
+      track.addEventListener('click', function(e){ update(nearest(xToNorm(e.clientX))); });
+
+      /* touch */
+      handle.addEventListener('touchstart', function(e){ dragging=true; e.preventDefault(); },{passive:false});
+      document.addEventListener('touchmove', function(e){
+        if(!dragging) return;
+        update(nearest(xToNorm(e.touches[0].clientX)));
+      },{passive:true});
+      document.addEventListener('touchend', function(){ dragging=false; });
+
+      /* label clicks */
+      labels.forEach(function(l){ l.addEventListener('click', function(){ update(parseInt(l.dataset.idx)); }); });
+
+      /* keyboard */
+      handle.addEventListener('keydown', function(e){
+        if(e.key==='ArrowRight' && current<3) update(current+1);
+        if(e.key==='ArrowLeft'  && current>0) update(current-1);
+      });
+
+      /* init */
+      update(0, true);
     })();
 
   </script>

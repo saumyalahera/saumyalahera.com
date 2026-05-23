@@ -1882,6 +1882,172 @@ h2.about__title{
   user-select: none;
 }
 
+/* ================================================================
+   Roast Spectrum — Interactive Slider
+   ================================================================ */
+.coffee-roast{ margin-top: 52px; }
+
+/* --- Slider track --- */
+.roast-slider{ margin: 22px 0 24px; }
+
+.roast-slider__labels{
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.roast-slider__labels span{
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+  cursor: pointer;
+  transition: color .2s ease;
+  user-select: none;
+}
+.roast-slider__labels span:hover,
+.roast-slider__labels span.is-active{
+  color: rgba(93,51,21,.70);
+}
+
+.roast-slider__track{
+  position: relative;
+  height: 24px;          /* tall hit area, visual line centered */
+  cursor: pointer;
+}
+.roast-slider__gradient{
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  transform: translateY(-50%);
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    rgba(200,145,74,.55),
+    rgba(155,94,47,.65),
+    rgba(93,50,24,.70),
+    rgba(30,15,8,.72)
+  );
+}
+.roast-slider__handle{
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #C8914A;   /* set by JS on each change */
+  border: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+  cursor: grab;
+  transition: left .35s cubic-bezier(.34,1.56,.64,1),
+              background .35s ease;
+  z-index: 1;
+  outline: none;
+}
+.roast-slider__handle:active{ cursor: grabbing; box-shadow: 0 1px 6px rgba(0,0,0,.18); }
+.roast-slider__handle:focus-visible{ box-shadow: 0 0 0 2px rgba(93,51,21,.22); }
+
+.roast-slider__handle-dot{
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: rgba(93,51,21,.30);
+  transition: background .35s ease;
+}
+
+/* --- Detail panel --- */
+.roast-detail{
+  background: rgba(255,254,251,.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 0.2px solid rgba(100,65,30,.16);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.roast-detail__left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.roast-detail__swatch{
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  opacity: .60;
+  border: 0.5px solid rgba(0,0,0,.10);
+  transition: background .35s ease;
+}
+.roast-detail__name{
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: rgba(0,0,0,.80);
+}
+.roast-detail__temp{
+  font-size: 9px;
+  color: rgba(0,0,0,.34);
+  margin-top: 3px;
+  letter-spacing: 0.03em;
+}
+.roast-detail__right{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.roast-detail__flavors{
+  font-size: 10px;
+  color: rgba(0,0,0,.50);
+  line-height: 1.6;
+}
+
+/* content fade animation */
+@keyframes roast-fade-in{
+  from{ opacity:0; transform:translateY(5px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+.roast-detail.is-changing .roast-detail__name,
+.roast-detail.is-changing .roast-detail__temp,
+.roast-detail.is-changing .roast-detail__flavors{
+  animation: roast-fade-in .22s ease both;
+}
+
+/* --- Meters --- */
+.roast-meters{ display:flex; flex-direction:column; gap:7px; }
+.roast-meter{ display:flex; align-items:center; gap:8px; }
+.roast-meter__label{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.30);
+  width: 44px;
+  flex-shrink: 0;
+}
+.roast-meter__track{
+  flex: 1;
+  height: 3px;
+  background: rgba(0,0,0,.07);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.roast-meter__fill{
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(93,51,21,.50);
+  transition: width .45s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* Mobile */
+@media (max-width: 680px){
+  .roast-detail{ grid-template-columns: 1fr; gap: 14px; }
+  .roast-slider__labels span{ font-size: 7.5px; letter-spacing: 0.06em; }
+}
+
 /* Override portfolio purple inside the coffee overlay — light warm pill */
 .coffee-overlay .tag--alt,
 .coffee-overlay span.tag--alt,

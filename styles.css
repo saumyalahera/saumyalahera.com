@@ -1882,13 +1882,21 @@ h2.about__title{
   user-select: none;
 }
 
-/* Override portfolio purple inside the coffee overlay — all tag variants */
+/* Override portfolio purple inside the coffee overlay — light warm pill */
 .coffee-overlay .tag--alt,
 .coffee-overlay span.tag--alt,
 .coffee-overlay div.tag--alt{
-  color: #6B3A18 !important;
-  background: rgba(140,80,30,.10) !important;
-  border-color: rgba(107,58,24,.22) !important;
+  color: rgba(107,58,24,.80) !important;
+  background: rgba(140,90,40,.12) !important;
+  border-color: rgba(107,65,22,.20) !important;
+}
+
+/* Kill the purple ::before and ::after pseudo-element overlays on tag--alt */
+.coffee-overlay .tag--alt::before,
+.coffee-overlay .tag--alt::after,
+.coffee-overlay span.tag--alt::before,
+.coffee-overlay span.tag--alt::after{
+  background: transparent !important;
 }
 
 /* Plain tags in coffee overlay get warm neutral tone */
@@ -1896,6 +1904,12 @@ h2.about__title{
   color: rgba(0,0,0,.62);
   background: rgba(255,252,247,.90);
   border-color: rgba(100,65,30,.18);
+}
+
+/* Kill purple pseudo-elements on plain tags inside coffee overlay too */
+.coffee-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3)::before,
+.coffee-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3)::after{
+  background: transparent !important;
 }
 
 /* Quiz option base: warm border on cream bg */

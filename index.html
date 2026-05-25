@@ -1165,45 +1165,36 @@
           <div class="coffee-explorer__detail" id="coffee-detail" aria-live="polite"></div>
         </div>
 
-        <!-- Roast Spectrum Slider -->
+        <!-- Roast Bean Viewer -->
         <div class="coffee-roast">
           <p class="kicker">The Spectrum</p>
           <h3 class="coffee-sub-title">Roast Levels</h3>
-          <p class="coffee-sub-intro">Every bean starts green. Drag to explore how heat transforms it.</p>
+          <p class="coffee-sub-intro">Every bean starts green. Heat transforms it — click a roast to see how.</p>
 
-          <div class="roast-slider">
-            <div class="roast-slider__labels">
-              <span data-idx="0">Light</span>
-              <span data-idx="1">Medium</span>
-              <span data-idx="2">Medium-Dark</span>
-              <span data-idx="3">Dark</span>
+          <div class="roast-viewer">
+            <div class="roast-canvas-wrap">
+              <canvas id="roast-canvas"></canvas>
             </div>
-            <div class="roast-slider__track" id="roast-track">
-              <div class="roast-slider__gradient"></div>
-              <div class="roast-slider__handle" id="roast-handle" tabindex="0" role="slider" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-label="Roast level">
-                <div class="roast-slider__handle-dot" id="roast-handle-dot"></div>
+            <div class="roast-info">
+              <div class="roast-pills">
+                <button class="roast-pill roast-pill--active" data-idx="0">Light</button>
+                <button class="roast-pill" data-idx="1">Medium</button>
+                <button class="roast-pill" data-idx="2">Medium-Dark</button>
+                <button class="roast-pill" data-idx="3">Dark</button>
               </div>
-            </div>
-          </div>
-
-          <div class="roast-detail" id="roast-detail">
-            <div class="roast-detail__left">
-              <div class="roast-detail__swatch" id="roast-swatch"></div>
-              <div>
-                <div class="roast-detail__name" id="roast-name"></div>
-                <div class="roast-detail__temp" id="roast-temp"></div>
-              </div>
-            </div>
-            <div class="roast-detail__right">
-              <div class="roast-detail__flavors" id="roast-flavors"></div>
-              <div class="roast-meters">
-                <div class="roast-meter">
-                  <span class="roast-meter__label">Acidity</span>
-                  <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-acidity"></div></div>
-                </div>
-                <div class="roast-meter">
-                  <span class="roast-meter__label">Body</span>
-                  <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-body"></div></div>
+              <div class="roast-info__detail">
+                <div class="roast-info__name" id="roast-name"></div>
+                <div class="roast-info__temp" id="roast-temp"></div>
+                <div class="roast-info__flavors" id="roast-flavors"></div>
+                <div class="roast-meters">
+                  <div class="roast-meter">
+                    <span class="roast-meter__label">Acidity</span>
+                    <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-acidity"></div></div>
+                  </div>
+                  <div class="roast-meter">
+                    <span class="roast-meter__label">Body</span>
+                    <div class="roast-meter__track"><div class="roast-meter__fill" id="roast-body"></div></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1730,98 +1721,200 @@
       window.addEventListener('resize',function(){ if(active) resize(); });
     })();
 
-    /* ---- Roast Slider ---- */
+    /* ---- Roast Bean Canvas (sketch illustration) ---- */
     (function(){
-      var ROASTS = [
-        { name:'Light',       temp:'180 – 205°C', color:'#C8914A', flavors:'Floral · Citrus · Berry · Tea-like',       acidity:88, body:22 },
-        { name:'Medium',      temp:'210 – 220°C', color:'#9B5E2F', flavors:'Caramel · Hazelnut · Chocolate · Balanced',acidity:55, body:55 },
-        { name:'Medium-Dark', temp:'225 – 230°C', color:'#5D3218', flavors:'Bittersweet · Dark Chocolate · Spice',     acidity:28, body:78 },
-        { name:'Dark',        temp:'230 – 245°C', color:'#1E0F08', flavors:'Smoky · Bitter · Charred · Bold',          acidity:12, body:96 }
+      var canvas = document.getElementById('roast-canvas');
+      if(!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var dpr = Math.min(window.devicePixelRatio||1,2);
+      var W=150, H=192;
+      canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+      canvas.style.width=W+'px'; canvas.style.height=H+'px';
+      ctx.scale(dpr,dpr);
+
+      var cx=W/2, cy=H/2+2;
+      var rw=52, rh=70;
+
+      var ROASTS=[
+        {name:'Light',       temp:'180 – 205°C', rgb:[200,145, 74], flavors:'Floral · Citrus · Berry · Tea-like',        acidity:88, body:22},
+        {name:'Medium',      temp:'210 – 220°C', rgb:[155, 94, 47], flavors:'Caramel · Hazelnut · Chocolate · Balanced', acidity:55, body:55},
+        {name:'Medium-Dark', temp:'225 – 230°C', rgb:[ 93, 50, 24], flavors:'Bittersweet · Dark Chocolate · Spice',      acidity:28, body:78},
+        {name:'Dark',        temp:'230 – 245°C', rgb:[ 30, 15,  8], flavors:'Smoky · Bitter · Charred · Bold',           acidity:12, body:96}
       ];
-      var POSITIONS = [0, 1/3, 2/3, 1];
 
-      var track    = document.getElementById('roast-track');
-      var handle   = document.getElementById('roast-handle');
-      var handleDot= document.getElementById('roast-handle-dot');
-      var detail   = document.getElementById('roast-detail');
-      var swatch   = document.getElementById('roast-swatch');
-      var nameEl   = document.getElementById('roast-name');
-      var tempEl   = document.getElementById('roast-temp');
-      var flavorsEl= document.getElementById('roast-flavors');
-      var acidityEl= document.getElementById('roast-acidity');
-      var bodyEl   = document.getElementById('roast-body');
-      var labels   = document.querySelectorAll('.roast-slider__labels span');
-      if(!track) return;
+      var cur=[200,145,74], target=[200,145,74], rafId=null;
 
-      var current = -1;
-      var dragging = false;
-
-      function nearest(x){
-        var idx = 0, best = Infinity;
-        POSITIONS.forEach(function(p,i){ var d=Math.abs(x-p); if(d<best){best=d;idx=i;} });
-        return idx;
+      /* organic bean outline */
+      function beanPath(){
+        ctx.beginPath();
+        ctx.moveTo(cx, cy-rh);
+        ctx.bezierCurveTo(cx+rw*0.76, cy-rh*0.84, cx+rw, cy-rh*0.14, cx+rw*0.87, cy+rh*0.20);
+        ctx.bezierCurveTo(cx+rw*0.68, cy+rh*0.74, cx+rw*0.26, cy+rh, cx, cy+rh);
+        ctx.bezierCurveTo(cx-rw*0.26, cy+rh, cx-rw*0.68, cy+rh*0.74, cx-rw*0.87, cy+rh*0.20);
+        ctx.bezierCurveTo(cx-rw, cy-rh*0.14, cx-rw*0.76, cy-rh*0.84, cx, cy-rh);
+        ctx.closePath();
       }
 
-      function update(idx, skipAnim){
-        if(idx === current) return;
-        current = idx;
-        var r = ROASTS[idx];
+      function draw(){
+        ctx.clearRect(0,0,W,H);
 
-        /* handle position */
-        handle.style.left = (POSITIONS[idx]*100)+'%';
-        handle.setAttribute('aria-valuenow', idx);
-
-        /* handle color matches roast */
-        handle.style.background = r.color;
-
-        /* active label */
-        labels.forEach(function(l,i){ l.classList.toggle('is-active', i===idx); });
-
-        /* detail panel content */
-        if(!skipAnim){
-          detail.classList.add('is-changing');
-          setTimeout(function(){ detail.classList.remove('is-changing'); }, 250);
+        /* lerp color */
+        var settled=true;
+        for(var i=0;i<3;i++){
+          cur[i]+=(target[i]-cur[i])*0.07;
+          if(Math.abs(cur[i]-target[i])>0.6) settled=false;
         }
-        swatch.style.background = r.color;
-        nameEl.textContent  = r.name;
-        tempEl.textContent  = r.temp;
-        flavorsEl.textContent = r.flavors;
-        acidityEl.style.width = r.acidity+'%';
-        bodyEl.style.width    = r.body+'%';
+
+        var r=Math.round(cur[0]), g=Math.round(cur[1]), b=Math.round(cur[2]);
+        /* darkness 0=light 1=very dark */
+        var dark=Math.max(0,Math.min(1,(200-r)/175));
+        /* ink tone — warm dark brown, deepens with roast */
+        var ir=Math.round(48-dark*22), ig=Math.round(24-dark*14), ib=Math.round(8-dark*6);
+        var inkStr=0.48+dark*0.40;
+        function ink(a){ return 'rgba('+ir+','+ig+','+ib+','+(Math.min(1,a*inkStr))+')'; }
+
+        /* ---- 1. light color wash ---- */
+        beanPath();
+        ctx.fillStyle='rgba('+r+','+g+','+b+',0.15)';
+        ctx.fill();
+
+        /* ---- 2. cross-hatch shading clipped to bean ---- */
+        ctx.save();
+        beanPath(); ctx.clip();
+
+        var sp=Math.max(3.5,6-dark*2.4); /* tighter spacing for dark roasts */
+
+        /* diagonal hatch lines — bottom-left shadow zone */
+        ctx.lineWidth=0.55;
+        for(var hx=-rw*2.3; hx<rw*0.65; hx+=sp){
+          var fade=Math.max(0,Math.min(1,(-hx-rw*(-0.6))/(rw*1.8)));
+          var a=fade*(0.18+dark*0.38);
+          if(a<0.01) continue;
+          ctx.strokeStyle=ink(a);
+          ctx.globalAlpha=1;
+          ctx.beginPath();
+          ctx.moveTo(cx+hx, cy-rh*1.7);
+          ctx.lineTo(cx+hx+rh*2.1, cy+rh*2.1);
+          ctx.stroke();
+        }
+
+        /* counter-hatch on left third for extra depth */
+        var sp2=sp*1.7;
+        for(var hx=-rw*2.3; hx<-rw*0.15; hx+=sp2){
+          var fade2=Math.max(0,Math.min(1,(-hx-rw*0.15)/(rw*1.5)));
+          var a2=fade2*(0.10+dark*0.28);
+          if(a2<0.01) continue;
+          ctx.strokeStyle=ink(a2);
+          ctx.beginPath();
+          ctx.moveTo(cx+hx, cy+rh*1.7);
+          ctx.lineTo(cx+hx+rh*2.1, cy-rh*1.7);
+          ctx.stroke();
+        }
+
+        /* fine horizontal texture lines across entire bean */
+        ctx.lineWidth=0.38;
+        var texA=0.08+dark*0.10;
+        ctx.strokeStyle=ink(texA);
+        for(var hy=-rh+2; hy<rh-2; hy+=3.2){
+          ctx.beginPath();
+          ctx.moveTo(cx-rw*0.88, cy+hy);
+          ctx.lineTo(cx+rw*0.88, cy+hy);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+
+        /* ---- 3. bean outline ---- */
+        beanPath();
+        ctx.strokeStyle=ink(1.0);
+        ctx.lineWidth=1.55;
+        ctx.lineJoin='round';
+        ctx.lineCap='round';
+        ctx.stroke();
+
+        /* ---- 4. center crease — S-curve ---- */
+        /* main crease line */
+        ctx.strokeStyle=ink(1.0);
+        ctx.lineWidth=1.7;
+        ctx.lineCap='round';
+        ctx.beginPath();
+        ctx.moveTo(cx+4,   cy-rh*0.78);
+        ctx.bezierCurveTo(cx+rw*0.32, cy-rh*0.22, cx-rw*0.32, cy+rh*0.22, cx-4, cy+rh*0.78);
+        ctx.stroke();
+
+        /* crease depth — parallel shadow lines to the right */
+        ctx.lineWidth=0.65;
+        for(var off=2.5; off<=8; off+=2.5){
+          var offA=(1-off/10.5)*(0.35+dark*0.30);
+          ctx.strokeStyle=ink(offA);
+          ctx.beginPath();
+          ctx.moveTo(cx+4+off,    cy-rh*0.78+off*0.25);
+          ctx.bezierCurveTo(cx+rw*0.32+off, cy-rh*0.22, cx-rw*0.32+off, cy+rh*0.22, cx-4+off, cy+rh*0.78);
+          ctx.stroke();
+        }
+
+        /* crease left edge — highlight sliver */
+        ctx.lineWidth=0.55;
+        ctx.strokeStyle=ink(0.22+dark*0.12);
+        ctx.beginPath();
+        ctx.moveTo(cx+4-2.2, cy-rh*0.78);
+        ctx.bezierCurveTo(cx+rw*0.32-2.2, cy-rh*0.22, cx-rw*0.32-2.2, cy+rh*0.22, cx-4-2.2, cy+rh*0.78);
+        ctx.stroke();
+
+        /* ---- 5. specular highlight ---- */
+        ctx.save();
+        beanPath(); ctx.clip();
+        var shine=ctx.createRadialGradient(cx-rw*0.28,cy-rh*0.42,0, cx,cy, rw*1.35);
+        shine.addColorStop(0,'rgba(255,255,255,0.22)');
+        shine.addColorStop(0.4,'rgba(255,255,255,0.05)');
+        shine.addColorStop(1,'rgba(255,255,255,0)');
+        ctx.fillStyle=shine; ctx.fill();
+        ctx.restore();
+
+        if(!settled){
+          rafId=requestAnimationFrame(draw);
+        } else {
+          rafId=null;
+        }
       }
 
-      function xToNorm(clientX){
-        var rect = track.getBoundingClientRect();
-        return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      var pills   =document.querySelectorAll('.roast-pill');
+      var detailEl=document.querySelector('.roast-info__detail');
+      var nameEl  =document.getElementById('roast-name');
+      var tempEl  =document.getElementById('roast-temp');
+      var flavorsEl=document.getElementById('roast-flavors');
+      var acidEl  =document.getElementById('roast-acidity');
+      var bodyEl  =document.getElementById('roast-body');
+
+      function switchRoast(idx){
+        var ro=ROASTS[idx];
+        target=ro.rgb.slice();
+        if(!rafId) rafId=requestAnimationFrame(draw);
+        pills.forEach(function(p,i){ p.classList.toggle('roast-pill--active',i===idx); });
+        detailEl.classList.remove('is-animating');
+        void detailEl.offsetWidth;
+        detailEl.classList.add('is-animating');
+        nameEl.textContent=ro.name;
+        tempEl.textContent=ro.temp;
+        flavorsEl.textContent=ro.flavors;
+        acidEl.style.width=ro.acidity+'%';
+        bodyEl.style.width=ro.body+'%';
+        setTimeout(function(){ detailEl.classList.remove('is-animating'); },280);
       }
 
-      /* mouse drag */
-      handle.addEventListener('mousedown', function(e){ dragging=true; e.preventDefault(); });
-      document.addEventListener('mousemove', function(e){ if(dragging) update(nearest(xToNorm(e.clientX))); });
-      document.addEventListener('mouseup',   function(){ dragging=false; });
-
-      /* click anywhere on track */
-      track.addEventListener('click', function(e){ update(nearest(xToNorm(e.clientX))); });
-
-      /* touch */
-      handle.addEventListener('touchstart', function(e){ dragging=true; e.preventDefault(); },{passive:false});
-      document.addEventListener('touchmove', function(e){
-        if(!dragging) return;
-        update(nearest(xToNorm(e.touches[0].clientX)));
-      },{passive:true});
-      document.addEventListener('touchend', function(){ dragging=false; });
-
-      /* label clicks */
-      labels.forEach(function(l){ l.addEventListener('click', function(){ update(parseInt(l.dataset.idx)); }); });
-
-      /* keyboard */
-      handle.addEventListener('keydown', function(e){
-        if(e.key==='ArrowRight' && current<3) update(current+1);
-        if(e.key==='ArrowLeft'  && current>0) update(current-1);
+      pills.forEach(function(p){
+        p.addEventListener('click',function(){ switchRoast(parseInt(p.dataset.idx)); });
       });
 
-      /* init */
-      update(0, true);
+      draw();
+      switchRoast(0);
+
+      document.getElementById('coffee-close').addEventListener('click',function(){
+        cancelAnimationFrame(rafId); rafId=null;
+      });
+      document.getElementById('coffee-trigger').addEventListener('click',function(){
+        if(!rafId) draw();
+      });
     })();
 
   </script>

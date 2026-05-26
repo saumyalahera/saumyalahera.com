@@ -1901,8 +1901,8 @@ h2.about__title{
 }
 #roast-canvas{
   display: block;
-  width: 150px;
-  height: 192px;
+  width: 160px;
+  height: 200px;
 }
 
 /* --- Roast pill selectors --- */
@@ -1996,7 +1996,7 @@ h2.about__title{
 @media (max-width: 680px){
   .roast-viewer{ grid-template-columns: 1fr; gap: 24px; }
   .roast-canvas-wrap{ justify-content: flex-start; }
-  #roast-canvas{ width: 112px; height: 144px; }
+  #roast-canvas{ width: 120px; height: 150px; }
 }
 
 /* Override portfolio purple inside the coffee overlay — light warm pill */

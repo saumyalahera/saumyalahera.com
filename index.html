@@ -1756,7 +1756,7 @@
 
         /* ── geometry ── */
         var cx=W*0.5, cy=H*0.50;
-        var rx=W*0.24, ry=H*0.30;
+        var rx=W*0.30, ry=H*0.38;
 
         ctx.translate(cx,cy);
         ctx.rotate(-0.13);
@@ -1774,13 +1774,15 @@
 
         /* roast colour wash — visible base tint that changes per roast */
         beanPath();
-        ctx.fillStyle = 'rgba('+R+','+G+','+B+',0.14)';
+        ctx.fillStyle = 'rgba('+R+','+G+','+B+',0.07)';
         ctx.fill();
-        /* subtle shadow gradient over the wash */
-        var washGrad = ctx.createLinearGradient(-rx*0.4,-ry*0.5, rx*0.3,ry*0.5);
-        washGrad.addColorStop(0,   'rgba(255,255,255,0.10)');
-        washGrad.addColorStop(0.5, 'rgba(0,0,0,0)');
-        washGrad.addColorStop(1,   'rgba(0,0,0,0.14)');
+        /* bottom-to-top brownish gradient */
+        var dkR=Math.max(0,Math.round(R*0.55+18));
+        var dkG=Math.max(0,Math.round(G*0.38+ 8));
+        var dkB=Math.max(0,Math.round(B*0.28+ 4));
+        var washGrad = ctx.createLinearGradient(0,-ry, 0,ry);
+        washGrad.addColorStop(0,   'rgba('+dkR+','+dkG+','+dkB+',0)');
+        washGrad.addColorStop(1,   'rgba('+dkR+','+dkG+','+dkB+',0.10)');
         beanPath();
         ctx.fillStyle = washGrad;
         ctx.fill();
@@ -1808,8 +1810,8 @@
           sf = Math.max(0, Math.min(1, sf));
           if(sf < 0.10) continue;                /* skip highlight zone      */
 
-          var op = sf * 0.58;
-          if(op < 0.04) continue;
+          var op = sf * 0.22;
+          if(op < 0.02) continue;
 
           /* x extents at this y (stay inside rough oval) */
           var ySq = (yi/ry)*(yi/ry);
@@ -1838,8 +1840,8 @@
         for(var yi2 = ry*0.05; yi2 < ry*1.05; yi2 += sp2){
           var sf2 = (yi2/ry - 0.05)*1.1;
           sf2 = Math.max(0, Math.min(1, sf2));
-          var op2 = sf2 * 0.28;
-          if(op2 < 0.04) continue;
+          var op2 = sf2 * 0.10;
+          if(op2 < 0.02) continue;
 
           var ySq2 = (yi2/ry)*(yi2/ry);
           if(ySq2 >= 1) continue;
@@ -1922,7 +1924,7 @@
       window.switchRoast=function(idx){
         currentRoast=idx;
         document.querySelectorAll('.roast-pill').forEach(function(p,i){
-          p.classList.toggle('active',i===idx);
+          p.classList.toggle('roast-pill--active',i===idx);
         });
         var r=ROASTS[idx];
         var el=function(id){return document.getElementById(id);};

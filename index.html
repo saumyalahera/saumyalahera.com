@@ -622,7 +622,7 @@
       <span>VIA THE APP</span>
     </p>
     <button class="coffee-trigger" id="coffee-trigger" aria-label="Explore coffee">
-      <span class="coffee-trigger__label">Explore</span>
+      <span class="coffee-trigger__label">Beverages</span>
       <svg class="coffee-trigger__chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
         <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
@@ -1131,6 +1131,15 @@
             </svg>
           </button>
         </div>
+        <!-- Drink toggle -->
+        <div class="drink-toggle">
+          <button class="drink-toggle__btn drink-toggle__btn--active" id="toggle-coffee">Coffee</button>
+          <span class="drink-toggle__sep">|</span>
+          <button class="drink-toggle__btn" id="toggle-tea">Tea</button>
+        </div>
+
+        <!-- Coffee panel -->
+        <div id="drink-panel-coffee">
         <h2 class="about__title">Coffee</h2>
         <p class="muted" style="margin:8px 0 0;">Some coffees I keep returning to — each with its own character and ritual.</p>
         <br/>
@@ -1315,7 +1324,171 @@
 
         </div>
 
-      </div>
+
+        </div><!-- /drink-panel-coffee -->
+
+        <!-- Tea panel -->
+        <div id="drink-panel-tea" style="display:none">
+        <h2 class="about__title">Tea</h2>
+        <p class="muted" style="margin:8px 0 0;">Teas I come back to — each with a distinct terroir and ritual.</p>
+        <br/>
+
+        <div class="coffee-explorer">
+          <div class="coffee-explorer__sidebar" id="tea-sidebar">
+            <button class="coffee-list__item coffee-list__item--active" data-key="matcha"><span class="coffee-list__num">01</span><span class="coffee-list__name">Matcha</span></button>
+            <button class="coffee-list__item" data-key="jasmine"><span class="coffee-list__num">02</span><span class="coffee-list__name">Jasmine Green</span></button>
+            <button class="coffee-list__item" data-key="darjeeling"><span class="coffee-list__num">03</span><span class="coffee-list__name">Darjeeling</span></button>
+            <button class="coffee-list__item" data-key="earlgrey"><span class="coffee-list__num">04</span><span class="coffee-list__name">Earl Grey</span></button>
+            <button class="coffee-list__item" data-key="oolong"><span class="coffee-list__num">05</span><span class="coffee-list__name">Oolong</span></button>
+            <button class="coffee-list__item" data-key="puerh"><span class="coffee-list__num">06</span><span class="coffee-list__name">Pu-erh</span></button>
+            <button class="coffee-list__item" data-key="gyokuro"><span class="coffee-list__num">07</span><span class="coffee-list__name">Gyokuro</span></button>
+            <button class="coffee-list__item" data-key="silver"><span class="coffee-list__num">08</span><span class="coffee-list__name">Silver Needle</span></button>
+          </div>
+          <div class="coffee-explorer__detail" id="tea-detail" aria-live="polite"></div>
+        </div>
+
+        <!-- Oxidation Spectrum -->
+        <div class="coffee-roast">
+          <p class="kicker">The Spectrum</p>
+          <h3 class="coffee-sub-title">Oxidation Levels</h3>
+          <p class="coffee-sub-intro">Every tea starts as the same leaf. Oxidation determines its colour, aroma, and character.</p>
+          <div class="tea-oxidation">
+            <div class="tea-ox-bar">
+              <div class="tea-ox-track">
+                <div class="tea-ox-fill" id="tea-ox-fill"></div>
+              </div>
+              <div class="tea-ox-labels">
+                <span>White</span><span>Green</span><span>Oolong</span><span>Black</span>
+              </div>
+            </div>
+            <div class="tea-ox-detail">
+              <div class="tea-ox-pills">
+                <button class="roast-pill roast-pill--active" id="tox-0">White</button>
+                <button class="roast-pill" id="tox-1">Green</button>
+                <button class="roast-pill" id="tox-2">Oolong</button>
+                <button class="roast-pill" id="tox-3">Black</button>
+              </div>
+              <div style="margin-top:14px;">
+                <div class="roast-info__name" id="tox-name"></div>
+                <div class="roast-info__temp" id="tox-temp"></div>
+                <div class="roast-info__flavors" id="tox-flavors"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <br/>
+
+        <!-- Rare Teas -->
+        <div class="coffee-sub-section">
+          <p class="kicker">Ultra-Premium · Rare</p>
+          <h3 class="coffee-sub-title">The World's Most Coveted Teas</h3>
+          <p class="coffee-sub-intro">These teas command extraordinary prices for their scarcity, terroir, or the precision required to produce them. A few hundred grams can cost more than a fine bottle of wine.</p>
+          <div class="coffee-bean-grid">
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Da Hong Pao</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Rock Oolong</span><span class="tag tag--alt">Wuyi, China</span>
+              </div>
+              <p class="coffee-bean-card__desc">From six original mother bushes on a cliffside. Cuttings now exist, but true Da Hong Pao is essentially priceless — rich, roasted, mineral.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Gyokuro Asahi</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Shade-Grown Green</span><span class="tag tag--alt">Uji, Japan</span>
+              </div>
+              <p class="coffee-bean-card__desc">Shaded for up to 35 days, harvested by hand. The extended shade period pushes L-theanine to extreme levels — intensely umami, almost broth-like.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Silver Needle Tribute</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">White Tea</span><span class="tag tag--alt">Fujian, China</span>
+              </div>
+              <p class="coffee-bean-card__desc">Only the very first buds of spring, harvested within a 2-week window. Each bud covered in fine white hairs. Honey, melon, wildflower in the cup.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Aged Pu-erh Cake</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Fermented</span><span class="tag tag--alt">Yunnan, China</span>
+              </div>
+              <p class="coffee-bean-card__desc">A 30-year-old raw pu-erh develops complexity rivalling aged wine — notes of dark forest, dried fruit, earth. Cakes from famous estates fetch thousands.</p>
+            </div>
+          </div>
+        </div>
+
+        <br/>
+
+        <!-- Tea Regions -->
+        <div class="coffee-sub-section">
+          <p class="kicker">Terroir</p>
+          <h3 class="coffee-sub-title">Great Tea Regions</h3>
+          <p class="coffee-sub-intro">Like wine, tea expresses its geography. Altitude, soil, rainfall, and seasonal temperature all shape what ends up in the cup.</p>
+          <div class="coffee-bean-grid coffee-bean-grid--5">
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Darjeeling</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">India</span><span class="tag tag--alt">2,000m</span>
+              </div>
+              <p class="coffee-bean-card__desc">The Champagne of teas. Three distinct flushes per year — each with its own character. First flush: floral and bright. Second flush: muscatel.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Uji</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Japan</span><span class="tag tag--alt">Kyoto</span>
+              </div>
+              <p class="coffee-bean-card__desc">Japan's most historic tea region. Birthplace of matcha culture. Slow river mists create ideal conditions for shade-grown teas with deep umami.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Wuyi</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">China</span><span class="tag tag--alt">Fujian</span>
+              </div>
+              <p class="coffee-bean-card__desc">UNESCO-listed mountain landscape. Rocky mineral soil gives Wuyi oolongs their signature "rock rhyme" — a lingering mineralité no other region replicates.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Assam</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">India</span><span class="tag tag--alt">Brahmaputra Valley</span>
+              </div>
+              <p class="coffee-bean-card__desc">Low altitude, humid, intensely tropical. Produces the boldest, maltiest black teas in the world — the backbone of most English breakfast blends.</p>
+            </div>
+            <div class="coffee-bean-card">
+              <div class="coffee-bean-card__name">Ali Shan</div>
+              <div class="coffee-bean-card__tags">
+                <span class="tag">Taiwan</span><span class="tag tag--alt">1,500m</span>
+              </div>
+              <p class="coffee-bean-card__desc">High-mountain oolong country. Cool temperatures slow growth, concentrating sugars and aromatics — buttery, floral, with a long sweet finish.</p>
+            </div>
+          </div>
+        </div>
+
+        <br/><br/>
+
+        <!-- Tea Quiz -->
+        <div class="coffee-quiz" id="tea-quiz">
+          <div class="coffee-quiz__panel" id="tq-intro">
+            <p class="kicker" style="text-align:center;">Interactive</p>
+            <h3 class="coffee-sub-title" style="margin:6px 0 10px;">What's Your Tea?</h3>
+            <p class="coffee-sub-intro" style="max-width:420px;">No tea knowledge needed. Five questions about your mood, your moment, and what you're drawn to — we'll find your cup.</p>
+            <button class="cq-btn cq-btn--fill" id="tq-start">Find my tea →</button>
+          </div>
+          <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="tq-game" aria-hidden="true">
+            <div class="cq-track"><div class="cq-track__fill" id="tq-fill"></div></div>
+            <div class="cq-counter" id="tq-counter">1 ⁄ 5</div>
+            <div class="cq-question" id="tq-question"></div>
+            <div class="cq-options" id="tq-options"></div>
+          </div>
+          <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="tq-result" aria-hidden="true">
+            <p class="kicker" style="text-align:center;margin-bottom:14px;">Your match</p>
+            <div class="cq-card" id="tq-card"></div>
+            <button class="cq-btn cq-btn--ghost" id="tq-restart" style="margin-top:20px;">Try again</button>
+          </div>
+        </div>
+
+        <br/><br/>
+        </div><!-- /drink-panel-tea -->
+      </div><!-- /coffee-overlay__content -->
     </div>
   </div>
 
@@ -1952,6 +2125,238 @@
 
 
 
+
+
+    /* ---- Drink Toggle ---- */
+    (function(){
+      var btnCoffee = document.getElementById('toggle-coffee');
+      var btnTea    = document.getElementById('toggle-tea');
+      var panelCoffee = document.getElementById('drink-panel-coffee');
+      var panelTea    = document.getElementById('drink-panel-tea');
+      if(!btnCoffee || !btnTea) return;
+      function show(drink){
+        var isCoffee = drink === 'coffee';
+        panelCoffee.style.display = isCoffee ? '' : 'none';
+        panelTea.style.display    = isCoffee ? 'none' : '';
+        btnCoffee.classList.toggle('drink-toggle__btn--active',  isCoffee);
+        btnTea.classList.toggle('drink-toggle__btn--active',    !isCoffee);
+      }
+      btnCoffee.addEventListener('click', function(){ show('coffee'); });
+      btnTea.addEventListener('click',    function(){ show('tea'); });
+    })();
+
+    /* ---- Tea Explorer ---- */
+    (function(){
+      var teas = {
+        matcha:     { name:'Matcha',        region:'Kyoto, Japan',       method:'Stone-Ground Powder',  description:'Shade-grown for three weeks before harvest, the leaves accumulate amino acids that produce matcha\'s signature umami depth. The whole leaf is stone-ground into a fine powder and whisked into hot water — you consume the entire leaf, not just an infusion.',      notes:['Umami','Creamy','Grassy','Vegetal'],          spec:'2g · 70°C · whisk 30 sec' },
+        jasmine:    { name:'Jasmine Green', region:'Fujian, China',      method:'Scented Layering',     description:'Fresh jasmine blossoms are layered with green tea leaves overnight, then removed before morning. This process can be repeated four to seven times for premium grades. The result is a tea that smells like jasmine but tastes unmistakably of tea.',                 notes:['Floral','Delicate','Light','Sweet'],           spec:'2g · 75°C · 2 min' },
+        darjeeling: { name:'Darjeeling',    region:'West Bengal, India', method:'Orthodox Rolling',     description:'Grown at elevations above 6,000 feet in the Himalayan foothills, first-flush Darjeeling is harvested in early spring. The muscatel character — a musky, grape-like sweetness — comes from a chemical reaction triggered by a leafhopper insect\'s bite.',      notes:['Muscatel','Floral','Bright','Astringent'],    spec:'3g · 90°C · 3 min' },
+        earlgrey:   { name:'Earl Grey',     region:'Fujian · Sri Lanka', method:'Bergamot Infusion',    description:'A black tea scented with bergamot oil, extracted from the rind of the bergamot orange grown primarily in Calabria, Italy. The exact origin story is disputed — but the pairing of citrus and malt has made it one of the world\'s most recognised teas.',       notes:['Citrus','Aromatic','Bold','Bergamot'],        spec:'2g · 95°C · 4 min' },
+        oolong:     { name:'Oolong',        region:'Taiwan · Fujian',    method:'Partial Oxidation',    description:'Processed to sit anywhere between 15% and 85% oxidised, oolong spans a vast flavour range — from the floral, butter-like quality of lightly oxidised Taiwan High Mountain to the roasted, fruity depth of a heavily oxidised Da Hong Pao.',                    notes:['Complex','Fruity','Toasty','Floral'],         spec:'4g · 85°C · 2–3 min' },
+        puerh:      { name:'Pu-erh',        region:'Yunnan, China',      method:'Post-Fermentation',    description:'Unlike any other tea, pu-erh improves with age. Sheng (raw) pu-erh undergoes slow natural fermentation over years or decades. Shou (ripe) pu-erh is artificially fermented in weeks. The best aged cakes can be 30–50 years old and fetch thousands.',        notes:['Earthy','Deep','Woody','Aged'],               spec:'4g · 100°C · rinse + 2 min' },
+        gyokuro:    { name:'Gyokuro',       region:'Uji, Japan',         method:'Shade-Grown',          description:'The most prized Japanese green tea. Covered with black cloth for 20 days before harvest, it develops exceptionally high levels of L-theanine — an amino acid responsible for calm focus and a distinctive oceanic sweetness. Brew cool and slow.',               notes:['Umami','Sweet','Oceanic','Soft'],              spec:'5g · 60°C · 90 sec' },
+        silver:     { name:'Silver Needle', region:'Fujian, China',      method:'Sun-Withered',         description:'Only the young, unopened buds are harvested — typically just two weeks a year in early spring. Covered in fine white hairs, the buds are simply withered in sunlight and dried. The least processed of all teas, retaining a delicate natural sweetness.',      notes:['Honey','Melon','Delicate','Subtle'],          spec:'3g · 75°C · 2 min' }
+      };
+
+      var sidebar = document.getElementById('tea-sidebar');
+      var detail  = document.getElementById('tea-detail');
+      if(!sidebar || !detail) return;
+
+      function renderTea(key){
+        var t = teas[key]; if(!t) return;
+        sidebar.querySelectorAll('.coffee-list__item').forEach(function(b){
+          b.classList.toggle('coffee-list__item--active', b.dataset.key === key);
+        });
+        detail.style.opacity = '0';
+        setTimeout(function(){
+          detail.innerHTML =
+              '<div class="coffee-detail__name">'+t.name+'</div>'
+            + '<div class="coffee-tag-row"><span class="tag tag--alt">'+t.region+'</span><span class="tag">'+t.method+'</span></div>'
+            + '<p class="coffee-detail__desc">'+t.description+'</p>'
+            + '<div class="coffee-detail__notes-label">Tasting Notes</div>'
+            + '<div class="coffee-detail__notes">'+t.notes.map(function(n){ return '<span class="tag">'+n+'</span>'; }).join('')+'</div>'
+            + '<div class="coffee-detail__spec">'+t.spec+'</div>';
+          detail.style.opacity = '1';
+        }, 100);
+      }
+
+      sidebar.addEventListener('click', function(e){
+        var btn = e.target.closest('[data-key]'); if(!btn) return;
+        renderTea(btn.dataset.key);
+      });
+      renderTea('matcha');
+    })();
+
+    /* ---- Tea Oxidation ---- */
+    (function(){
+      var levels = [
+        { name:'White',  temp:'75°C · 2 min',  pct: 12, flavors:'Sun-withered buds · barely processed · honey, melon, pale gold liquor' },
+        { name:'Green',  temp:'75–80°C · 2 min', pct: 28, flavors:'Steamed or pan-fired to halt oxidation · grassy, vegetal, bright' },
+        { name:'Oolong', temp:'85°C · 2–3 min',  pct: 58, flavors:'Partially oxidised 15–85% · ranges from floral-buttery to roasted-fruity' },
+        { name:'Black',  temp:'95°C · 4 min',    pct: 95, flavors:'Fully oxidised · bold, malty, rich — the basis for most blended teas' }
+      ];
+      var pills = [
+        document.getElementById('tox-0'),
+        document.getElementById('tox-1'),
+        document.getElementById('tox-2'),
+        document.getElementById('tox-3')
+      ];
+      var fillEl    = document.getElementById('tea-ox-fill');
+      var nameEl    = document.getElementById('tox-name');
+      var tempEl    = document.getElementById('tox-temp');
+      var flavorsEl = document.getElementById('tox-flavors');
+      if(!fillEl) return;
+
+      function switchOx(idx){
+        var lv = levels[idx];
+        pills.forEach(function(p,i){
+          if(p) p.classList.toggle('roast-pill--active', i===idx);
+        });
+        fillEl.style.width    = lv.pct+'%';
+        nameEl.textContent    = lv.name;
+        tempEl.textContent    = lv.temp;
+        flavorsEl.textContent = lv.flavors;
+      }
+      pills.forEach(function(p,i){
+        if(p) p.addEventListener('click', function(){ switchOx(i); });
+      });
+      switchOx(0);
+    })();
+
+    /* ---- Tea Quiz ---- */
+    (function(){
+      var Qs = [
+        { q: 'What time calls for tea?',
+          opts: [
+            { t: 'Morning — part of my ritual',        s: {matcha:3, gyokuro:2, darjeeling:2} },
+            { t: 'Afternoon break',                    s: {jasmine:2, earlgrey:3, oolong:2} },
+            { t: 'Evening wind-down',                  s: {puerh:2, silver:3, oolong:1} },
+            { t: 'Any quiet moment I can find',        s: {silver:2, jasmine:2, gyokuro:1} }
+          ]
+        },
+        { q: 'Pick a word that fits your mood right now',
+          opts: [
+            { t: 'Focused',                            s: {matcha:4, gyokuro:2} },
+            { t: 'Curious',                            s: {darjeeling:3, oolong:3} },
+            { t: 'Soothed',                            s: {jasmine:3, silver:2} },
+            { t: 'Grounded',                           s: {puerh:4, earlgrey:2} }
+          ]
+        },
+        { q: 'How do you feel about bitterness?',
+          opts: [
+            { t: 'I like it — depth and character',   s: {puerh:3, darjeeling:2, earlgrey:1} },
+            { t: 'A little is interesting',            s: {oolong:2, matcha:2, earlgrey:2} },
+            { t: 'I prefer sweetness and clarity',    s: {silver:3, jasmine:2, gyokuro:2} },
+            { t: 'I don\'t think about it much',      s: {earlgrey:2, oolong:1, jasmine:1} }
+          ]
+        },
+        { q: 'What do you want from the cup?',
+          opts: [
+            { t: 'Energy and sharp focus',             s: {matcha:5} },
+            { t: 'Layers to slowly discover',          s: {puerh:3, oolong:3, darjeeling:2} },
+            { t: 'Something pure and uncomplicated',   s: {gyokuro:3, silver:3} },
+            { t: 'Warmth and gentle comfort',          s: {jasmine:3, earlgrey:2} }
+          ]
+        },
+        { q: 'How do you usually make it?',
+          opts: [
+            { t: 'Properly — kettle, timer, full ritual', s: {gyokuro:3, puerh:3, matcha:2} },
+            { t: 'Casually — mug, bag, done',          s: {earlgrey:4, jasmine:2} },
+            { t: 'Slowly, with full attention',        s: {silver:3, darjeeling:2, oolong:2} },
+            { t: 'However gives me the best result',   s: {darjeeling:2, matcha:2, oolong:1} }
+          ]
+        }
+      ];
+
+      var TEAS = {
+        matcha:     {name:'Matcha',        region:'Kyoto, Japan',       method:'Stone-Ground Powder',  desc:'You want focus and you want it now. Matcha delivers calm, sustained energy without the crash — the whole leaf ground into powder, whisked into water, nothing wasted. The ritual itself is part of the effect.',                                         notes:['Umami','Creamy','Grassy','Vegetal'],       spec:'2g · 70°C · whisk 30 sec'},
+        jasmine:    {name:'Jasmine Green', region:'Fujian, China',      method:'Scented Layering',     desc:'You want something that feels like a pause — soft, floral, unhurried. Jasmine green is scented over fresh blossoms through the night, then removed before morning. The result is delicate and transporting.',                                         notes:['Floral','Delicate','Light','Sweet'],       spec:'2g · 75°C · 2 min'},
+        darjeeling: {name:'Darjeeling',    region:'West Bengal, India', method:'Orthodox Rolling',     desc:'You lean toward the complex and the unexpected. Darjeeling first flush is like no other tea — a muscatel character born from the bite of a tiny leafhopper, grown in Himalayan mist. It rewards attention.',                                           notes:['Muscatel','Floral','Bright','Astringent'], spec:'3g · 90°C · 3 min'},
+        earlgrey:   {name:'Earl Grey',     region:'Fujian · Sri Lanka', method:'Bergamot Infusion',    desc:'You want something familiar that still has character. Earl Grey is a bold black tea lifted by bergamot — an Italian citrus oil pressed from the rind. Grounding, aromatic, and perfectly suited to an afternoon with no particular agenda.',           notes:['Citrus','Aromatic','Bold','Bergamot'],     spec:'2g · 95°C · 4 min'},
+        oolong:     {name:'Oolong',        region:'Taiwan · Fujian',    method:'Partial Oxidation',    desc:'You want something that refuses to be simple. Oolong is neither green nor black — it lives in the space between, partially oxidised to any degree the maker chooses. Fruity, toasty, floral all at once, depending on when you catch it.',            notes:['Complex','Fruity','Toasty','Floral'],      spec:'4g · 85°C · 2–3 min'},
+        puerh:      {name:'Pu-erh',        region:'Yunnan, China',      method:'Post-Fermentation',    desc:'You want depth that took time to build. Pu-erh is the only tea that genuinely improves with age — compressed into cakes, stored for years, slowly transforming. Earthy, woody, and rich in a way that feels ancient.',                                notes:['Earthy','Deep','Woody','Aged'],            spec:'4g · 100°C · rinse + 2 min'},
+        gyokuro:    {name:'Gyokuro',       region:'Uji, Japan',         method:'Shade-Grown',          desc:'You want something that rewards care. Gyokuro is shaded for 20 days before harvest — slowing growth, building amino acids, concentrating sweetness. Brew it cool, brew it slow. The result is unlike anything else in the tea world.',               notes:['Umami','Sweet','Oceanic','Soft'],          spec:'5g · 60°C · 90 sec'},
+        silver:     {name:'Silver Needle', region:'Fujian, China',      method:'Sun-Withered',         desc:'You want stillness in a cup. Silver Needle is the simplest and rarest white tea — only the first buds of spring, withered in sunlight, dried. Barely processed, nothing hidden. Honey, melon, and a lightness that feels like early morning.',        notes:['Honey','Melon','Delicate','Subtle'],       spec:'3g · 75°C · 2 min'}
+      };
+
+      var scores, current;
+      var introEl  = document.getElementById('tq-intro');
+      var gameEl   = document.getElementById('tq-game');
+      var resultEl = document.getElementById('tq-result');
+      var fillEl   = document.getElementById('tq-fill');
+      var counterEl= document.getElementById('tq-counter');
+      var qEl      = document.getElementById('tq-question');
+      var optsEl   = document.getElementById('tq-options');
+      var cardEl   = document.getElementById('tq-card');
+      if(!introEl) return;
+
+      function fadeOut(el,cb){
+        el.style.opacity='0'; el.style.transform='translateY(-10px)';
+        setTimeout(function(){ el.classList.add('coffee-quiz__panel--hidden'); el.setAttribute('aria-hidden','true'); if(cb)cb(); },280);
+      }
+      function fadeIn(el){
+        el.classList.remove('coffee-quiz__panel--hidden'); el.removeAttribute('aria-hidden');
+        el.offsetHeight;
+        el.style.opacity='1'; el.style.transform='translateY(0)';
+      }
+
+      function renderQ(idx){
+        var q=Qs[idx];
+        fillEl.style.width=(idx/Qs.length*100)+'%';
+        counterEl.textContent=(idx+1)+' ⁄ '+Qs.length;
+        qEl.style.opacity='0'; optsEl.style.opacity='0';
+        setTimeout(function(){
+          qEl.textContent=q.q;
+          optsEl.innerHTML='';
+          q.opts.forEach(function(opt){
+            var btn=document.createElement('button');
+            btn.className='cq-option';
+            btn.textContent=opt.t;
+            btn.addEventListener('click',function(){
+              Object.keys(opt.s).forEach(function(k){ scores[k]=(scores[k]||0)+opt.s[k]; });
+              btn.classList.add('cq-option--picked');
+              setTimeout(function(){
+                current++;
+                if(current<Qs.length){ renderQ(current); } else { showResult(); }
+              },260);
+            });
+            optsEl.appendChild(btn);
+          });
+          qEl.style.opacity='1'; optsEl.style.opacity='1';
+        },200);
+      }
+
+      function showResult(){
+        fillEl.style.width='100%';
+        var winner=Object.keys(scores).reduce(function(a,b){ return scores[a]>=scores[b]?a:b; });
+        var t=TEAS[winner];
+        fadeOut(gameEl,function(){
+          cardEl.innerHTML=
+            '<div class="cq-card__name">'+t.name+'</div>'
+            +'<div class="cq-card__tags">'
+              +'<span class="tag tag--alt">'+t.region+'</span>'
+              +'<span class="tag">'+t.method+'</span>'
+            +'</div>'
+            +'<p class="cq-card__desc">'+t.desc+'</p>'
+            +'<div class="cq-card__notes-label">Tasting Notes</div>'
+            +'<div class="cq-card__notes">'+t.notes.map(function(n){ return '<span class="tag">'+n+'</span>'; }).join('')+'</div>'
+            +'<div class="cq-card__spec">'+t.spec+'</div>';
+          fadeIn(resultEl);
+        });
+      }
+
+      document.getElementById('tq-start').addEventListener('click',function(){
+        scores={matcha:0,jasmine:0,darjeeling:0,earlgrey:0,oolong:0,puerh:0,gyokuro:0,silver:0};
+        current=0;
+        fadeOut(introEl,function(){ renderQ(0); fadeIn(gameEl); });
+      });
+      document.getElementById('tq-restart').addEventListener('click',function(){
+        fadeOut(resultEl,function(){
+          fillEl.style.width='0%';
+          fadeIn(introEl);
+        });
+      });
+    })();
 
   </script>
 </body>

@@ -1721,252 +1721,235 @@
       window.addEventListener('resize',function(){ if(active) resize(); });
     })();
 
-    /* ---- Roast Bean Canvas (authentic sketch) ---- */
+    /* ---- Roast Bean Canvas  ink illustration ---- */
     (function(){
       var canvas = document.getElementById('roast-canvas');
       if(!canvas) return;
       var ctx = canvas.getContext('2d');
-      var dpr = Math.min(window.devicePixelRatio||1,2);
-      var W=160, H=200;
-      canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
-      canvas.style.width=W+'px'; canvas.style.height=H+'px';
-      ctx.scale(dpr,dpr);
-
-      /* Real coffee bean proportions: ~10:7 length-to-width */
-      var ox=W/2+1, oy=H/2;
-      var A=72, B=46; /* half-height, half-width */
 
       var ROASTS=[
-        {name:'Light',       temp:'180 – 205°C', rgb:[200,145, 74], flavors:'Floral · Citrus · Berry · Tea-like',        acidity:88, body:22},
-        {name:'Medium',      temp:'210 – 220°C', rgb:[155, 94, 47], flavors:'Caramel · Hazelnut · Chocolate · Balanced', acidity:55, body:55},
-        {name:'Medium-Dark', temp:'225 – 230°C', rgb:[ 93, 50, 24], flavors:'Bittersweet · Dark Chocolate · Spice',      acidity:28, body:78},
-        {name:'Dark',        temp:'230 – 245°C', rgb:[ 30, 15,  8], flavors:'Smoky · Bitter · Charred · Bold',           acidity:12, body:96}
+        {name:'Light',       temp:'180 – 205°C', rgb:[200,145,74],  flavors:'Floral · Citrus · Berry · Tea-like',        acidity:88, body:22},
+        {name:'Medium',      temp:'210 – 220°C', rgb:[155, 94,47],  flavors:'Caramel · Hazelnut · Chocolate · Balanced', acidity:55, body:55},
+        {name:'Medium-Dark', temp:'225 – 230°C', rgb:[ 93, 50,24],  flavors:'Bittersweet · Dark Chocolate · Spice',      acidity:28, body:78},
+        {name:'Dark',        temp:'230 – 245°C', rgb:[ 30, 15, 8],  flavors:'Smoky · Bitter · Charred · Bold',           acidity:12, body:96}
       ];
+      var currentRoast = 0;
 
-      var cur=[200,145,74], target=[200,145,74], rafId=null;
+      function drawBean(col){
+        var dpr  = window.devicePixelRatio||1;
+        var rect = canvas.getBoundingClientRect();
+        canvas.width  = Math.round(rect.width  * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        var W = canvas.width/dpr, H = canvas.height/dpr;
 
-      /* ----------------------------------------------------------------
-         Authentic coffee bean silhouette — 5-segment bezier path.
-         Based on the actual front-face profile of a coffee bean:
-           • top end more pointed, bottom end rounder
-           • right shoulder is fuller (dorsal side)
-           • left side is marginally flatter (ventral / crease side)
-           • widest point sits in the upper-middle third
-         sa / sb = optional scale factors for concentric contour lines  */
-      function beanPath(sx, sy, sa, sb){
-        sx = (sx===undefined) ? ox : sx;
-        sy = (sy===undefined) ? oy : sy;
-        sa = (sa===undefined) ? 1  : sa;
-        sb = (sb===undefined) ? 1  : sb;
-        var a=A*sa, b=B*sb;
-        ctx.beginPath();
-        ctx.moveTo(sx, sy-a);
-        /* upper-right — spread quickly from pointed tip */
-        ctx.bezierCurveTo(sx+b*0.46, sy-a*0.90,  sx+b*1.00, sy-a*0.50,  sx+b*0.98, sy-a*0.04);
-        /* lower-right — fuller shoulder, tapers toward bottom */
-        ctx.bezierCurveTo(sx+b*0.96, sy+a*0.46,  sx+b*0.65, sy+a*0.86,  sx+b*0.06, sy+a*0.98);
-        /* bottom — rounder, nudged slightly right so asymmetry reads */
-        ctx.bezierCurveTo(sx-b*0.14, sy+a*1.00,  sx-b*0.40, sy+a*1.00,  sx-b*0.60, sy+a*0.93);
-        /* lower-left */
-        ctx.bezierCurveTo(sx-b*0.90, sy+a*0.80,  sx-b*1.00, sy+a*0.40,  sx-b*0.96, sy-a*0.02);
-        /* upper-left — slightly flatter than right */
-        ctx.bezierCurveTo(sx-b*0.92, sy-a*0.50,  sx-b*0.42, sy-a*0.90,  sx, sy-a);
-        ctx.closePath();
-      }
-
-      function draw(){
+        ctx.save();
+        ctx.scale(dpr,dpr);
         ctx.clearRect(0,0,W,H);
-        var settled=true;
-        for(var i=0;i<3;i++){
-          cur[i]+=(target[i]-cur[i])*0.07;
-          if(Math.abs(cur[i]-target[i])>0.6) settled=false;
+
+        var R=col[0], G=col[1], B=col[2];
+
+        /* ink colour: dark sepia derived from roast */
+        var iR = Math.max(22, Math.round(R*0.42+12));
+        var iG = Math.max(12, Math.round(G*0.34+ 8));
+        var iB = Math.max( 5, Math.round(B*0.26+ 4));
+        function ink(a){ return 'rgba('+iR+','+iG+','+iB+','+a+')'; }
+
+        /* ── geometry ── */
+        var cx=W*0.5, cy=H*0.50;
+        var rx=W*0.24, ry=H*0.30;
+
+        ctx.translate(cx,cy);
+        ctx.rotate(-0.13);
+
+        /* organic bean silhouette */
+        function beanPath(){
+          ctx.beginPath();
+          ctx.moveTo(0,-ry);
+          ctx.bezierCurveTo( rx*0.76,-ry*0.95,  rx,-ry*0.26,  rx, 0);
+          ctx.bezierCurveTo( rx,      ry*0.26,  rx*0.76, ry*0.95,  0, ry);
+          ctx.bezierCurveTo(-rx*0.71, ry*0.95, -rx, ry*0.28, -rx, 0);
+          ctx.bezierCurveTo(-rx,     -ry*0.28, -rx*0.71,-ry*0.95,  0,-ry);
+          ctx.closePath();
         }
-        var r=Math.round(cur[0]), g=Math.round(cur[1]), b=Math.round(cur[2]);
-        var dark=Math.max(0,Math.min(1,(200-r)/178));
 
-        /* warm ink — deepens from caramel-brown to near-black with roast */
-        var ir=46-Math.round(dark*24), ig=22-Math.round(dark*13), ib=7-Math.round(dark*5);
-        var base=0.50+dark*0.44;
-        function ink(a){ return 'rgba('+ir+','+ig+','+ib+','+(Math.min(1,a*base))+')'; }
-
-        /* ---- 1. roast-colour fill ---- */
+        /* roast colour wash — visible base tint that changes per roast */
         beanPath();
-        ctx.fillStyle='rgba('+r+','+g+','+b+',0.13)';
+        ctx.fillStyle = 'rgba('+R+','+G+','+B+',0.14)';
+        ctx.fill();
+        /* subtle shadow gradient over the wash */
+        var washGrad = ctx.createLinearGradient(-rx*0.4,-ry*0.5, rx*0.3,ry*0.5);
+        washGrad.addColorStop(0,   'rgba(255,255,255,0.10)');
+        washGrad.addColorStop(0.5, 'rgba(0,0,0,0)');
+        washGrad.addColorStop(1,   'rgba(0,0,0,0.14)');
+        beanPath();
+        ctx.fillStyle = washGrad;
         ctx.fill();
 
-        /* ---- 2. directional shadow inside bean (top-right bright, lower-left dark) ---- */
+        /* ── clip all interior work to bean ── */
         ctx.save();
-        beanPath(); ctx.clip();
-        var shGr=ctx.createRadialGradient(ox+B*0.20,oy-A*0.16,B*0.18, ox-B*0.06,oy+A*0.10,B*1.95);
-        var rs=Math.max(0,r-30), gs=Math.max(0,g-16), bs=Math.max(0,b-6);
-        shGr.addColorStop(0,'rgba(255,248,238,0.0)');
-        shGr.addColorStop(1,'rgba('+rs+','+gs+','+bs+',0.30)');
-        ctx.fillStyle=shGr; ctx.fill();
-        ctx.restore();
-
-        /* ---- 3. contour / form lines — concentric scaled-down bean shells ----
-           This is the key difference from straight horizontal lines:
-           each "ring" exactly follows the bean's silhouette, just smaller,
-           giving an authentic hand-engraved look                           */
-        ctx.save();
-        beanPath(); ctx.clip();
-        ctx.lineWidth=0.35;
-        for(var s=0.88; s>0.08; s-=0.075){
-          /* left/lower half gets denser lines (shadow side) */
-          var bias=Math.max(0, 0.80-s);
-          var alpha=(0.048+dark*0.050)*(0.55+bias*0.85);
-          ctx.strokeStyle=ink(alpha);
-          beanPath(ox, oy, s, s);
-          ctx.stroke();
-        }
-        ctx.restore();
-
-        /* ---- 4. diagonal cross-hatch — shadow zone (left ~55% of bean) ---- */
-        ctx.save();
-        beanPath(); ctx.clip();
-        var sp=Math.max(3.0, 5.5-dark*2.2);
-        ctx.lineWidth=0.48;
-        for(var hx=-B*2.5; hx<B*0.50; hx+=sp){
-          var fh=Math.max(0,Math.min(1,(-hx+B*0.50)/(B*2.2)));
-          var ah=fh*(0.15+dark*0.38);
-          if(ah<0.01) continue;
-          ctx.strokeStyle=ink(ah);
-          ctx.beginPath();
-          ctx.moveTo(ox+hx, oy-A*1.85); ctx.lineTo(ox+hx+A*2.1, oy+A*2.1);
-          ctx.stroke();
-        }
-        /* counter-hatch — left quarter for extra depth */
-        var sp2=sp*1.80;
-        for(var hx=-B*2.5; hx<-B*0.08; hx+=sp2){
-          var fh2=Math.max(0,Math.min(1,(-hx)/(B*1.8)));
-          var ah2=fh2*(0.07+dark*0.17);
-          if(ah2<0.01) continue;
-          ctx.strokeStyle=ink(ah2);
-          ctx.beginPath();
-          ctx.moveTo(ox+hx, oy+A*1.85); ctx.lineTo(ox+hx+A*2.1, oy-A*1.85);
-          ctx.stroke();
-        }
-        ctx.restore();
-
-        /* ---- 5. bold ink outline ---- */
         beanPath();
-        ctx.strokeStyle=ink(1.0);
-        ctx.lineWidth=1.65;
-        ctx.lineJoin='round'; ctx.lineCap='round';
-        ctx.stroke();
+        ctx.clip();
 
-        /* ---- 6. crease groove (filled shape, not just a line) ----
-           The groove is the defining feature of a coffee bean.
-           Rendered as a tapered filled path, darker on the left wall,
-           fading to nearly transparent on the right edge.              */
-        ctx.save();
-        beanPath(); ctx.clip();
+        /* ─────────────────────────────────────
+           HATCHING  — primary direction
+           Lines run slightly diagonal (like the
+           reference): ~8° slope, left to right.
+           Density is 0 in the upper-left highlight
+           zone and increases toward bottom-right.
+        ───────────────────────────────────── */
+        var sp1 = 4.2;   /* line spacing */
+        var sl1 = 0.14;  /* slope: how much y rises per unit x */
+        ctx.lineWidth = 0.55;
+        ctx.lineCap   = 'butt';
 
-        var gc=B*0.25; /* S-curve horizontal swing */
-        /* crease axis anchor points (offset right-of-centre at top, left at bottom) */
-        var ctx_x=ox+3.5, ctx_y=oy-A*0.83;
-        var cbx=ox-3.5,   cby=oy+A*0.83;
-        var gW=5.5; /* groove width at mid-point */
+        for(var yi = -ry*1.05; yi < ry*1.05; yi += sp1){
+          /* shadow factor: 0 = highlight (upper-left), 1 = deep shadow */
+          var sf = (yi/ry)*0.55 + 0.45;          /* [-0.55+0.45 … 0.55+0.45] */
+          sf = Math.max(0, Math.min(1, sf));
+          if(sf < 0.10) continue;                /* skip highlight zone      */
 
-        /* filled groove */
-        ctx.beginPath();
-        ctx.moveTo(ctx_x-0.5, ctx_y);
-        /* left wall ↓ */
-        ctx.bezierCurveTo(ox+gc-0.5, oy-A*0.20, ox-gc-0.5, oy+A*0.20, cbx-0.5, cby);
-        /* across bottom tip */
-        ctx.lineTo(cbx-0.5+gW, cby);
-        /* right wall ↑ */
-        ctx.bezierCurveTo(ox-gc-0.5+gW, oy+A*0.20, ox+gc-0.5+gW, oy-A*0.20, ctx_x-0.5+gW, ctx_y);
-        ctx.closePath();
+          var op = sf * 0.58;
+          if(op < 0.04) continue;
 
-        /* horizontal gradient: deep on left wall, transparent on right */
-        var gFill=ctx.createLinearGradient(ctx_x-2, 0, ctx_x+gW+2, 0);
-        gFill.addColorStop(0,   ink(0.82+dark*0.16));
-        gFill.addColorStop(0.42,ink(0.52+dark*0.28));
-        gFill.addColorStop(1,   ink(0.10+dark*0.08));
-        ctx.fillStyle=gFill;
-        ctx.fill();
+          /* x extents at this y (stay inside rough oval) */
+          var ySq = (yi/ry)*(yi/ry);
+          if(ySq >= 1) continue;
+          var xE = rx * Math.sqrt(1-ySq) + 6;
 
-        /* left wall — the main visible crease edge, bold */
-        ctx.strokeStyle=ink(1.0);
-        ctx.lineWidth=1.55; ctx.lineCap='round';
-        ctx.beginPath();
-        ctx.moveTo(ctx_x, ctx_y);
-        ctx.bezierCurveTo(ox+gc, oy-A*0.20, ox-gc, oy+A*0.20, cbx, cby);
-        ctx.stroke();
+          /* slight organic jitter */
+          var jit = (Math.random()-0.5)*0.8;
 
-        /* fine lines fanning right of crease (depth cues) */
-        ctx.lineWidth=0.52;
-        for(var lo=2.5; lo<=7.5; lo+=2.5){
-          ctx.strokeStyle=ink((1-lo/10.5)*(0.26+dark*0.22));
           ctx.beginPath();
-          ctx.moveTo(ctx_x+lo, ctx_y+lo*0.15);
-          ctx.bezierCurveTo(ox+gc+lo, oy-A*0.20, ox-gc+lo, oy+A*0.20, cbx+lo, cby);
+          ctx.moveTo(-xE,  yi + jit + sl1*xE );
+          ctx.lineTo( xE,  yi + jit - sl1*xE );
+          ctx.strokeStyle = ink(op);
           ctx.stroke();
         }
 
-        /* right-edge highlight sliver (light catching groove rim) */
-        ctx.strokeStyle='rgba(255,255,255,'+(0.22+dark*0.08)+')';
-        ctx.lineWidth=0.55;
+        /* ─────────────────────────────────────
+           CROSS-HATCHING — second direction
+           Only in the lower / shadow half.
+           Runs perpendicular to primary (~-82°).
+        ───────────────────────────────────── */
+        var sp2 = 5.8;
+        var sl2 = -0.78;   /* steep opposite slope */
+        ctx.lineWidth = 0.45;
+
+        for(var yi2 = ry*0.05; yi2 < ry*1.05; yi2 += sp2){
+          var sf2 = (yi2/ry - 0.05)*1.1;
+          sf2 = Math.max(0, Math.min(1, sf2));
+          var op2 = sf2 * 0.28;
+          if(op2 < 0.04) continue;
+
+          var ySq2 = (yi2/ry)*(yi2/ry);
+          if(ySq2 >= 1) continue;
+          var xE2 = rx * Math.sqrt(1-ySq2) + 4;
+          var jit2 = (Math.random()-0.5)*0.8;
+
+          ctx.beginPath();
+          ctx.moveTo(-xE2, yi2 + jit2 + sl2*xE2);
+          ctx.lineTo( xE2, yi2 + jit2 - sl2*xE2);
+          ctx.strokeStyle = ink(op2);
+          ctx.stroke();
+        }
+
+        /* ─────────────────────────────────────
+           CREASE — S-curve + flanking detail lines
+        ───────────────────────────────────── */
+
+        /* crease shadow — widest stroke, dark */
         ctx.beginPath();
-        ctx.moveTo(ctx_x+gW+0.5, ctx_y);
-        ctx.bezierCurveTo(ox-gc+gW+0.5, oy+A*0.20, ox+gc+gW+0.5, oy-A*0.20, ctx_x+gW+0.5, ctx_y);
+        ctx.moveTo( rx*0.06,-ry*0.87);
+        ctx.bezierCurveTo( rx*0.50,-ry*0.22, -rx*0.50, ry*0.22, -rx*0.06, ry*0.87);
+        ctx.strokeStyle = ink(0.88);
+        ctx.lineWidth   = Math.max(0.7, rx*0.028);
+        ctx.lineCap     = 'round';
         ctx.stroke();
 
-        ctx.restore();
+        /* crease highlight edge */
+        ctx.beginPath();
+        ctx.moveTo(-rx*0.07,-ry*0.84);
+        ctx.bezierCurveTo( rx*0.28,-ry*0.20, -rx*0.28, ry*0.20, rx*0.07, ry*0.84);
+        ctx.strokeStyle = ink(0.18);
+        ctx.lineWidth   = Math.max(0.9, rx*0.035);
+        ctx.stroke();
 
-        /* ---- 7. specular highlight (top-left) ---- */
+        /* short radiating lines off the crease — pen sketch detail */
+        var creaseSegs = 9;
+        for(var k=0;k<creaseSegs;k++){
+          var t = k/(creaseSegs-1);
+          /* point on crease bezier (approximate) */
+          var bx = rx*(0.06 + (0.50-0.06)*3*t*(1-t)*(1-t) +
+                         (-0.50)*(3*t*t*(1-t)) + (-0.06)*t*t*t);
+          var by = -ry*0.87 + (ry*0.87-(-ry*0.87))*t;
+          /* perpendicular direction */
+          var len = (2 + Math.random()*3) * (0.5 + t*0.5);
+          var angle = -0.5 + Math.random()*0.3 + (k%2===0 ? 1.4 : -0.2);
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bx + Math.cos(angle)*len, by + Math.sin(angle)*len);
+          ctx.strokeStyle = ink(0.35 + Math.random()*0.20);
+          ctx.lineWidth   = 0.5 + Math.random()*0.3;
+          ctx.lineCap     = 'round';
+          ctx.stroke();
+        }
+
+        ctx.restore(); /* end clip */
+
+        /* ── OUTLINE — main silhouette ── */
+        beanPath();
+        ctx.strokeStyle = ink(0.92);
+        ctx.lineWidth   = Math.max(0.6, rx*0.018);
+        ctx.lineJoin    = 'round';
+        ctx.lineCap     = 'round';
+        ctx.stroke();
+
+        /* slight outer edge variation: a second thinner overlapping stroke
+           on the shadow side to give varied line weight                   */
         ctx.save();
-        beanPath(); ctx.clip();
-        var shine=ctx.createRadialGradient(ox-B*0.26, oy-A*0.38, 0, ox, oy, B*1.45);
-        shine.addColorStop(0,'rgba(255,255,255,0.20)');
-        shine.addColorStop(0.4,'rgba(255,255,255,0.05)');
-        shine.addColorStop(1,'rgba(255,255,255,0)');
-        ctx.fillStyle=shine; ctx.fill();
+        ctx.translate(rx*0.015, ry*0.015);
+        beanPath();
+        ctx.strokeStyle = ink(0.22);
+        ctx.lineWidth   = Math.max(0.8, rx*0.025);
+        ctx.stroke();
         ctx.restore();
 
-        if(!settled){ rafId=requestAnimationFrame(draw); }
-        else { rafId=null; }
+        ctx.restore(); /* end translate/rotate/scale */
       }
 
-      var pills   =document.querySelectorAll('.roast-pill');
-      var detailEl=document.querySelector('.roast-info__detail');
-      var nameEl  =document.getElementById('roast-name');
-      var tempEl  =document.getElementById('roast-temp');
-      var flavorsEl=document.getElementById('roast-flavors');
-      var acidEl  =document.getElementById('roast-acidity');
-      var bodyEl  =document.getElementById('roast-body');
+      window.addEventListener('resize',function(){ drawBean(ROASTS[currentRoast].rgb); });
 
-      function switchRoast(idx){
-        var ro=ROASTS[idx];
-        target=ro.rgb.slice();
-        if(!rafId) rafId=requestAnimationFrame(draw);
-        pills.forEach(function(p,i){ p.classList.toggle('roast-pill--active',i===idx); });
-        detailEl.classList.remove('is-animating');
-        void detailEl.offsetWidth;
-        detailEl.classList.add('is-animating');
-        nameEl.textContent=ro.name;
-        tempEl.textContent=ro.temp;
-        flavorsEl.textContent=ro.flavors;
-        acidEl.style.width=ro.acidity+'%';
-        bodyEl.style.width=ro.body+'%';
-        setTimeout(function(){ detailEl.classList.remove('is-animating'); },280);
-      }
+      window.switchRoast=function(idx){
+        currentRoast=idx;
+        document.querySelectorAll('.roast-pill').forEach(function(p,i){
+          p.classList.toggle('active',i===idx);
+        });
+        var r=ROASTS[idx];
+        var el=function(id){return document.getElementById(id);};
+        if(el('roast-name'))    el('roast-name').textContent    =r.name;
+        if(el('roast-temp'))    el('roast-temp').textContent    =r.temp;
+        if(el('roast-flavors')) el('roast-flavors').textContent =r.flavors;
+        if(el('roast-acidity')) el('roast-acidity').style.width =r.acidity+'%';
+        if(el('roast-body'))    el('roast-body').style.width    =r.body+'%';
+        drawBean(r.rgb);
+      };
 
-      pills.forEach(function(p){
-        p.addEventListener('click',function(){ switchRoast(parseInt(p.dataset.idx)); });
+      document.querySelectorAll('.roast-pill').forEach(function(p,i){
+        p.addEventListener('click',function(){ switchRoast(i); });
       });
 
-      draw();
       switchRoast(0);
-
-      document.getElementById('coffee-close').addEventListener('click',function(){
-        cancelAnimationFrame(rafId); rafId=null;
-      });
-      document.getElementById('coffee-trigger').addEventListener('click',function(){
-        if(!rafId) draw();
-      });
     })();
+
+
+
+
+
+
+
+
+
+
 
   </script>
 </body>

@@ -1281,6 +1281,392 @@ h2.about__title{
   .hero-avatar{ width: 72px; height: 72px; }
 }
 
+/* ===== Language Trigger + Overlay ===== */
+
+/* trigger — inline row, underlined text, left-aligned above Games heading */
+.lang-trigger{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 14px;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.55);
+  cursor: pointer;
+  transition: color .18s ease;
+}
+.lang-trigger:hover{
+  color: rgba(0,0,0,.88);
+}
+.lang-trigger__label{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(0,0,0,.25);
+}
+.lang-trigger__icon{
+  flex-shrink: 0;
+  transition: transform .18s ease;
+}
+.lang-trigger:hover .lang-trigger__icon{
+  transform: translateX(2px);
+}
+.lang-trigger.is-hidden{
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* close chevron in lang overlay — matches coffee/tea: points down, bobs down */
+.lang-close-chevron{
+  display: block;
+  animation: coffee-bob-up 2.4s ease-in-out infinite;
+}
+
+/* overlay — reuses .coffee-overlay for slide-in animation, own background */
+.lang-overlay{
+  background: #F6F7F9;
+  position: relative; /* for shader canvas */
+}
+
+/* shader canvas behind everything */
+.lang-shader{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* scrollable area */
+.lang-scroll{
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-top: 44px;
+}
+
+/* inner content width */
+.lang-content-wrap{
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 100px;
+}
+
+/* lang overlay reuses .coffee-overlay__header for the centered header */
+
+/* ── intro text ── */
+.lang-intro{
+  text-align: center;
+  padding: 36px 24px 0;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.lang-intro__kicker{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.3);
+  margin: 0 0 10px;
+}
+.lang-intro__title{
+  font-size: clamp(24px, 5vw, 40px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: rgba(0,0,0,.82);
+  margin: 0 0 10px;
+  line-height: 1.1;
+}
+.lang-intro__sub{
+  font-size: 13px;
+  color: rgba(0,0,0,.38);
+  margin: 0;
+}
+
+/* ── language tabs ── */
+.lang-tabs{
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 28px 24px 0;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.lang-tab{
+  background: none;
+  border: 1px solid rgba(0,0,0,.13);
+  border-radius: 100px;
+  padding: 7px 18px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.38);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+.lang-tab:hover:not(.lang-tab--active){
+  border-color: rgba(0,0,0,.28);
+  color: rgba(0,0,0,.62);
+}
+.lang-tab--active{
+  background: rgba(0,0,0,.86);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* ── stage: hero + phrases + script ── */
+.lang-stage{
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* hero word */
+.lang-hero{
+  text-align: center;
+  padding: 44px 0 40px;
+  border-bottom: 1px solid rgba(0,0,0,.07);
+}
+.lang-hero__word{
+  font-size: clamp(52px, 11vw, 96px);
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  color: rgba(0,0,0,.82);
+  line-height: 1;
+  margin: 0 0 14px;
+}
+.lang-hero__roman{
+  font-size: 13px;
+  color: rgba(0,0,0,.38);
+  margin: 0 0 8px;
+  font-style: italic;
+}
+.lang-hero__meta{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.22);
+}
+
+/* phrase grid */
+.lang-phrases{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1px;
+  background: rgba(0,0,0,.07);
+  margin: 32px 0 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lang-phrase{
+  background: #F6F7F9;
+  padding: 18px 18px 16px;
+  transition: background .15s ease;
+}
+.lang-phrase:hover{
+  background: #fff;
+}
+.lang-phrase__native{
+  font-size: 17px;
+  font-weight: 400;
+  color: rgba(0,0,0,.80);
+  margin: 0 0 5px;
+  line-height: 1.25;
+}
+.lang-phrase__roman{
+  font-size: 11px;
+  color: rgba(0,0,0,.30);
+  font-style: italic;
+  margin: 0 0 6px;
+}
+.lang-phrase__meaning{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+}
+
+/* script strip */
+.lang-script-strip{
+  text-align: center;
+  padding: 36px 0 20px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  margin-top: 32px;
+}
+.lang-script-strip__chars{
+  font-size: 17px;
+  color: rgba(0,0,0,.18);
+  letter-spacing: 0.18em;
+  line-height: 1.9;
+  word-break: break-all;
+}
+.lang-script-strip__label{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.18);
+  margin-top: 10px;
+}
+
+/* ── test section ── */
+.lang-test{
+  max-width: 860px;
+  margin: 40px auto 80px;
+  padding: 0 24px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  padding-top: 36px;
+}
+.lang-test__header{
+  text-align: center;
+  margin-bottom: 24px;
+}
+.lang-test__title{
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: rgba(0,0,0,.72);
+  margin: 0;
+}
+
+/* idle */
+.lang-test__start{
+  display: block;
+  margin: 0 auto;
+  background: rgba(0,0,0,.86);
+  color: #fff;
+  border: none;
+  border-radius: 100px;
+  padding: 10px 28px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity .18s ease;
+}
+.lang-test__start:hover{ opacity: .72; }
+.lang-test__start--ghost{
+  background: none;
+  color: rgba(0,0,0,.5);
+  border: 1px solid rgba(0,0,0,.18);
+}
+.lang-test__start--ghost:hover{ opacity: .7; }
+
+/* game */
+.lang-test__game--hidden{ display: none; }
+
+.lang-test__progress{
+  height: 2px;
+  background: rgba(0,0,0,.08);
+  border-radius: 2px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.lang-test__bar{
+  height: 100%;
+  background: rgba(0,0,0,.55);
+  border-radius: 2px;
+  transition: width .35s ease;
+  width: 0%;
+}
+.lang-test__counter{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+  text-align: center;
+  margin-bottom: 20px;
+}
+.lang-test__prompt{
+  font-size: clamp(28px, 6vw, 52px);
+  font-weight: 200;
+  letter-spacing: -0.02em;
+  color: rgba(0,0,0,.82);
+  text-align: center;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.lang-test__hint{
+  font-size: 12px;
+  color: rgba(0,0,0,.3);
+  text-align: center;
+  font-style: italic;
+  margin: 0 0 28px;
+}
+.lang-test__options{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.lang-test__opt{
+  background: rgba(0,0,0,.04);
+  border: 1px solid rgba(0,0,0,.09);
+  border-radius: 8px;
+  padding: 14px 12px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0,0,0,.72);
+  cursor: pointer;
+  text-align: center;
+  transition: background .12s ease, border-color .12s ease;
+  line-height: 1.3;
+}
+.lang-test__opt:hover:not(:disabled){
+  background: rgba(0,0,0,.08);
+  border-color: rgba(0,0,0,.18);
+}
+.lang-test__opt:disabled{ cursor: default; }
+.lang-test__opt--correct{
+  background: rgba(60,140,80,.12) !important;
+  border-color: rgba(60,140,80,.4) !important;
+  color: rgba(30,100,50,.9) !important;
+}
+.lang-test__opt--wrong{
+  background: rgba(180,50,50,.08) !important;
+  border-color: rgba(180,50,50,.3) !important;
+  color: rgba(140,40,40,.8) !important;
+}
+
+/* result */
+.lang-test__score{
+  font-size: clamp(42px, 9vw, 72px);
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  color: rgba(0,0,0,.82);
+  text-align: center;
+  margin: 0 0 12px;
+}
+.lang-test__verdict{
+  font-size: 13px;
+  color: rgba(0,0,0,.42);
+  text-align: center;
+  margin: 0 0 24px;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* ===== Coffee Trigger (inline, below footer date) ===== */
 .coffee-trigger{
   display: flex;

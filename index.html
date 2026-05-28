@@ -545,6 +545,13 @@
       <br/>
       <br/>
       <div class="pillrow__wrap" aria-label="Work and experience">
+        <!-- Learn Languages trigger — inline, above heading -->
+        <button class="lang-trigger" id="lang-trigger" aria-label="Explore languages">
+          <span class="lang-trigger__label">Learn Languages</span>
+          <svg class="lang-trigger__icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="12" height="12" aria-hidden="true">
+            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
         <h2 class="about__title">Games I Admire</h2>
         <p class="muted">
         Not a complete list — just a selection of games I’ve deeply enjoyed and continue to think about. These stood out to me for their atmosphere, storytelling, and the way they create a lasting emotional experience.
@@ -1105,6 +1112,79 @@
 
 
   <!-- Coffee Fullscreen Overlay -->
+  <!-- ===== Language Overlay ===== -->
+  <div class="coffee-overlay lang-overlay" id="lang-overlay" role="dialog" aria-modal="true" aria-label="Languages" aria-hidden="true">
+    <canvas class="lang-shader" id="lang-shader"></canvas>
+    <div class="lang-scroll">
+
+      <!-- centered header — mirrors coffee overlay -->
+      <div class="coffee-overlay__header">
+        <p class="footer-signature">
+          <span>Saumya</span>
+          <img class="footer-avatar" src="assets/avatar.jpg" alt="Saumya Lahera" />
+          <span>Lahera</span>
+        </p>
+        <p class="footer-websiteupdate" style="margin-top:4px;">
+          <span>LEARN</span>
+          <span>LANGUAGES</span>
+        </p>
+        <button class="coffee-overlay__close lang-close-btn" id="lang-close" aria-label="Close languages">
+          <span class="coffee-overlay__close-label">Close</span>
+          <svg class="lang-close-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- intro -->
+      <div class="lang-intro">
+        <p class="lang-intro__kicker">Daily Practice</p>
+        <h2 class="lang-intro__title">Learn the Basics</h2>
+        <p class="lang-intro__sub">Five languages. The words you need first.</p>
+      </div>
+
+      <!-- language tabs -->
+      <div class="lang-tabs" role="tablist" id="lang-tabs">
+        <button class="lang-tab lang-tab--active" role="tab" data-lang="spanish">Spanish</button>
+        <button class="lang-tab" role="tab" data-lang="russian">Russian</button>
+        <button class="lang-tab" role="tab" data-lang="turkish">Turkish</button>
+        <button class="lang-tab" role="tab" data-lang="irish">Irish</button>
+        <button class="lang-tab" role="tab" data-lang="english">English</button>
+      </div>
+
+      <!-- dynamic stage -->
+      <div class="lang-stage" id="lang-stage" aria-live="polite"></div>
+
+      <!-- test section -->
+      <div class="lang-test" id="lang-test">
+        <div class="lang-test__header">
+          <p class="lang-intro__kicker" style="margin:0 0 4px;">Test Yourself</p>
+          <h3 class="lang-test__title">How well do you know <span id="lt-lang-name">Spanish</span>?</h3>
+        </div>
+        <!-- idle state -->
+        <div class="lang-test__idle" id="lt-idle">
+          <button class="lang-test__start" id="lt-start">Start the test →</button>
+        </div>
+        <!-- question state -->
+        <div class="lang-test__game lang-test__game--hidden" id="lt-game">
+          <div class="lang-test__progress"><div class="lang-test__bar" id="lt-bar"></div></div>
+          <div class="lang-test__counter" id="lt-counter">1 / 10</div>
+          <div class="lang-test__prompt" id="lt-prompt"></div>
+          <div class="lang-test__hint" id="lt-hint"></div>
+          <div class="lang-test__options" id="lt-options"></div>
+        </div>
+        <!-- result state -->
+        <div class="lang-test__result lang-test__game--hidden" id="lt-result">
+          <div class="lang-test__score" id="lt-score"></div>
+          <p class="lang-test__verdict" id="lt-verdict"></p>
+          <button class="lang-test__start lang-test__start--ghost" id="lt-retry">Try again</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ===== /Language Overlay ===== -->
+
   <div class="coffee-overlay" id="coffee-overlay" role="dialog" aria-modal="true" aria-label="Coffee" aria-hidden="true">
     <!-- Full-page background shader — sits behind all content -->
     <div class="coffee-shader-wrap">
@@ -2497,6 +2577,350 @@
         });
       });
     })();
+
+    /* ---- Language Section ---- */
+    (function(){
+      /* open / close */
+      var trigger  = document.getElementById('lang-trigger');
+      var overlay  = document.getElementById('lang-overlay');
+      var closeBtn = document.getElementById('lang-close');
+      if(!trigger || !overlay) return;
+      function openLang() {
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden','false');
+        trigger.classList.add('is-hidden');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeLang() {
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden','true');
+        trigger.classList.remove('is-hidden');
+        document.body.style.overflow = '';
+        setTimeout(function(){
+          var s = overlay.querySelector('.lang-scroll');
+          if(s) s.scrollTop = 0;
+        }, 680);
+      }
+      trigger.addEventListener('click', openLang);
+      closeBtn.addEventListener('click', closeLang);
+      document.addEventListener('keydown', function(e){
+        if(e.key === 'Escape' && overlay.classList.contains('is-open')) closeLang();
+      });
+
+      /* ── shader: 3 slowly drifting radial blobs ── */
+      (function(){
+        var cv = document.getElementById('lang-shader');
+        if(!cv) return;
+        var ctx2 = cv.getContext('2d');
+        var t2 = 0;
+        var blobs = [
+          { bx:0.18, by:0.25, br:0.55, c:[148,180,210] },
+          { bx:0.78, by:0.55, br:0.48, c:[168,210,180] },
+          { bx:0.48, by:0.82, br:0.42, c:[210,185,200] }
+        ];
+        function resizeCv(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
+        function drawShader(){
+          if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawShader); return; }
+          t2 += 0.005;
+          ctx2.clearRect(0,0,cv.width,cv.height);
+          blobs.forEach(function(b,i){
+            var x=(b.bx+Math.sin(t2*0.6+i*1.8)*0.14)*cv.width;
+            var y=(b.by+Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
+            var r=b.br*Math.min(cv.width,cv.height);
+            var g=ctx2.createRadialGradient(x,y,0,x,y,r);
+            g.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
+            g.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
+            ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
+            ctx2.fillStyle=g; ctx2.fill();
+          });
+          requestAnimationFrame(drawShader);
+        }
+        window.addEventListener('resize', resizeCv);
+        resizeCv();
+        drawShader();
+      })();
+
+      /* ── language data ── */
+      var LANGS = {
+        spanish: {
+          label:'Spanish · Español', family:'Romance · Indo-European',
+          hero:'Hola', heroRoman:'[OH-lah]', heroMeaning:'Hello',
+          script:'A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z',
+          scriptLabel:'Latin · 27 letters · written left-to-right',
+          phrases:[
+            { n:'Hola',               r:'[OH-lah]',              m:'Hello' },
+            { n:'Adiós',              r:'[ah-DYOHS]',             m:'Goodbye' },
+            { n:'Gracias',            r:'[GRAH-syahs]',           m:'Thank you' },
+            { n:'Por favor',          r:'[por fah-VOR]',          m:'Please' },
+            { n:'Sí / No',            r:'[see / noh]',            m:'Yes / No' },
+            { n:'¿Cómo estás?',       r:'[KOH-moh es-TAHS]',     m:'How are you?' },
+            { n:'Buenos días',        r:'[BWEH-nos DEE-ahs]',     m:'Good morning' },
+            { n:'Buenas noches',      r:'[BWEH-nas NOH-ches]',    m:'Good night' },
+            { n:'Lo siento',          r:'[loh SYEN-toh]',         m:'I\'m sorry' },
+            { n:'No entiendo',        r:'[noh en-TYEN-doh]',      m:'I don\'t understand' },
+            { n:'Me llamo…',          r:'[meh YAH-moh]',          m:'My name is…' },
+            { n:'¿Dónde está?',       r:'[DOHN-deh es-TAH]',      m:'Where is it?' },
+            { n:'¿Cuánto cuesta?',    r:'[KWAN-toh KWES-tah]',    m:'How much does it cost?' },
+            { n:'¿Habla inglés?',     r:'[AH-blah een-GLAYS]',    m:'Do you speak English?' },
+            { n:'Necesito ayuda',     r:'[neh-seh-SEE-toh ah-YOO-dah]', m:'I need help' },
+            { n:'Mucho gusto',        r:'[MOO-choh GOOS-toh]',    m:'Nice to meet you' },
+            { n:'De nada',            r:'[deh NAH-dah]',           m:'You\'re welcome' },
+            { n:'¿Puede repetir?',    r:'[PWEH-deh reh-peh-TEER]',m:'Can you repeat that?' },
+            { n:'Tengo hambre',       r:'[TEN-goh AHM-breh]',     m:'I\'m hungry' },
+            { n:'Estoy perdido/a',    r:'[es-TOY per-DEE-doh]',   m:'I\'m lost' }
+          ]
+        },
+        russian: {
+          label:'Russian · Русский', family:'Slavic · Indo-European',
+          hero:'Привет', heroRoman:'[pree-VYET]', heroMeaning:'Hi',
+          script:'А Б В Г Д Е Ё Ж З И Й К Л М Н О П Р С Т У Ф Х Ц Ч Ш Щ Ъ Ы Ь Э Ю Я',
+          scriptLabel:'Cyrillic · 33 letters · written left-to-right',
+          phrases:[
+            { n:'Привет',             r:'[pree-VYET]',             m:'Hi (informal)' },
+            { n:'Здравствуйте',       r:'[ZDRAS-tvuy-tye]',        m:'Hello (formal)' },
+            { n:'До свидания',        r:'[dah svee-DAH-nyah]',     m:'Goodbye' },
+            { n:'Спасибо',            r:'[spah-SEE-bah]',          m:'Thank you' },
+            { n:'Пожалуйста',         r:'[pah-ZHAHL-stah]',        m:'Please / You\'re welcome' },
+            { n:'Да / Нет',           r:'[dah / nyet]',            m:'Yes / No' },
+            { n:'Как дела?',          r:'[kak dee-LAH]',           m:'How are you?' },
+            { n:'Доброе утро',        r:'[DOH-bra-ye OO-trah]',    m:'Good morning' },
+            { n:'Спокойной ночи',     r:'[spa-KOY-nay NOH-chee]',  m:'Good night' },
+            { n:'Я не понимаю',       r:'[ya nye pah-nee-MAH-yu]', m:'I don\'t understand' },
+            { n:'Извините',           r:'[eez-vee-NEE-tye]',       m:'Excuse me' },
+            { n:'Меня зовут…',        r:'[mye-NYA zah-VOOT]',      m:'My name is…' },
+            { n:'Очень приятно',      r:'[OH-chen pree-YAT-nah]',  m:'Nice to meet you' },
+            { n:'Где находится…?',    r:'[gdye nah-KHO-deet-sya]', m:'Where is…?' },
+            { n:'Сколько стоит?',     r:'[SKOHL-kah STOH-eet]',    m:'How much does it cost?' },
+            { n:'Вы говорите по-английски?', r:'[vy gah-vah-REE-tye]', m:'Do you speak English?' },
+            { n:'Мне нужна помощь',   r:'[mnye noozh-NAH POH-mash]',m:'I need help' },
+            { n:'Я не знаю',          r:'[ya nye ZNAH-yu]',         m:'I don\'t know' },
+            { n:'Пожалуйста, повторите', r:'[pah-ZHAHL-stah pov-tah-REE-tye]', m:'Please repeat that' },
+            { n:'Я голоден/голодна',  r:'[ya GOH-lah-den]',         m:'I\'m hungry' }
+          ]
+        },
+        turkish: {
+          label:'Turkish · Türkçe', family:'Turkic · Altaic',
+          hero:'Merhaba', heroRoman:'[mer-HAH-bah]', heroMeaning:'Hello',
+          script:'A B C Ç D E F G Ğ H I İ J K L M N O Ö P R S Ş T U Ü V Y Z',
+          scriptLabel:'Latin-based · 29 letters · almost perfectly phonetic',
+          phrases:[
+            { n:'Merhaba',            r:'[mer-HAH-bah]',           m:'Hello' },
+            { n:'Güle güle',          r:'[GÜ-leh GÜ-leh]',         m:'Goodbye' },
+            { n:'Teşekkürler',        r:'[te-shek-KÜR-ler]',       m:'Thank you' },
+            { n:'Lütfen',             r:'[LÜFT-fen]',               m:'Please' },
+            { n:'Evet / Hayır',       r:'[e-VET / ha-YIR]',        m:'Yes / No' },
+            { n:'Nasılsınız?',        r:'[nah-sil-SIN-iz]',        m:'How are you?' },
+            { n:'Günaydın',           r:'[gün-ay-DIN]',             m:'Good morning' },
+            { n:'İyi geceler',        r:'[ee-YEE ge-je-LER]',       m:'Good night' },
+            { n:'Özür dilerim',       r:'[ö-ZÜR dee-le-RIM]',      m:'I\'m sorry' },
+            { n:'Anlamıyorum',        r:'[an-la-MI-yo-rum]',        m:'I don\'t understand' },
+            { n:'Adım…',              r:'[ah-DIM]',                 m:'My name is…' },
+            { n:'Memnun oldum',       r:'[mem-NUN ol-dum]',         m:'Nice to meet you' },
+            { n:'Tamam',              r:'[tah-MAM]',                m:'OK / Alright' },
+            { n:'Nerede…?',           r:'[ne-RE-de]',               m:'Where is…?' },
+            { n:'Ne kadar?',          r:'[ne kah-DAR]',             m:'How much does it cost?' },
+            { n:'İngilizce biliyor musunuz?', r:'[een-gee-LEEZ-jeh]', m:'Do you speak English?' },
+            { n:'Yardım lazım',       r:'[yar-DIM lah-ZIM]',        m:'I need help' },
+            { n:'Bilmiyorum',         r:'[bil-mi-YO-rum]',          m:'I don\'t know' },
+            { n:'Tekrar eder misiniz?', r:'[tek-RAR e-der mi-SIN-iz]', m:'Can you repeat that?' },
+            { n:'Açım',               r:'[ah-CHIM]',                m:'I\'m hungry' }
+          ]
+        },
+        irish: {
+          label:'Irish · Gaeilge', family:'Celtic · Indo-European',
+          hero:'Dia dhuit', heroRoman:'[JEE-uh GHWIT]', heroMeaning:'Hello',
+          script:'A B C D E F G H I L M N O P R S T U',
+          scriptLabel:'Irish Latin · 18 letters · fada (á é í ó ú) marks long vowels',
+          phrases:[
+            { n:'Dia dhuit',          r:'[JEE-uh GHWIT]',          m:'Hello' },
+            { n:'Dia is Muire dhuit', r:'[JEE-uh iss MWI-reh]',    m:'Hello (in reply)' },
+            { n:'Slán',               r:'[slawn]',                  m:'Goodbye' },
+            { n:'Slán leat',          r:'[slawn lat]',              m:'Goodbye (to one leaving)' },
+            { n:'Go raibh maith agat',r:'[guh ROH mah AH-gut]',     m:'Thank you' },
+            { n:'Le do thoil',        r:'[leh duh HULL]',           m:'Please' },
+            { n:'Tá / Níl',           r:'[taw / neel]',             m:'Yes (it is) / No (it isn\'t)' },
+            { n:'Conas atá tú?',      r:'[KUN-us ah-TAW too]',      m:'How are you?' },
+            { n:'Tá mé go maith',     r:'[taw may guh mah]',        m:'I\'m well' },
+            { n:'Maidin mhaith',      r:'[MAH-jin WAH]',            m:'Good morning' },
+            { n:'Oíche mhaith',       r:'[EE-heh WAH]',             m:'Good night' },
+            { n:'Ní thuigim',         r:'[nee HIG-im]',             m:'I don\'t understand' },
+            { n:'Gabh mo leithscéal', r:'[gah muh LEH-shkale]',     m:'Excuse me' },
+            { n:'Is mise…',           r:'[iss MISH-uh]',            m:'My name is…' },
+            { n:'Tá áthas orm',       r:'[taw AW-hus OR-um]',       m:'Pleased to meet you' },
+            { n:'Cá bhfuil…?',        r:'[kaw WILL]',               m:'Where is…?' },
+            { n:'Cé mhéad?',          r:'[kay VAYD]',               m:'How much?' },
+            { n:'An bhfuil Béarla agat?', r:'[un will BAYR-lah AH-gut]', m:'Do you speak English?' },
+            { n:'Teastaíonn cúnamh uaim', r:'[CHAS-teen KOO-nav OO-im]', m:'I need help' },
+            { n:'Tá ocras orm',       r:'[taw UK-rass OR-um]',      m:'I\'m hungry' }
+          ]
+        },
+        english: {
+          label:'English', family:'Germanic · Indo-European',
+          hero:'Hello', heroRoman:'[heh-LOH]', heroMeaning:'The universal greeting',
+          script:'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z',
+          scriptLabel:'Latin · 26 letters · 170,000+ words in active use',
+          phrases:[
+            { n:'Hello',              r:'[heh-LOH]',               m:'Hola · Привет · Merhaba' },
+            { n:'Goodbye',            r:'[good-BY]',               m:'Adiós · До свидания · Slán' },
+            { n:'Thank you',          r:'[THANK yoo]',             m:'Gracias · Спасибо · Go raibh maith agat' },
+            { n:'Please',             r:'[pleez]',                 m:'Por favor · Пожалуйста · Lütfen' },
+            { n:'Yes / No',           r:'[yes / noh]',             m:'Sí/No · Да/Нет · Evet/Hayır' },
+            { n:'How are you?',       r:'[how ar YOO]',            m:'¿Cómo estás? · Как дела? · Nasılsınız?' },
+            { n:'Good morning',       r:'[good MOR-ning]',         m:'Buenos días · Günaydın · Maidin mhaith' },
+            { n:'Good night',         r:'[good NYTE]',             m:'Buenas noches · Спокойной ночи · Oíche mhaith' },
+            { n:'Excuse me',          r:'[ex-KYOOZ mee]',          m:'Perdón · Извините · Gabh mo leithscéal' },
+            { n:'I\'m sorry',         r:'[I\'m SOR-ee]',           m:'Lo siento · Простите · Özür dilerim' },
+            { n:'My name is…',        r:'[my NAYM iz]',            m:'Me llamo · Меня зовут · Adım · Is mise' },
+            { n:'Nice to meet you',   r:'[nyss to MEET yoo]',      m:'Mucho gusto · Очень приятно · Memnun oldum' },
+            { n:'I don\'t understand',r:'[I dont un-der-STAND]',   m:'No entiendo · Я не понимаю · Ní thuigim' },
+            { n:'Where is…?',         r:'[wair IZ]',               m:'¿Dónde está? · Где…? · Cá bhfuil…?' },
+            { n:'How much?',          r:'[how MUCH]',              m:'¿Cuánto? · Сколько? · Ne kadar? · Cé mhéad?' },
+            { n:'Do you speak English?', r:'[do yoo speek]',       m:'¿Habla inglés? · Вы говорите по-английски?' },
+            { n:'I need help',        r:'[I need HELP]',           m:'Necesito ayuda · Мне нужна помощь · Yardım lazım' },
+            { n:'I don\'t know',      r:'[I dont NOH]',            m:'No sé · Я не знаю · Bilmiyorum' },
+            { n:'Can you repeat?',    r:'[kan yoo ree-PEET]',      m:'¿Puede repetir? · Пожалуйста, повторите' },
+            { n:'I\'m hungry',        r:'[I\'m HUN-gree]',         m:'Tengo hambre · Я голоден · Açım · Tá ocras orm' }
+          ]
+        }
+      };
+
+      var currentLang = 'spanish';
+
+      /* ── render phrases ── */
+      function renderLang(key){
+        currentLang = key;
+        var l = LANGS[key];
+        document.querySelectorAll('.lang-tab').forEach(function(tab){
+          tab.classList.toggle('lang-tab--active', tab.dataset.lang===key);
+        });
+        /* update test header name */
+        var nameEl = document.getElementById('lt-lang-name');
+        if(nameEl) nameEl.textContent = l.label.split(' · ')[0];
+        /* reset test to idle */
+        resetTest();
+
+        var stageEl = document.getElementById('lang-stage');
+        stageEl.innerHTML =
+          '<div class="lang-hero">'
+            +'<div class="lang-hero__word">'+l.hero+'</div>'
+            +'<div class="lang-hero__roman">'+l.heroRoman+'&ensp;&middot;&ensp;'+l.heroMeaning+'</div>'
+            +'<div class="lang-hero__meta">'+l.label+'&ensp;&middot;&ensp;'+l.family+'</div>'
+          +'</div>'
+          +'<div class="lang-phrases">'
+            +l.phrases.map(function(p){
+              return '<div class="lang-phrase">'
+                +'<div class="lang-phrase__native">'+p.n+'</div>'
+                +'<div class="lang-phrase__roman">'+p.r+'</div>'
+                +'<div class="lang-phrase__meaning">'+p.m+'</div>'
+              +'</div>';
+            }).join('')
+          +'</div>'
+          +'<div class="lang-script-strip">'
+            +'<div class="lang-script-strip__chars">'+l.script+'</div>'
+            +'<div class="lang-script-strip__label">'+l.scriptLabel+'</div>'
+          +'</div>';
+      }
+
+      document.getElementById('lang-tabs').querySelectorAll('.lang-tab').forEach(function(tab){
+        tab.addEventListener('click', function(){ renderLang(tab.dataset.lang); });
+      });
+
+      /* ── test ── */
+      var testQ = 10; /* questions per test */
+      var testScore = 0, testCurrent = 0, testQuestions = [];
+
+      function shuffle(arr){ /* fisher-yates */
+        var a = arr.slice();
+        for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+        return a;
+      }
+
+      function buildTest(){
+        var phrases = LANGS[currentLang].phrases;
+        testQuestions = shuffle(phrases).slice(0, Math.min(testQ, phrases.length));
+        testScore = 0; testCurrent = 0;
+      }
+
+      function showTestState(id){
+        ['lt-idle','lt-game','lt-result'].forEach(function(s){
+          var el = document.getElementById(s);
+          if(el){ el.classList.toggle('lang-test__game--hidden', s!==id); }
+        });
+      }
+
+      function renderTestQ(){
+        var q = testQuestions[testCurrent];
+        var l = LANGS[currentLang];
+        var allMeanings = l.phrases.map(function(p){ return p.m; });
+        /* pick 3 wrong answers that aren't the correct one */
+        var wrong = shuffle(allMeanings.filter(function(m){ return m!==q.m; })).slice(0,3);
+        var opts = shuffle([q.m].concat(wrong));
+
+        document.getElementById('lt-counter').textContent = (testCurrent+1)+' / '+testQuestions.length;
+        document.getElementById('lt-bar').style.width = Math.round((testCurrent/testQuestions.length)*100)+'%';
+        document.getElementById('lt-prompt').textContent = q.n;
+        document.getElementById('lt-hint').textContent = q.r;
+        var optWrap = document.getElementById('lt-options');
+        optWrap.innerHTML = '';
+        opts.forEach(function(opt){
+          var btn = document.createElement('button');
+          btn.className = 'lang-test__opt';
+          btn.textContent = opt;
+          btn.addEventListener('click', function(){
+            /* lock all buttons */
+            optWrap.querySelectorAll('.lang-test__opt').forEach(function(b){ b.disabled = true; });
+            if(opt === q.m){
+              btn.classList.add('lang-test__opt--correct');
+              testScore++;
+            } else {
+              btn.classList.add('lang-test__opt--wrong');
+              /* show correct */
+              optWrap.querySelectorAll('.lang-test__opt').forEach(function(b){
+                if(b.textContent === q.m) b.classList.add('lang-test__opt--correct');
+              });
+            }
+            setTimeout(function(){
+              testCurrent++;
+              if(testCurrent < testQuestions.length){ renderTestQ(); }
+              else { showResult(); }
+            }, 900);
+          });
+          optWrap.appendChild(btn);
+        });
+      }
+
+      function showResult(){
+        document.getElementById('lt-bar').style.width = '100%';
+        var pct = Math.round((testScore/testQuestions.length)*100);
+        var verdicts = [
+          [90, 'Excellent! You really know your '+LANGS[currentLang].label.split(' · ')[0]+'.'],
+          [70, 'Good work — a few more sessions and you\'ll nail it.'],
+          [50, 'Getting there. Keep practicing the tricky ones.'],
+          [0,  'Don\'t worry — every mistake is a memory in the making.']
+        ];
+        var v = verdicts.find(function(v){ return pct >= v[0]; })[1];
+        document.getElementById('lt-score').textContent = testScore+' / '+testQuestions.length;
+        document.getElementById('lt-verdict').textContent = v;
+        showTestState('lt-result');
+      }
+
+      function resetTest(){
+        showTestState('lt-idle');
+        var barEl = document.getElementById('lt-bar');
+        if(barEl) barEl.style.width = '0%';
+      }
+
+      document.getElementById('lt-start').addEventListener('click', function(){
+        buildTest(); showTestState('lt-game'); renderTestQ();
+      });
+      document.getElementById('lt-retry').addEventListener('click', function(){
+        buildTest(); showTestState('lt-game'); renderTestQ();
+      });
+
+      renderLang('spanish');
+
+    })();
+
 
   </script>
 </body>

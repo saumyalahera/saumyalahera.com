@@ -1904,6 +1904,11 @@ h2.about__title{
   width: 160px;
   height: 200px;
 }
+#tea-leaf-canvas{
+  display: block;
+  width: 160px;
+  height: 200px;
+}
 
 /* --- Roast pill selectors --- */
 .roast-info{ display: flex; flex-direction: column; gap: 20px; }

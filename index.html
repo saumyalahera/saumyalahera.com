@@ -1352,26 +1352,29 @@
           <p class="kicker">The Spectrum</p>
           <h3 class="coffee-sub-title">Oxidation Levels</h3>
           <p class="coffee-sub-intro">Every tea starts as the same leaf. Oxidation determines its colour, aroma, and character.</p>
-          <div class="tea-oxidation">
-            <div class="tea-ox-bar">
-              <div class="tea-ox-track">
-                <div class="tea-ox-fill" id="tea-ox-fill"></div>
-              </div>
-              <div class="tea-ox-labels">
-                <span>White</span><span>Green</span><span>Oolong</span><span>Black</span>
-              </div>
+          <div class="roast-viewer">
+            <div class="roast-canvas-wrap">
+              <canvas id="tea-leaf-canvas"></canvas>
             </div>
-            <div class="tea-ox-detail">
-              <div class="tea-ox-pills">
+            <div class="roast-info">
+              <div class="tea-ox-pills roast-pills">
                 <button class="roast-pill roast-pill--active" id="tox-0">White</button>
                 <button class="roast-pill" id="tox-1">Green</button>
                 <button class="roast-pill" id="tox-2">Oolong</button>
                 <button class="roast-pill" id="tox-3">Black</button>
               </div>
-              <div style="margin-top:14px;">
+              <div class="roast-info__detail">
                 <div class="roast-info__name" id="tox-name"></div>
                 <div class="roast-info__temp" id="tox-temp"></div>
                 <div class="roast-info__flavors" id="tox-flavors"></div>
+                <div class="tea-ox-bar" style="margin-top:14px;">
+                  <div class="tea-ox-track">
+                    <div class="tea-ox-fill" id="tea-ox-fill"></div>
+                  </div>
+                  <div class="tea-ox-labels">
+                    <span>White</span><span>Green</span><span>Oolong</span><span>Black</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -2142,7 +2145,13 @@
         btnTea.classList.toggle('drink-toggle__btn--active',    !isCoffee);
       }
       btnCoffee.addEventListener('click', function(){ show('coffee'); });
-      btnTea.addEventListener('click',    function(){ show('tea'); });
+      btnTea.addEventListener('click', function(){
+        show('tea');
+        /* redraw tea leaf now that panel is visible and has real dimensions */
+        requestAnimationFrame(function(){
+          if(window._teaLeafRedraw) window._teaLeafRedraw();
+        });
+      });
     })();
 
     /* ---- Tea Explorer ---- */
@@ -2187,40 +2196,171 @@
       renderTea('matcha');
     })();
 
-    /* ---- Tea Oxidation ---- */
+    /* ---- Tea Leaf Canvas + Oxidation ---- */
     (function(){
       var levels = [
-        { name:'White',  temp:'75°C · 2 min',  pct: 12, flavors:'Sun-withered buds · barely processed · honey, melon, pale gold liquor' },
-        { name:'Green',  temp:'75–80°C · 2 min', pct: 28, flavors:'Steamed or pan-fired to halt oxidation · grassy, vegetal, bright' },
-        { name:'Oolong', temp:'85°C · 2–3 min',  pct: 58, flavors:'Partially oxidised 15–85% · ranges from floral-buttery to roasted-fruity' },
-        { name:'Black',  temp:'95°C · 4 min',    pct: 95, flavors:'Fully oxidised · bold, malty, rich — the basis for most blended teas' }
+        { name:'White',  temp:'75°C · 2 min',    pct:12, flavors:'Sun-withered buds · barely processed · honey, melon, pale gold liquor',  rgb:[210,215,175] },
+        { name:'Green',  temp:'75–80°C · 2 min', pct:32, flavors:'Steamed or pan-fired to halt oxidation · grassy, vegetal, bright',        rgb:[105,155,72]  },
+        { name:'Oolong', temp:'85°C · 2–3 min',  pct:62, flavors:'Partially oxidised 15–85% · ranges from floral-buttery to roasted-fruity',rgb:[158,112,52]  },
+        { name:'Black',  temp:'95°C · 4 min',    pct:95, flavors:'Fully oxidised · bold, malty, rich — the basis for most blended teas',   rgb:[ 52, 28, 10]  }
       ];
-      var pills = [
-        document.getElementById('tox-0'),
-        document.getElementById('tox-1'),
-        document.getElementById('tox-2'),
-        document.getElementById('tox-3')
-      ];
+
+      var canvas = document.getElementById('tea-leaf-canvas');
+      var pills  = [0,1,2,3].map(function(i){ return document.getElementById('tox-'+i); });
       var fillEl    = document.getElementById('tea-ox-fill');
       var nameEl    = document.getElementById('tox-name');
       var tempEl    = document.getElementById('tox-temp');
       var flavorsEl = document.getElementById('tox-flavors');
       if(!fillEl) return;
 
-      function switchOx(idx){
-        var lv = levels[idx];
-        pills.forEach(function(p,i){
-          if(p) p.classList.toggle('roast-pill--active', i===idx);
+      /* ── tea leaf illustration ── */
+      function drawLeaf(col){
+        if(!canvas) return;
+        var dpr  = window.devicePixelRatio||1;
+        var rect = canvas.getBoundingClientRect();
+        canvas.width  = Math.round(rect.width *dpr);
+        canvas.height = Math.round(rect.height*dpr);
+        var ctx = canvas.getContext('2d');
+        var W = canvas.width/dpr, H = canvas.height/dpr;
+
+        ctx.save();
+        ctx.scale(dpr,dpr);
+        ctx.clearRect(0,0,W,H);
+
+        var R=col[0], G=col[1], B=col[2];
+        /* ink = dark version of leaf colour */
+        var iR=Math.max(18,Math.round(R*0.38+10));
+        var iG=Math.max(10,Math.round(G*0.32+ 8));
+        var iB=Math.max( 4,Math.round(B*0.28+ 4));
+        function ink(a){ return 'rgba('+iR+','+iG+','+iB+','+a+')'; }
+
+        var cx=W*0.50, cy=H*0.50;
+        var rx=W*0.26, ry=H*0.40;
+
+        ctx.translate(cx,cy);
+        ctx.rotate(0.10); /* gentle tilt */
+
+        /* ── leaf silhouette — asymmetric Camellia sinensis
+           Right side: fuller, widens earlier, peaks around mid-leaf.
+           Left side: slightly narrower, peaks a touch lower.
+           Tip offset slightly right of centre. ── */
+        function leafPath(){
+          ctx.beginPath();
+          /* tip — nudged a little right of centre */
+          ctx.moveTo(rx*0.06, -ry);
+          /* right edge: sweeps out quickly, peaks wide around 0.08ry, tapers to base */
+          ctx.bezierCurveTo( rx*0.55,-ry*0.78,  rx*1.08,-ry*0.18,  rx*1.02, ry*0.18);
+          ctx.bezierCurveTo( rx*0.96, ry*0.55,  rx*0.58, ry*0.84,  rx*0.22, ry*0.96);
+          /* stem notch — slight dip, asymmetric */
+          ctx.bezierCurveTo( rx*0.10, ry*1.00,  rx*0.02, ry*0.94,  rx*0.02, ry*0.90);
+          ctx.bezierCurveTo( rx*0.02, ry*0.94, -rx*0.04, ry*1.00, -rx*0.14, ry*0.98);
+          /* left edge: slightly narrower and peaks a touch lower */
+          ctx.bezierCurveTo(-rx*0.46, ry*0.88, -rx*0.84, ry*0.60, -rx*0.90, ry*0.20);
+          ctx.bezierCurveTo(-rx*0.94,-ry*0.12, -rx*0.52,-ry*0.72,  rx*0.06,-ry);
+          ctx.closePath();
+        }
+
+        /* colour wash */
+        leafPath();
+        ctx.fillStyle = 'rgba('+R+','+G+','+B+',0.10)';
+        ctx.fill();
+
+        /* bottom tint */
+        var dkR=Math.max(0,Math.round(R*0.55+10));
+        var dkG=Math.max(0,Math.round(G*0.42+ 6));
+        var dkB=Math.max(0,Math.round(B*0.30+ 4));
+        var washGrad=ctx.createLinearGradient(0,-ry,0,ry);
+        washGrad.addColorStop(0,'rgba('+dkR+','+dkG+','+dkB+',0)');
+        washGrad.addColorStop(1,'rgba('+dkR+','+dkG+','+dkB+',0.12)');
+        leafPath(); ctx.fillStyle=washGrad; ctx.fill();
+
+        /* clip for interior */
+        ctx.save();
+        leafPath();
+        ctx.clip();
+
+        /* hatching — same style as bean */
+        var sp=4.0, sl=0.13;
+        ctx.lineWidth=0.50; ctx.lineCap='butt';
+        for(var yi=-ry*1.05;yi<ry*1.05;yi+=sp){
+          var sf=(yi/ry)*0.55+0.45; sf=Math.max(0,Math.min(1,sf));
+          if(sf<0.12) continue;
+          var op=sf*0.11; if(op<0.01) continue;
+          var ySq=(yi/ry)*(yi/ry); if(ySq>=1) continue;
+          var xE=rx*Math.sqrt(1-ySq)+5;
+          var jit=(Math.random()-0.5)*0.7;
+          ctx.beginPath();
+          ctx.moveTo(-xE, yi+jit+sl*xE);
+          ctx.lineTo( xE, yi+jit-sl*xE);
+          ctx.strokeStyle=ink(op); ctx.stroke();
+        }
+
+        /* ── veins ── */
+        ctx.lineCap='round';
+        /* midrib — follows the leaf's asymmetric axis, curves gently right */
+        ctx.beginPath();
+        ctx.moveTo(rx*0.06,-ry*0.92);
+        ctx.bezierCurveTo(rx*0.14,-ry*0.18, rx*0.10,ry*0.42, rx*0.04,ry*0.84);
+        ctx.strokeStyle=ink(0.48); ctx.lineWidth=Math.max(0.7,rx*0.030); ctx.stroke();
+
+        /* lateral veins — 5 pairs, right side longer than left (matches wider lobe) */
+        var veinPairs=[
+          /* [midribY_norm, rightLen, leftLen] */
+          [-0.66, 0.46, 0.30],
+          [-0.36, 0.56, 0.38],
+          [-0.02, 0.60, 0.42],
+          [ 0.28, 0.52, 0.36],
+          [ 0.56, 0.38, 0.26]
+        ];
+        veinPairs.forEach(function(v){
+          var my = v[0]*ry;
+          /* midrib x drifts right slightly */
+          var mx = rx*0.10*(1-Math.abs(v[0])*0.6);
+          ctx.lineWidth=Math.max(0.4,rx*0.018);
+          /* right vein — longer, angles upward slightly */
+          var rLen=v[1]*rx;
+          ctx.beginPath();
+          ctx.moveTo(mx,my);
+          ctx.quadraticCurveTo(mx+rLen*0.55,my-rLen*0.08, mx+rLen,my+rLen*0.18);
+          ctx.strokeStyle=ink(0.35); ctx.stroke();
+          /* left vein — shorter, similar angle */
+          var lLen=v[2]*rx;
+          ctx.beginPath();
+          ctx.moveTo(mx,my);
+          ctx.quadraticCurveTo(mx-lLen*0.55,my-lLen*0.08, mx-lLen,my+lLen*0.18);
+          ctx.strokeStyle=ink(0.35); ctx.stroke();
         });
+
+        ctx.restore(); /* end clip */
+
+        /* outline */
+        leafPath();
+        ctx.strokeStyle=ink(0.62);
+        ctx.lineWidth=Math.max(0.6,rx*0.022);
+        ctx.lineJoin='round'; ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function switchOx(idx){
+        var lv=levels[idx];
+        pills.forEach(function(p,i){ if(p) p.classList.toggle('roast-pill--active',i===idx); });
         fillEl.style.width    = lv.pct+'%';
         nameEl.textContent    = lv.name;
         tempEl.textContent    = lv.temp;
         flavorsEl.textContent = lv.flavors;
+        drawLeaf(lv.rgb);
       }
-      pills.forEach(function(p,i){
-        if(p) p.addEventListener('click', function(){ switchOx(i); });
+
+      pills.forEach(function(p,i){ if(p) p.addEventListener('click',function(){ switchOx(i); }); });
+      window.addEventListener('resize',function(){
+        var ai=pills.findIndex(function(p){ return p && p.classList.contains('roast-pill--active'); });
+        drawLeaf(levels[ai<0?0:ai].rgb);
       });
-      switchOx(0);
+      /* expose so drink-toggle can trigger a redraw when tea panel becomes visible */
+      window._teaLeafRedraw = function(){ switchOx(pills.findIndex(function(p){ return p && p.classList.contains('roast-pill--active'); })<0?0:pills.findIndex(function(p){ return p && p.classList.contains('roast-pill--active'); })); };
+      /* initial draw deferred — panel may be hidden at this point */
+      setTimeout(function(){ switchOx(0); }, 0);
     })();
 
     /* ---- Tea Quiz ---- */

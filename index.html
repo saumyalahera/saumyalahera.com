@@ -383,6 +383,14 @@
           I enjoy turning architectural constraints into design leverage — especially on mobile/embedded platforms.
         </p>
       </div>
+      <!-- Beverages trigger -->
+      <button class="lang-trigger" id="coffee-trigger" aria-label="Explore beverages">
+        <span class="lang-trigger__label">Beverages</span>
+        <svg class="lang-trigger__icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="12" height="12" aria-hidden="true">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
       <div class="pillrow__wrap" aria-label="Work and experience">
           <h2 class="about__title">Featured Skills</h2>
         <div class="pillrow" id="featured_skills" aria-label="Featured skills">
@@ -461,6 +469,14 @@
         </div>
       </div>
       
+      <!-- Places trigger -->
+      <button class="lang-trigger" id="places-trigger" aria-label="Explore countries" style="margin-top:22px;">
+        <span class="lang-trigger__label">Countries</span>
+        <svg class="lang-trigger__icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="12" height="12" aria-hidden="true">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
       <!-- Duolingo Cells -->
       <!-- Duolingo -->
       <br/><br/>
@@ -542,11 +558,9 @@
       <!--
       Games
       -->
-      <br/>
-      <br/>
       <div class="pillrow__wrap" aria-label="Work and experience">
         <!-- Learn Languages trigger — inline, above heading -->
-        <button class="lang-trigger" id="lang-trigger" aria-label="Explore languages">
+        <button class="lang-trigger" id="lang-trigger" aria-label="Explore languages" style="margin-top:22px;">
           <span class="lang-trigger__label">Learn Languages</span>
           <svg class="lang-trigger__icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="12" height="12" aria-hidden="true">
             <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -628,12 +642,6 @@
       <span id="footer-updated-date">JAN,6 2026</span>
       <span>VIA THE APP</span>
     </p>
-    <button class="coffee-trigger" id="coffee-trigger" aria-label="Explore coffee">
-      <span class="coffee-trigger__label">Beverages</span>
-      <svg class="coffee-trigger__chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
-        <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
   </footer>
 
   <script src="script.js" defer></script>
@@ -1112,6 +1120,125 @@
 
 
   <!-- Coffee Fullscreen Overlay -->
+  <!-- ===== Places Overlay ===== -->
+  <div class="coffee-overlay places-overlay" id="places-overlay" role="dialog" aria-modal="true" aria-label="Countries" aria-hidden="true">
+    <!-- background shader — Canvas 2D blobs like language page -->
+    <canvas id="places-shader" class="lang-shader"></canvas>
+    <div class="coffee-overlay__scroll">
+      <div class="coffee-overlay__content">
+
+        <div class="coffee-overlay__header">
+          <p class="footer-signature">
+            <span>Saumya</span>
+            <img class="footer-avatar" src="assets/avatar.jpg" alt="Saumya Lahera" />
+            <span>Lahera</span>
+          </p>
+          <p class="footer-websiteupdate" style="margin-top:4px;">
+            <span>COUNTRIES</span>
+            <span>&amp;</span>
+            <span>WORLD</span>
+          </p>
+          <button class="coffee-overlay__close" id="places-close" aria-label="Close countries">
+            <span class="coffee-overlay__close-label">Close</span>
+            <svg class="coffee-overlay__close-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- intro -->
+        <div class="coffee-sub-section" style="text-align:center;padding-bottom:0;">
+          <h2 class="about__title" style="font-size:clamp(2rem,4.5vw,3rem);margin-bottom:10px;">Countries of the World</h2>
+          <p class="coffee-sub-intro" style="max-width:480px;margin:0 auto;">Every country on Earth — capitals, currencies, languages, and what makes each one genuinely distinct.</p>
+        </div>
+
+        <br/>
+
+        <!-- Country Explorer -->
+        <div class="coffee-sub-section">
+          <span class="places-count" id="places-count" style="display:block;text-align:center;margin-bottom:8px;"></span>
+
+          <!-- ── Filter bar ── -->
+          <div class="places-filters">
+            <div class="places-alpha" id="places-alpha"></div>
+            <div class="places-filter-row">
+              <select class="places-select" id="pf-continent" aria-label="Filter by continent">
+                <option value="">All Continents</option>
+                <option value="Africa">Africa</option>
+                <option value="Asia">Asia</option>
+                <option value="Europe">Europe</option>
+                <option value="North America">North America</option>
+                <option value="South America">South America</option>
+                <option value="Oceania">Oceania</option>
+              </select>
+              <select class="places-select" id="pf-pop" aria-label="Filter by population">
+                <option value="">Any Population</option>
+                <option value="Micro">Micro (&lt;500K)</option>
+                <option value="Small">Small (&lt;10M)</option>
+                <option value="Medium">Medium (&lt;50M)</option>
+                <option value="Large">Large (50M+)</option>
+              </select>
+              <select class="places-select" id="pf-lang" aria-label="Filter by language">
+                <option value="">Any Language</option>
+                <option value="English">English</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="Russian">Russian</option>
+                <option value="Other">Other</option>
+              </select>
+              <select class="places-select" id="pf-economy" aria-label="Filter by economy">
+                <option value="">Any Economy</option>
+                <option value="High Income">High Income</option>
+                <option value="Middle Income">Middle Income</option>
+                <option value="Low Income">Low Income</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="coffee-explorer places-explorer" id="places-explorer">
+            <div class="coffee-explorer__sidebar" id="places-sidebar"></div>
+            <div class="coffee-explorer__detail" id="places-detail" aria-live="polite"></div>
+          </div>
+        </div>
+
+        <br/>
+
+        <!-- Capital Test -->
+        <div class="coffee-sub-section">
+          <p class="kicker">Test Yourself</p>
+          <h3 class="coffee-sub-title">Capital Cities</h3>
+          <p class="coffee-sub-intro">196 countries. 12 random capitals per round — can you name them all?</p>
+
+          <div class="places-test" id="places-test">
+            <!-- idle -->
+            <div class="places-test__idle" id="pt-idle">
+              <button class="lang-test__start" id="pt-start">Start the test →</button>
+            </div>
+            <!-- game -->
+            <div class="lang-test__game--hidden" id="pt-game">
+              <div class="lang-test__progress"><div class="lang-test__bar" id="pt-bar"></div></div>
+              <div class="lang-test__counter" id="pt-counter">1 / 12</div>
+              <div class="places-test__prompt" id="pt-prompt"></div>
+              <div class="places-test__continent" id="pt-continent"></div>
+              <div class="lang-test__options" id="pt-options"></div>
+            </div>
+            <!-- result -->
+            <div class="lang-test__game--hidden" id="pt-result">
+              <div class="lang-test__score" id="pt-score"></div>
+              <p class="lang-test__verdict" id="pt-verdict"></p>
+              <button class="lang-test__start lang-test__start--ghost" id="pt-retry">Try again</button>
+            </div>
+          </div>
+        </div>
+
+        <br/><br/>
+      </div>
+    </div>
+  </div>
+  <!-- ===== /Places Overlay ===== -->
+
   <!-- ===== Language Overlay ===== -->
   <div class="coffee-overlay lang-overlay" id="lang-overlay" role="dialog" aria-modal="true" aria-label="Languages" aria-hidden="true">
     <canvas class="lang-shader" id="lang-shader"></canvas>
@@ -1200,9 +1327,7 @@
             <span>Lahera</span>
           </p>
           <p class="footer-websiteupdate" style="margin-top:4px;">
-            <span>LAST UPDATED</span>
-            <span id="overlay-updated-date">JAN,6 2026</span>
-            <span>VIA THE APP</span>
+            <span>BEVERAGES</span>
           </p>
           <button class="coffee-overlay__close" id="coffee-close" aria-label="Close coffee">
             <span class="coffee-overlay__close-label">Close</span>
@@ -2921,6 +3046,530 @@
 
     })();
 
+    /* ---- Places Section ---- */
+    (function(){
+      /* open / close */
+      var trigger  = document.getElementById('places-trigger');
+      var overlay  = document.getElementById('places-overlay');
+      var closeBtn = document.getElementById('places-close');
+      if(!trigger||!overlay) return;
+      function openPlaces(){
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden','false');
+        trigger.classList.add('is-hidden');
+        document.body.style.overflow='hidden';
+      }
+      function closePlaces(){
+        overlay.classList.remove('is-open');
+        overlay.setAttribute('aria-hidden','true');
+        trigger.classList.remove('is-hidden');
+        document.body.style.overflow='';
+        setTimeout(function(){
+          var s=overlay.querySelector('.coffee-overlay__scroll');
+          if(s) s.scrollTop=0;
+        },680);
+      }
+      trigger.addEventListener('click',openPlaces);
+      closeBtn.addEventListener('click',closePlaces);
+      document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'&&overlay.classList.contains('is-open')) closePlaces();
+      });
+
+      /* ── places shader — Canvas 2D drifting blobs (same as language page) ── */
+      (function(){
+        var cv = document.getElementById('places-shader');
+        if(!cv) return;
+        var ctx2 = cv.getContext('2d');
+        var t2 = 0;
+        var blobs = [
+          { bx:0.20, by:0.28, br:0.58, c:[148,180,210] },
+          { bx:0.75, by:0.58, br:0.50, c:[168,210,180] },
+          { bx:0.50, by:0.80, br:0.44, c:[210,185,200] }
+        ];
+        function resizePl(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
+        function drawPl(){
+          if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawPl); return; }
+          t2 += 0.005;
+          ctx2.clearRect(0,0,cv.width,cv.height);
+          blobs.forEach(function(b,i){
+            var x=(b.bx+Math.sin(t2*0.6+i*1.8)*0.14)*cv.width;
+            var y=(b.by+Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
+            var r=b.br*Math.min(cv.width,cv.height);
+            var g=ctx2.createRadialGradient(x,y,0,x,y,r);
+            g.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
+            g.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
+            ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
+            ctx2.fillStyle=g; ctx2.fill();
+          });
+          requestAnimationFrame(drawPl);
+        }
+        window.addEventListener('resize', resizePl);
+        resizePl();
+        drawPl();
+      })();
+
+      /* ── country data ── */
+      var PLACES = [
+        // Africa
+        {k:'algeria',      name:'Algeria',               continent:'Africa',        capital:'Algiers',        currency:'Algerian Dinar (DZD)',   language:'Arabic, Tamazight', pop:'45M',  desc:'Africa\'s largest country by area, Algeria is a land of vast Saharan desert, Roman ruins, and a Mediterranean coast. The ancient city of Timgad, built by the Romans in 100 CE, was buried by sand for centuries before its rediscovery.', fact:'Algeria is the largest country in Africa and the 10th largest in the world.'},
+        {k:'angola',       name:'Angola',                continent:'Africa',        capital:'Luanda',          currency:'Angolan Kwanza (AOA)',   language:'Portuguese',        pop:'34M',  desc:'Angola sits on the Atlantic coast of southern Africa, rich in oil and diamonds. Luanda is one of the most expensive cities in the world for expatriates. The country has one of the world\'s fastest-growing economies.', fact:'Angola has one of the highest rates of biodiversity in Africa, with many endemic species.'},
+        {k:'benin',        name:'Benin',                 continent:'Africa',        capital:'Porto-Novo',      currency:'West African CFA Franc', language:'French',            pop:'13M',  desc:'Benin is regarded as the birthplace of the Vodun (Voodoo) religion, which spread to the Americas during the slave trade. The ancient Kingdom of Dahomey was one of West Africa\'s most powerful states.', fact:'Benin\'s Vodun religion is practiced by 17% of the population and is an official religion.'},
+        {k:'botswana',     name:'Botswana',              continent:'Africa',        capital:'Gaborone',        currency:'Botswanan Pula (BWP)',   language:'English, Tswana',   pop:'2.6M', desc:'Botswana transformed from one of Africa\'s poorest countries at independence in 1966 to a middle-income nation thanks to diamond mining. The Okavango Delta — the world\'s largest inland delta — floods seasonally creating a stunning wildlife oasis.', fact:'Botswana is one of Africa\'s most stable democracies and has the world\'s largest elephant population.'},
+        {k:'burkinafaso',  name:'Burkina Faso',          continent:'Africa',        capital:'Ouagadougou',     currency:'West African CFA Franc', language:'French',            pop:'22M',  desc:'Burkina Faso, meaning "Land of Incorruptible People," is a landlocked West African nation known for its vibrant arts scene and the FESPACO film festival — the largest African cinema event in the world.', fact:'Burkina Faso hosts FESPACO, the largest and most prestigious African film festival.'},
+        {k:'burundi',      name:'Burundi',               continent:'Africa',        capital:'Gitega',          currency:'Burundian Franc (BIF)',  language:'Kirundi, French',   pop:'12M',  desc:'Burundi is one of the world\'s smallest and poorest countries, a landlocked nation in the African Great Lakes region. Lake Tanganyika — the world\'s second deepest lake — forms its western border.', fact:'Lake Tanganyika, on Burundi\'s border, is the second deepest lake in the world at 1,470m.'},
+        {k:'caboverde',    name:'Cabo Verde',            continent:'Africa',        capital:'Praia',           currency:'Cape Verdean Escudo',   language:'Portuguese, Kriolu', pop:'600K', desc:'An archipelago of ten volcanic islands in the Atlantic, Cabo Verde was uninhabited when Portuguese explorers arrived in 1456. It developed as a key stop in the transatlantic slave trade and today has a distinctive Creole culture.', fact:'Cabo Verde has no rivers — all fresh water comes from rainfall and desalination.'},
+        {k:'cameroon',     name:'Cameroon',              continent:'Africa',        capital:'Yaoundé',         currency:'Central African CFA',   language:'French, English',   pop:'28M',  desc:'Called "Africa in miniature," Cameroon encompasses almost every climate and geography found across the continent — rainforest, savanna, mountains, desert, and a beautiful coastline. It is one of the most biodiverse countries in the world.', fact:'Cameroon is called "Africa in miniature" for its extraordinary geographic and climatic diversity.'},
+        {k:'car',          name:'Central African Rep.',  continent:'Africa',        capital:'Bangui',          currency:'Central African CFA',   language:'Sango, French',     pop:'5M',   desc:'One of the world\'s most resource-rich yet least-developed countries, the Central African Republic holds large reserves of diamonds, gold, and uranium. It has faced decades of political instability since independence from France in 1960.', fact:'The CAR is home to the Dzanga-Sangha reserve, one of the best places in Africa to see forest elephants.'},
+        {k:'chad',         name:'Chad',                  continent:'Africa',        capital:'N\'Djamena',      currency:'Central African CFA',   language:'French, Arabic',    pop:'17M',  desc:'Chad is a landlocked country dominated by the Sahara desert in the north. Lake Chad — once one of Africa\'s largest lakes — has shrunk by 90% since the 1960s due to climate change and human use, threatening millions of people.', fact:'Lake Chad has shrunk by 90% since the 1960s — one of the world\'s most visible climate disasters.'},
+        {k:'comoros',      name:'Comoros',               continent:'Africa',        capital:'Moroni',          currency:'Comorian Franc (KMF)',  language:'Comorian, Arabic, French', pop:'900K', desc:'An archipelago of three islands in the Indian Ocean, Comoros is the world\'s largest producer of ylang-ylang, used in perfumery. The active volcano Mount Karthala on Grand Comore is one of the largest active volcanoes in the world.', fact:'Comoros produces two-thirds of the world\'s ylang-ylang — the key ingredient in Chanel No. 5.'},
+        {k:'congobrazza',  name:'Congo (Republic)',      continent:'Africa',        capital:'Brazzaville',     currency:'Central African CFA',   language:'French',            pop:'6M',   desc:'The Republic of the Congo sits on the Congo River, which forms its border with the much larger DRC. It has significant oil wealth and contains part of the Congo Basin rainforest, the second-largest tropical forest on Earth.', fact:'Brazzaville and Kinshasa are the world\'s two closest capital cities — separated only by the Congo River.'},
+        {k:'drc',          name:'Congo (DR)',            continent:'Africa',        capital:'Kinshasa',        currency:'Congolese Franc (CDF)', language:'French',            pop:'100M', desc:'The Democratic Republic of Congo is Africa\'s second-largest country and contains 70% of Africa\'s forest. It holds some of the world\'s largest deposits of cobalt, essential for electric vehicle batteries, yet remains one of the poorest nations on Earth.', fact:'The DRC contains 80% of the world\'s coltan, used in every smartphone and laptop.'},
+        {k:'djibouti',     name:'Djibouti',              continent:'Africa',        capital:'Djibouti City',   currency:'Djiboutian Franc (DJF)', language:'French, Arabic',   pop:'1M',   desc:'One of the world\'s smallest countries, Djibouti sits at the mouth of the Red Sea — one of the world\'s most important shipping lanes. Its strategic location means it hosts more foreign military bases than almost any other country.', fact:'Djibouti hosts military bases from the US, France, China, Japan, and Italy simultaneously.'},
+        {k:'egypt',        name:'Egypt',                 continent:'Africa',        capital:'Cairo',           currency:'Egyptian Pound (EGP)',  language:'Arabic',            pop:'106M', desc:'Egypt\'s Nile Valley nurtured one of the oldest civilisations on Earth — 5,000 years of continuous history. The Great Pyramid of Giza is the only surviving Wonder of the Ancient World. 90% of Egypt\'s population lives within a few kilometres of the Nile.', fact:'The Great Pyramid of Giza was the tallest man-made structure in the world for 3,800 years.'},
+        {k:'equatorialguinea', name:'Equatorial Guinea', continent:'Africa',       capital:'Malabo',          currency:'Central African CFA',   language:'Spanish, French, Portuguese', pop:'1.5M', desc:'The only Spanish-speaking country in Africa, Equatorial Guinea became one of sub-Saharan Africa\'s largest oil producers after offshore discoveries in the 1990s. It has an unusual geography — a mainland portion and an island capital, Malabo.', fact:'Equatorial Guinea is the only African country where Spanish is an official language.'},
+        {k:'eritrea',      name:'Eritrea',               continent:'Africa',        capital:'Asmara',          currency:'Eritrean Nakfa (ERN)',  language:'Tigrinya, Arabic',  pop:'3.5M', desc:'One of the world\'s youngest nations, Eritrea gained independence from Ethiopia in 1993 after a 30-year war. Asmara, its capital, is UNESCO-listed for its extraordinary collection of Italian Modernist and Art Deco architecture from the colonial era.', fact:'Asmara\'s Italian Modernist architecture from the 1930s is a UNESCO World Heritage Site.'},
+        {k:'eswatini',     name:'Eswatini',              continent:'Africa',        capital:'Mbabane',         currency:'Swazi Lilangeni (SZL)', language:'Swati, English',    pop:'1.2M', desc:'Eswatini (formerly Swaziland) is one of the world\'s last absolute monarchies. The tiny landlocked kingdom is entirely surrounded by South Africa and Mozambique. It has the world\'s highest HIV/AIDS prevalence rate.', fact:'Eswatini is one of the last remaining absolute monarchies in the world.'},
+        {k:'ethiopia',     name:'Ethiopia',              continent:'Africa',        capital:'Addis Ababa',     currency:'Ethiopian Birr (ETB)',  language:'Amharic',           pop:'125M', desc:'Ethiopia is the only African country never colonised by a European power. It is the birthplace of coffee, Christianity in Africa, and Lucy — the 3.2-million-year-old human ancestor skeleton. The country has 11 UNESCO World Heritage Sites.', fact:'Ethiopia is the only African country never colonised — it defeated Italy at the Battle of Adwa in 1896.'},
+        {k:'gabon',        name:'Gabon',                 continent:'Africa',        capital:'Libreville',      currency:'Central African CFA',  language:'French',             pop:'2.3M', desc:'One of Africa\'s most forested countries, Gabon has set aside 11% of its territory as national parks. It is one of the few places where forest elephants, gorillas, and hippos are found on the beach. Oil wealth gives it one of Africa\'s highest GDPs per capita.', fact:'Gabon set aside 11% of its territory as national parks — one of the highest proportions in the world.'},
+        {k:'gambia',       name:'Gambia',                continent:'Africa',        capital:'Banjul',          currency:'Gambian Dalasi (GMD)',  language:'English',           pop:'2.6M', desc:'The Gambia is Africa\'s smallest country — a thin sliver of land along the Gambia River, almost entirely surrounded by Senegal. It stretches only 50km wide at its widest point. Despite its size, it has a rich birdlife with over 600 recorded species.', fact:'The Gambia is Africa\'s smallest country — only 50km wide and entirely surrounded by Senegal.'},
+        {k:'ghana',        name:'Ghana',                 continent:'Africa',        capital:'Accra',           currency:'Ghanaian Cedi (GHS)',   language:'English',           pop:'33M',  desc:'Ghana was the first sub-Saharan African country to gain independence, in 1957, and remains one of Africa\'s most stable democracies. It was the heart of the ancient Ghana Empire and later the Gold Coast under British colonial rule.', fact:'Ghana was the first sub-Saharan African country to gain independence from colonial rule, in 1957.'},
+        {k:'guinea',       name:'Guinea',                continent:'Africa',        capital:'Conakry',         currency:'Guinean Franc (GNF)',   language:'French',            pop:'13M',  desc:'Guinea holds about half of the world\'s bauxite reserves — the ore used to make aluminium — making it one of the world\'s most mineral-rich countries. The Niger, Senegal, and Gambia rivers all rise in Guinea\'s Fouta Djallon highlands.', fact:'Guinea holds nearly half of the world\'s bauxite reserves — the primary ore for aluminium production.'},
+        {k:'guineabissau', name:'Guinea-Bissau',         continent:'Africa',        capital:'Bissau',          currency:'West African CFA Franc', language:'Portuguese',       pop:'2M',   desc:'One of West Africa\'s smallest countries, Guinea-Bissau has experienced numerous coups since independence in 1974. Its Bijagós Archipelago — 88 islands off the coast — is a UNESCO biosphere reserve and one of Africa\'s great wildlife havens.', fact:'Guinea-Bissau\'s Bijagós Archipelago is a UNESCO Biosphere Reserve home to saltwater hippos.'},
+        {k:'ivorycoast',   name:'Ivory Coast',           continent:'Africa',        capital:'Yamoussoukro',    currency:'West African CFA Franc', language:'French',           pop:'27M',  desc:'The world\'s largest producer of cocoa, Ivory Coast supplies about 45% of the global cocoa market. The Basilica of Our Lady of Peace in Yamoussoukro is the world\'s largest church by area — larger than St. Peter\'s in Rome.', fact:'Ivory Coast produces 45% of the world\'s cocoa and its basilica surpasses St. Peter\'s in Rome in area.'},
+        {k:'kenya',        name:'Kenya',                 continent:'Africa',        capital:'Nairobi',         currency:'Kenyan Shilling (KES)', language:'Swahili, English',  pop:'55M',  desc:'Kenya straddles the equator and is home to the Great Rift Valley — a geological scar visible from space. Nairobi National Park is the world\'s only wildlife reserve inside a capital city. Kenyan athletes dominate long-distance running worldwide.', fact:'Nairobi National Park is the world\'s only wildlife reserve located within a capital city.'},
+        {k:'lesotho',      name:'Lesotho',               continent:'Africa',        capital:'Maseru',          currency:'Lesotho Loti (LSL)',    language:'Sesotho, English',  pop:'2.2M', desc:'Lesotho is the highest country in the world — every point in the country is above 1,000 metres. It is entirely surrounded by South Africa and is famous for its pony-trekking routes through the Maluti Mountains.', fact:'Every single point in Lesotho is above 1,000 metres — making it the highest country on Earth.'},
+        {k:'liberia',      name:'Liberia',               continent:'Africa',        capital:'Monrovia',        currency:'Liberian Dollar (LRD)', language:'English',           pop:'5.4M', desc:'Liberia was founded in 1822 by freed American slaves — it is Africa\'s oldest republic. Monrovia is named after US President James Monroe. The country has the largest rubber plantation in the world, operated by Firestone.', fact:'Liberia was founded by freed American slaves in 1822 and is Africa\'s oldest republic.'},
+        {k:'libya',        name:'Libya',                 continent:'Africa',        capital:'Tripoli',         currency:'Libyan Dinar (LYD)',    language:'Arabic',            pop:'7M',   desc:'Libya is 90% desert — almost entirely Sahara. It holds Africa\'s largest proven oil reserves. The ancient Greek colony of Cyrene and the Roman city of Leptis Magna are two of the Mediterranean world\'s finest archaeological sites.', fact:'Libya holds Africa\'s largest proven oil reserves and is 90% covered by the Sahara Desert.'},
+        {k:'madagascar',   name:'Madagascar',            continent:'Africa',        capital:'Antananarivo',    currency:'Malagasy Ariary (MGA)', language:'Malagasy, French',  pop:'29M',  desc:'Madagascar separated from mainland Africa 165 million years ago, allowing unique species to evolve in isolation. Over 90% of its wildlife exists nowhere else on Earth. It is the world\'s fourth-largest island and the primary source of the world\'s vanilla.', fact:'Over 90% of Madagascar\'s plant and animal species are found nowhere else on Earth.'},
+        {k:'malawi',       name:'Malawi',                continent:'Africa',        capital:'Lilongwe',        currency:'Malawian Kwacha (MWK)', language:'Chichewa, English', pop:'20M',  desc:'Malawi is known as the "Warm Heart of Africa" for its friendly people. Lake Malawi — one of Africa\'s Great Rift Valley lakes — contains more species of fish than any other lake in the world, including 500+ cichlid species.', fact:'Lake Malawi contains more fish species than any other lake on Earth — over 500 species of cichlids.'},
+        {k:'mali',         name:'Mali',                  continent:'Africa',        capital:'Bamako',          currency:'West African CFA Franc', language:'French',           pop:'23M',  desc:'Mali was home to three of West Africa\'s greatest empires — Ghana, Mali, and Songhai. Timbuktu was a legendary centre of Islamic scholarship, holding over 700,000 manuscripts. The Dogon people\'s cliff-side villages are among Africa\'s most extraordinary sights.', fact:'Timbuktu\'s libraries hold over 700,000 ancient manuscripts — a centre of medieval Islamic learning.'},
+        {k:'mauritania',   name:'Mauritania',            continent:'Africa',        capital:'Nouakchott',      currency:'Mauritanian Ouguiya',   language:'Arabic',            pop:'4.6M', desc:'Mauritania is where the Arab world meets sub-Saharan Africa. Most of its territory is Sahara desert. The ancient city of Chinguetti was one of Islam\'s seven holy cities — a caravan hub that now risks being swallowed by sand.', fact:'Mauritania only officially abolished slavery in 1981 — the last country in the world to do so.'},
+        {k:'mauritius',    name:'Mauritius',             continent:'Africa',        capital:'Port Louis',      currency:'Mauritian Rupee (MUR)', language:'English, French, Creole', pop:'1.3M', desc:'Mauritius is a volcanic island nation in the Indian Ocean, famous for its beaches and as the home of the now-extinct dodo. It has one of Africa\'s strongest economies and highest standards of living, with a diverse population of Indian, African, and European descent.', fact:'Mauritius was the only known home of the dodo — the bird that became a symbol of extinction.'},
+        {k:'morocco',      name:'Morocco',               continent:'Africa',        capital:'Rabat',           currency:'Moroccan Dirham (MAD)', language:'Arabic, Tamazight', pop:'37M',  desc:'The gateway between Africa and Europe — only 14km of water separate Morocco from Spain. The University of al-Qarawiyyin in Fez, founded in 859 CE, is the world\'s oldest continuously operating university. Morocco produces 70% of the world\'s argan oil.', fact:'The University of al-Qarawiyyin, founded 859 CE, is the world\'s oldest continuously operating university.'},
+        {k:'mozambique',   name:'Mozambique',            continent:'Africa',        capital:'Maputo',          currency:'Mozambican Metical (MZN)', language:'Portuguese',     pop:'33M',  desc:'Mozambique has one of the world\'s longest coastlines — 2,500km along the Indian Ocean. It gained independence from Portugal in 1975 after a decade-long war, then endured 16 years of civil war. The Bazaruto Archipelago is one of Africa\'s finest marine environments.', fact:'Mozambique\'s coastline stretches 2,500km — one of the longest in Africa.'},
+        {k:'namibia',      name:'Namibia',               continent:'Africa',        capital:'Windhoek',        currency:'Namibian Dollar (NAD)', language:'English',           pop:'2.6M', desc:'Namibia is the least densely populated country in Africa. The Namib Desert — the world\'s oldest desert — runs along its entire Atlantic coast. The orange sand dunes of Sossusvlei are among the tallest in the world, rising over 300 metres.', fact:'Namibia is the least densely populated country in Africa — 3 people per square kilometre.'},
+        {k:'niger',        name:'Niger',                 continent:'Africa',        capital:'Niamey',          currency:'West African CFA Franc', language:'French',           pop:'25M',  desc:'Niger is one of the hottest countries on Earth — 80% is Sahara or Sahel. It has the world\'s largest uranium reserves. The "W" National Park, shared with Burkina Faso and Benin, is one of the most important wildlife areas in West Africa.', fact:'Niger contains the world\'s largest uranium reserves, supplying power to much of Europe.'},
+        {k:'nigeria',      name:'Nigeria',               continent:'Africa',        capital:'Abuja',           currency:'Nigerian Naira (NGN)',  language:'English',           pop:'220M', desc:'Africa\'s most populous country and largest economy. Nigeria\'s Nollywood produces more films annually than Hollywood — it is the world\'s second-largest film industry by volume. More English speakers live in Nigeria than in the United Kingdom.', fact:'Nollywood produces around 2,500 films per year — more than Hollywood and second only to Bollywood.'},
+        {k:'rwanda',       name:'Rwanda',                continent:'Africa',        capital:'Kigali',          currency:'Rwandan Franc (RWF)',   language:'Kinyarwanda, French, English', pop:'14M', desc:'Rwanda has achieved a remarkable transformation since the 1994 genocide, becoming one of Africa\'s fastest-growing economies. It is the cleanest country in Africa — plastic bags are banned and the last Saturday of every month is a national cleaning day called Umuganda.', fact:'Rwanda is one of the world\'s cleanest countries — plastic bags are completely banned.'},
+        {k:'senegal',      name:'Senegal',               continent:'Africa',        capital:'Dakar',           currency:'West African CFA Franc', language:'French',           pop:'17M',  desc:'Senegal is one of West Africa\'s most stable democracies. Dakar, at the westernmost point of Africa, hosted the finish of the famous Paris-Dakar rally. The country\'s music — mbalax — is known worldwide, and wrestling is the national sport.', fact:'Dakar sits at Cap-Vert, the westernmost point of mainland Africa.'},
+        {k:'sierraleone',  name:'Sierra Leone',          continent:'Africa',        capital:'Freetown',        currency:'Sierra Leonean Leone',  language:'English',           pop:'8M',   desc:'Sierra Leone was a British colony founded partly as a home for freed slaves — Freetown\'s name reflects this history. The country has some of the world\'s richest diamond deposits. Despite devastating civil war in the 1990s, it has made significant progress in rebuilding.', fact:'Freetown was founded in 1787 as a home for freed Black loyalists and liberated Africans.'},
+        {k:'somalia',      name:'Somalia',               continent:'Africa',        capital:'Mogadishu',       currency:'Somali Shilling (SOS)', language:'Somali, Arabic',    pop:'17M',  desc:'Somalia has the longest coastline of any African mainland country — 3,333km. It is also considered the world\'s most homogeneous country in terms of ethnicity, language, and religion. The Somali people are known as one of the world\'s greatest nomadic cultures.', fact:'Somalia has the longest coastline in mainland Africa at 3,333km.'},
+        {k:'southafrica',  name:'South Africa',          continent:'Africa',        capital:'Pretoria (exec.)', currency:'South African Rand (ZAR)', language:'11 official languages', pop:'60M', desc:'South Africa has three capitals and 11 official languages — more than any country except Bolivia. Home to Nelson Mandela, the first freely-elected Black president, it abolished apartheid in 1994. The Kruger National Park is one of the world\'s greatest wildlife reserves.', fact:'South Africa has 3 capitals and 11 official languages — the most of any country in the world.'},
+        {k:'southsudan',   name:'South Sudan',           continent:'Africa',        capital:'Juba',            currency:'South Sudanese Pound',  language:'English',           pop:'11M',  desc:'South Sudan became the world\'s newest country in 2011 after separating from Sudan following a referendum. Despite its enormous oil wealth, it has struggled with civil war and humanitarian crisis. The Sudd — one of the world\'s largest swamps — covers a third of the country.', fact:'South Sudan is the world\'s newest country, having gained independence from Sudan in 2011.'},
+        {k:'sudan',        name:'Sudan',                 continent:'Africa',        capital:'Khartoum',        currency:'Sudanese Pound (SDG)',  language:'Arabic, English',   pop:'46M',  desc:'Sudan has more ancient pyramids than Egypt — over 200 Nubian pyramids built by the Kushite kingdoms. The country sits where the Blue and White Nile rivers merge at Khartoum. It was the largest country in Africa until South Sudan\'s independence in 2011.', fact:'Sudan has more ancient pyramids than Egypt — over 200 pyramids built by Nubian kingdoms.'},
+        {k:'tanzania',     name:'Tanzania',              continent:'Africa',        capital:'Dodoma',          currency:'Tanzanian Shilling (TZS)', language:'Swahili, English', pop:'63M', desc:'Tanzania is home to Mount Kilimanjaro — Africa\'s highest peak at 5,895m — and the Serengeti, site of the greatest wildlife migration on Earth. Zanzibar Island, a semi-autonomous territory, was a major centre of the spice trade and Arab slave trade.', fact:'The Serengeti hosts the world\'s largest land animal migration — 1.5 million wildebeest annually.'},
+        {k:'togo',         name:'Togo',                  continent:'Africa',        capital:'Lomé',            currency:'West African CFA Franc', language:'French',           pop:'8.5M', desc:'One of Africa\'s smallest countries, Togo has a narrow strip of coastline just 56km long. It is one of the world\'s largest producers of phosphate. Lomé, the capital, is notable for being the only African capital city on a country\'s western border.', fact:'Lomé is the only capital city in Africa located on its country\'s western border.'},
+        {k:'tunisia',      name:'Tunisia',               continent:'Africa',        capital:'Tunis',           currency:'Tunisian Dinar (TND)',  language:'Arabic',            pop:'12M',  desc:'Tunisia led the Arab Spring in 2010 — the first country in the region where popular protests toppled a government. It was the heartland of ancient Carthage, Rome\'s greatest rival. Djerba Island is one of the oldest continuously inhabited places in the world.', fact:'Tunisia sparked the Arab Spring in 2010 — the revolutionary wave that swept across the Arab world.'},
+        {k:'uganda',       name:'Uganda',                continent:'Africa',        capital:'Kampala',         currency:'Ugandan Shilling (UGX)', language:'English, Swahili', pop:'48M',  desc:'Uganda, the "Pearl of Africa," contains the source of the White Nile at Lake Victoria. It has the world\'s second-highest concentration of primate species and is home to half the world\'s remaining mountain gorillas. Kampala sits on seven hills.', fact:'Uganda is home to half the world\'s remaining mountain gorilla population.'},
+        {k:'zambia',       name:'Zambia',                continent:'Africa',        capital:'Lusaka',          currency:'Zambian Kwacha (ZMW)',  language:'English',           pop:'19M',  desc:'Zambia is defined by the Zambezi River, which forms Victoria Falls — one of the world\'s largest waterfalls, called "Mosi-oa-Tunya" (the smoke that thunders) by locals. David Livingstone, the first European to see the falls, named them after Queen Victoria.', fact:'Victoria Falls on Zambia\'s border is the world\'s largest waterfall by combined width and height.'},
+        {k:'saotome',      name:'São Tomé & Príncipe',   continent:'Africa',        capital:'São Tomé',        currency:'São Tomé Dobra (STN)', language:'Portuguese',       pop:'220K', desc:'São Tomé & Príncipe is a tiny island nation in the Gulf of Guinea — one of Africa\'s smallest and least visited countries. Straddling the Equator, it was uninhabited until Portuguese settlers arrived in the 1400s. Today it is known as the "Chocolate Islands" for its exceptional cacao production.', fact:'São Tomé & Príncipe straddles the Equator and was uninhabited until the Portuguese arrived in the 1400s.'},
+        {k:'seychelles',   name:'Seychelles',             continent:'Africa',        capital:'Victoria',        currency:'Seychellois Rupee (SCR)', language:'Seychellois Creole, English, French', pop:'98K', desc:'The Seychelles consists of 115 islands scattered across the Indian Ocean and is home to the world\'s largest seed — the coco de mer palm, which produces a nut weighing up to 25 kg. It is one of Africa\'s most prosperous nations per capita and has some of Earth\'s most pristine beaches.', fact:'The coco de mer palm of Seychelles produces the world\'s largest seed — up to 25 kg.'},
+        {k:'zimbabwe',     name:'Zimbabwe',              continent:'Africa',        capital:'Harare',          currency:'Zimbabwe Gold (ZiG)',   language:'Shona, Ndebele, English', pop:'16M', desc:'Zimbabwe is home to the ruins of Great Zimbabwe — a medieval stone city that was the capital of the Munhumutapa Empire. The country experienced one of the worst hyperinflations in history, issuing a 100-trillion-dollar banknote in 2009.', fact:'Zimbabwe issued a 100-trillion-dollar banknote in 2009 during one of history\'s worst hyperinflations.'},
+        // Asia
+        {k:'afghanistan',  name:'Afghanistan',           continent:'Asia',          capital:'Kabul',           currency:'Afghan Afghani (AFN)',  language:'Dari, Pashto',      pop:'40M',  desc:'Afghanistan sits at the crossroads of Central and South Asia, a position that made it historically crucial on the Silk Road. The Bamiyan Valley — site of the giant Buddha statues destroyed by the Taliban in 2001 — was once a thriving Buddhist centre.', fact:'Afghanistan\'s Hindu Kush mountains were called "the roof of the world" by ancient Silk Road traders.'},
+        {k:'armenia',      name:'Armenia',               continent:'Asia',          capital:'Yerevan',         currency:'Armenian Dram (AMD)',   language:'Armenian',          pop:'3M',   desc:'Armenia became the world\'s first nation to adopt Christianity as its state religion, in 301 CE. The Armenian Apostolic Church uses a unique alphabet invented in 405 CE. Mount Ararat — the biblical resting place of Noah\'s Ark — dominates the skyline but lies in Turkey.', fact:'Armenia was the first country to officially adopt Christianity as a state religion, in 301 CE.'},
+        {k:'azerbaijan',   name:'Azerbaijan',            continent:'Asia',          capital:'Baku',            currency:'Azerbaijani Manat (AZN)', language:'Azerbaijani',      pop:'10M',  desc:'Azerbaijan sits on the Caspian Sea and was among the first places where oil was commercially drilled, in 1846. Baku\'s old city, Icherisheher, is a UNESCO World Heritage Site. The country produces pomegranates so important they appear on its national emblem.', fact:'Azerbaijan drilled the world\'s first oil well in 1846 — 13 years before the famous Pennsylvania well.'},
+        {k:'bahrain',      name:'Bahrain',               continent:'Asia',          capital:'Manama',          currency:'Bahraini Dinar (BHD)',  language:'Arabic',            pop:'1.7M', desc:'The smallest Arab country and a tiny island kingdom in the Persian Gulf, Bahrain was the ancient civilisation of Dilmun. It has the largest World Heritage Site relative to country size — the Bahrain Fort and related archaeological sites. It was the first Gulf state to discover oil.', fact:'Bahrain was the first Gulf state to discover oil, in 1932, transforming its economy.'},
+        {k:'bangladesh',   name:'Bangladesh',            continent:'Asia',          capital:'Dhaka',           currency:'Bangladeshi Taka (BDT)', language:'Bengali',          pop:'170M', desc:'Bangladesh is the world\'s most densely populated large country. The Sundarbans — the world\'s largest mangrove forest — straddles its border with India and is home to the Bengal tiger. Bangladesh is the world\'s second-largest garment exporter.', fact:'Bangladesh is home to the Sundarbans — the world\'s largest mangrove forest and home of the Bengal tiger.'},
+        {k:'bhutan',       name:'Bhutan',                continent:'Asia',          capital:'Thimphu',         currency:'Bhutanese Ngultrum (BTN)', language:'Dzongkha',       pop:'800K', desc:'Bhutan measures national success by Gross National Happiness rather than GDP. It is the only country in the world that is carbon-negative. It only opened to tourism in 1974 and limits visitors to prevent cultural and environmental impact.', fact:'Bhutan is the world\'s only carbon-negative country — it absorbs more CO₂ than it produces.'},
+        {k:'brunei',       name:'Brunei',                continent:'Asia',          capital:'Bandar Seri Begawan', currency:'Brunei Dollar (BND)', language:'Malay',          pop:'450K', desc:'Brunei is one of the world\'s smallest countries and one of its wealthiest, thanks to oil and gas. The Sultan of Brunei, one of the world\'s richest people, has ruled since 1967. The Omar Ali Saifuddien Mosque is considered one of the finest in Asia.', fact:'The Sultan of Brunei owns one of the world\'s largest collections of cars — over 7,000 vehicles.'},
+        {k:'cambodia',     name:'Cambodia',              continent:'Asia',          capital:'Phnom Penh',      currency:'Cambodian Riel (KHR)', language:'Khmer',             pop:'17M',  desc:'Cambodia is home to Angkor Wat — the world\'s largest religious monument. Built by the Khmer Empire in the 12th century, it covers 1.6 square kilometres. The country endured the devastating Khmer Rouge genocide in the 1970s, losing an estimated 25% of its population.', fact:'Angkor Wat is the world\'s largest religious monument, covering 1.6 square kilometres.'},
+        {k:'china',        name:'China',                 continent:'Asia',          capital:'Beijing',         currency:'Renminbi / Yuan (CNY)', language:'Mandarin Chinese',  pop:'1.4B', desc:'China invented paper, printing, gunpowder, and the compass — four inventions that changed the world. The Great Wall stretches over 21,000km. China operates on a single time zone despite spanning five geographical time zones. The country has 56 officially recognised ethnic groups.', fact:'China operates on a single time zone despite its geography spanning five — all clocks show Beijing time.'},
+        {k:'cyprus',       name:'Cyprus',                continent:'Asia',          capital:'Nicosia',         currency:'Euro (EUR)',            language:'Greek, Turkish',    pop:'1.2M', desc:'Cyprus is the birthplace of Aphrodite, goddess of love, according to Greek mythology. It has been divided since 1974 between the Republic of Cyprus and Northern Cyprus. Nicosia remains the world\'s last divided capital city, split by a UN buffer zone.', fact:'Nicosia is the world\'s last divided capital city, split between Greek and Turkish Cypriot communities.'},
+        {k:'georgia',      name:'Georgia',               continent:'Asia',          capital:'Tbilisi',         currency:'Georgian Lari (GEL)',   language:'Georgian',          pop:'3.7M', desc:'Georgia is considered the birthplace of wine — evidence of winemaking in clay vessels (qvevri) dates back 8,000 years, the oldest in the world. The Georgian alphabet is one of the world\'s 14 unique alphabets. The Caucasus mountains contain some of Europe\'s highest peaks.', fact:'Georgia is the birthplace of wine — archaeological evidence of winemaking dates back 8,000 years.'},
+        {k:'india',        name:'India',                 continent:'Asia',          capital:'New Delhi',       currency:'Indian Rupee (INR)',    language:'Hindi, English + 20 others', pop:'1.4B', desc:'India gave humanity zero, the decimal system, chess, yoga, and shampoo. The Himalayan range — including Everest — forms its northern border. India has 22 officially recognised languages, 1,600 dialects, and is the world\'s largest democracy.', fact:'India\'s rail network employs over 1.4 million people — one of the world\'s largest single employers.'},
+        {k:'indonesia',    name:'Indonesia',             continent:'Asia',          capital:'Jakarta',         currency:'Indonesian Rupiah (IDR)', language:'Indonesian (Bahasa)', pop:'277M', desc:'The world\'s largest archipelago nation — 17,500 islands, of which about 6,000 are inhabited. Indonesia has the world\'s fourth-largest population and is the largest Muslim-majority country. It contains some of the world\'s last wild orangutans and Komodo dragons.', fact:'Indonesia is the world\'s largest archipelago — 17,500 islands spanning the width of Australia.'},
+        {k:'iran',         name:'Iran',                  continent:'Asia',          capital:'Tehran',          currency:'Iranian Rial (IRR)',    language:'Persian (Farsi)',    pop:'86M',  desc:'Iran is one of the world\'s oldest civilisations — Persia was a great empire more than 2,500 years ago. It is the world\'s largest producer of saffron and pistachios. The ancient city of Persepolis, built by Darius the Great, remains one of the world\'s great archaeological sites.', fact:'Iran produces over 80% of the world\'s saffron — the world\'s most expensive spice by weight.'},
+        {k:'iraq',         name:'Iraq',                  continent:'Asia',          capital:'Baghdad',         currency:'Iraqi Dinar (IQD)',     language:'Arabic, Kurdish',   pop:'42M',  desc:'Iraq is home to Mesopotamia — "the land between the rivers" — considered the cradle of civilisation. The ancient cities of Ur, Nineveh, and Babylon were all here. Baghdad was the intellectual capital of the Islamic world during the Golden Age (8th–13th centuries).', fact:'Iraq contains Mesopotamia — the cradle of civilisation where writing, the wheel, and cities were invented.'},
+        {k:'israel',       name:'Israel',                continent:'Asia',          capital:'Jerusalem',       currency:'Israeli New Shekel (ILS)', language:'Hebrew, Arabic', pop:'9.5M', desc:'Israel is the world\'s only Jewish-majority state, established in 1948. It has more startup companies per capita than any country in the world — nicknamed the "Startup Nation." Jerusalem, its capital, is sacred to three of the world\'s major religions.', fact:'Israel has more startup companies per capita than any other country — known as the "Startup Nation."'},
+        {k:'japan',        name:'Japan',                 continent:'Asia',          capital:'Tokyo',           currency:'Japanese Yen (JPY)',    language:'Japanese',          pop:'125M', desc:'Japan sits on the Pacific Ring of Fire — four tectonic plates converge beneath it, causing around 1,500 earthquakes a year. Tokyo is the world\'s largest metropolitan area, with 37 million people. Japan has a literacy rate of 99% and the world\'s highest life expectancy.', fact:'Japan has more than 6,800 islands and has experienced over 1,500 earthquakes every year on average.'},
+        {k:'jordan',       name:'Jordan',                continent:'Asia',          capital:'Amman',           currency:'Jordanian Dinar (JOD)', language:'Arabic',            pop:'10M',  desc:'Jordan contains some of the world\'s most remarkable ancient sites — Petra, the rose-red city carved into sandstone cliffs, was built by the Nabataean Arabs and is one of the New Seven Wonders. The Dead Sea, on its western border, is the Earth\'s lowest point at 430m below sea level.', fact:'The Dead Sea on Jordan\'s border is Earth\'s lowest point at 430 metres below sea level.'},
+        {k:'kazakhstan',   name:'Kazakhstan',            continent:'Asia',          capital:'Astana',          currency:'Kazakhstani Tenge (KZT)', language:'Kazakh, Russian', pop:'19M',  desc:'Kazakhstan is the world\'s largest landlocked country — bigger than Western Europe. It launched the Space Race: Sputnik and Yuri Gagarin both launched from the Baikonur Cosmodrome. The world\'s apple is thought to have originated here — "Almaty" means "Father of Apples."', fact:'Almaty (formerly Alma-Ata) means "father of apples" — Kazakhstan is the ancestral home of the apple.'},
+        {k:'kuwait',       name:'Kuwait',                continent:'Asia',          capital:'Kuwait City',     currency:'Kuwaiti Dinar (KWD)',   language:'Arabic',            pop:'4.4M', desc:'Kuwait has the world\'s most valuable currency by exchange rate. With 9% of the world\'s oil reserves, it is one of the wealthiest countries per capita. The Kuwait Towers in Kuwait City are one of the Gulf\'s most iconic landmarks.', fact:'The Kuwaiti Dinar is the world\'s highest-valued currency unit.'},
+        {k:'kyrgyzstan',   name:'Kyrgyzstan',            continent:'Asia',          capital:'Bishkek',         currency:'Kyrgyzstani Som (KGS)', language:'Kyrgyz, Russian',   pop:'7M',   desc:'Kyrgyzstan is a mountainous Central Asian country where nomadic culture remains strong — the traditional felt yurt is still used by a significant portion of the population. Issyk-Kul, a vast alpine lake at 1,600m, is one of the world\'s deepest lakes.', fact:'Kyrgyzstan\'s Issyk-Kul lake never freezes despite being surrounded by snow-capped mountains.'},
+        {k:'laos',         name:'Laos',                  continent:'Asia',          capital:'Vientiane',       currency:'Lao Kip (LAK)',         language:'Lao',               pop:'7.4M', desc:'Laos is the most bombed country per capita in history — the US dropped more bombs on it during the Vietnam War era than were used in all of World War II. Despite this, it is one of Southeast Asia\'s most serene and beautiful countries.', fact:'Laos is the most heavily bombed country per capita in history — a legacy of the Vietnam War era.'},
+        {k:'lebanon',      name:'Lebanon',               continent:'Asia',          capital:'Beirut',          currency:'Lebanese Pound (LBP)',  language:'Arabic, French',    pop:'5.5M', desc:'Lebanon is one of the world\'s oldest continuously inhabited regions. The Phoenicians, who invented the modern alphabet, were from this land. Beirut was known as the "Paris of the Middle East" before its civil war. Lebanon has the most press freedom in the Arab world.', fact:'The Phoenicians, from modern-day Lebanon, invented the alphabet that all Western alphabets descend from.'},
+        {k:'malaysia',     name:'Malaysia',              continent:'Asia',          capital:'Kuala Lumpur',    currency:'Malaysian Ringgit (MYR)', language:'Malay',            pop:'33M',  desc:'Malaysia is one of the world\'s biodiversity hotspots — the Borneo rainforest, shared with Indonesia and Brunei, is the world\'s third-largest. The Petronas Towers in Kuala Lumpur were the world\'s tallest buildings from 1998 to 2004. Malaysia has the world\'s largest flower, the Rafflesia.', fact:'The Petronas Towers were the world\'s tallest buildings from 1998 to 2004.'},
+        {k:'maldives',     name:'Maldives',              continent:'Asia',          capital:'Malé',            currency:'Maldivian Rufiyaa (MVR)', language:'Dhivehi',         pop:'540K', desc:'The Maldives is the world\'s flattest country — no point exceeds 2.4m above sea level — and the most threatened by rising sea levels. It consists of 26 atolls with over 1,000 coral islands. The country will be uninhabitable within decades if current sea level rise continues.', fact:'The Maldives is the world\'s flattest country — its highest point is just 2.4 metres above sea level.'},
+        {k:'mongolia',     name:'Mongolia',              continent:'Asia',          capital:'Ulaanbaatar',     currency:'Mongolian Tögrög (MNT)', language:'Mongolian',        pop:'3.4M', desc:'Mongolia is the world\'s most sparsely populated sovereign country. At its peak, the Mongol Empire was the largest contiguous land empire in history, covering 24 million square kilometres. Nomadic herding culture survives here more than anywhere else on Earth.', fact:'At its peak, the Mongol Empire was the largest contiguous land empire in history.'},
+        {k:'myanmar',      name:'Myanmar',               continent:'Asia',          capital:'Naypyidaw',       currency:'Myanmar Kyat (MMK)',    language:'Burmese',           pop:'54M',  desc:'Myanmar (Burma) has 135 officially recognised ethnic groups and was once the world\'s largest exporter of rice. The ancient city of Bagan contains over 2,000 Buddhist temples and pagodas spanning 42 square kilometres — one of the world\'s great archaeological landscapes.', fact:'Bagan contains over 2,000 Buddhist temples — one of the world\'s greatest concentrations of ancient monuments.'},
+        {k:'nepal',        name:'Nepal',                 continent:'Asia',          capital:'Kathmandu',       currency:'Nepalese Rupee (NPR)', language:'Nepali',             pop:'30M',  desc:'Nepal contains eight of the world\'s ten highest mountains, including Everest (8,849m) and K2. The country is the birthplace of the Buddha. Nepal is the only country in the world with a non-rectangular flag — its distinctive double-pennant shape.', fact:'Nepal is the only country in the world with a non-rectangular national flag.'},
+        {k:'northkorea',   name:'North Korea',           continent:'Asia',          capital:'Pyongyang',       currency:'North Korean Won (KPW)', language:'Korean',           pop:'26M',  desc:'North Korea is one of the world\'s most isolated countries. The demilitarised zone (DMZ) dividing it from South Korea is, paradoxically, one of the most pristine wildlife habitats in Asia — untouched by humans for over 70 years. The country has the world\'s largest stadium.', fact:'The Rungrado May Day Stadium in Pyongyang is the world\'s largest stadium, seating 114,000 people.'},
+        {k:'oman',         name:'Oman',                  continent:'Asia',          capital:'Muscat',          currency:'Omani Rial (OMR)',      language:'Arabic',            pop:'4.5M', desc:'Oman is one of the world\'s oldest continuously inhabited regions. The ancient frankincense trade route ran through here. The Wahiba Sands — a vast sea of orange dunes — and the dramatic Hajar Mountains make it one of Arabia\'s most striking landscapes.', fact:'Oman\'s ancient frankincense trees are so valuable that stealing one is punishable by law.'},
+        {k:'pakistan',     name:'Pakistan',              continent:'Asia',          capital:'Islamabad',       currency:'Pakistani Rupee (PKR)', language:'Urdu, English',     pop:'230M', desc:'Pakistan has five of the world\'s 14 eight-thousander peaks, including K2 — the world\'s second-highest mountain. The ancient Indus Valley civilization, one of the world\'s earliest urban cultures, flourished in what is now Pakistan 4,500 years ago.', fact:'Pakistan contains five of the world\'s 14 peaks above 8,000 metres, including K2.'},
+        {k:'philippines',  name:'Philippines',           continent:'Asia',          capital:'Manila',          currency:'Philippine Peso (PHP)', language:'Filipino, English',  pop:'115M', desc:'The Philippines is an archipelago of 7,641 islands and the world\'s third-largest English-speaking country. The Tubbataha Reef Natural Park is one of the world\'s great marine biodiversity hotspots. The country is considered the world\'s texting capital.', fact:'The Philippines is one of the world\'s most biodiverse countries — 70% of its species are found nowhere else.'},
+        {k:'qatar',        name:'Qatar',                 continent:'Asia',          capital:'Doha',            currency:'Qatari Riyal (QAR)',    language:'Arabic',            pop:'2.9M', desc:'Qatar is one of the world\'s wealthiest countries per capita, built on vast natural gas reserves. It was the first Middle Eastern country to host the FIFA World Cup (2022). The country has transformed from a small pearl-fishing community into a major global hub in just 70 years.', fact:'Qatar has the highest GDP per capita of any country in the world — driven by natural gas wealth.'},
+        {k:'saudiarabia',  name:'Saudi Arabia',          continent:'Asia',          capital:'Riyadh',          currency:'Saudi Riyal (SAR)',     language:'Arabic',            pop:'36M',  desc:'Saudi Arabia is the world\'s largest oil exporter and contains Islam\'s two holiest sites — Mecca and Medina. The Empty Quarter (Rub\' al Khali) is the world\'s largest continuous sand desert. The country is one of the world\'s few absolute monarchies.', fact:'Saudi Arabia\'s Empty Quarter is the world\'s largest continuous sand desert — larger than France.'},
+        {k:'singapore',    name:'Singapore',             continent:'Asia',          capital:'Singapore',       currency:'Singapore Dollar (SGD)', language:'English, Mandarin, Malay, Tamil', pop:'6M', desc:'Singapore is the world\'s only island city-state and one of its most densely populated places. It went from third-world to first-world in a single generation. It has no natural resources, yet has one of the world\'s highest standards of living and GDP per capita.', fact:'Singapore went from a small trading port to one of the world\'s wealthiest nations in just 50 years.'},
+        {k:'southkorea',   name:'South Korea',           continent:'Asia',          capital:'Seoul',           currency:'South Korean Won (KRW)', language:'Korean',           pop:'52M',  desc:'South Korea achieved one of the most remarkable economic transformations in history — from one of the world\'s poorest countries in the 1950s to a global technology leader. It has the world\'s fastest internet speeds and is the birthplace of K-pop and Korean cinema.', fact:'South Korea has the world\'s fastest average internet speeds and highest smartphone ownership rate.'},
+        {k:'srilanka',     name:'Sri Lanka',             continent:'Asia',          capital:'Sri Jayawardenepura Kotte', currency:'Sri Lankan Rupee (LKR)', language:'Sinhala, Tamil', pop:'22M', desc:'Sri Lanka, known as the "Pearl of the Indian Ocean," is the world\'s leading tea producer by value and the source of the finest Ceylon tea. The ancient city of Sigiriya, built atop a 180m rock fortress, is one of Asia\'s most extraordinary archaeological sites.', fact:'Sri Lanka is the world\'s leading exporter of Ceylon tea — considered the finest black tea in the world.'},
+        {k:'syria',        name:'Syria',                 continent:'Asia',          capital:'Damascus',        currency:'Syrian Pound (SYP)',    language:'Arabic',            pop:'21M',  desc:'Damascus is one of the world\'s oldest continuously inhabited cities — people have lived here for at least 11,000 years. Syria was the heart of the Umayyad Caliphate — the largest empire the world had seen to that point. The country has been devastated by civil war since 2011.', fact:'Damascus is one of the oldest continuously inhabited cities in the world — occupied for 11,000 years.'},
+        {k:'taiwan',       name:'Taiwan',                continent:'Asia',          capital:'Taipei',          currency:'New Taiwan Dollar (TWD)', language:'Mandarin Chinese', pop:'24M',  desc:'Taiwan produces the majority of the world\'s semiconductors through TSMC — without Taiwanese chips, most of the world\'s electronics would stop being made. The island has one of Asia\'s most vibrant democracies and is known for its night markets and Alishan mountain railway.', fact:'Taiwan\'s TSMC manufactures over 90% of the world\'s most advanced semiconductors.'},
+        {k:'tajikistan',   name:'Tajikistan',            continent:'Asia',          capital:'Dushanbe',        currency:'Tajikistani Somoni (TJS)', language:'Tajik, Russian', pop:'10M',  desc:'Tajikistan is the smallest Central Asian country but one of the most mountainous — 93% of its territory is covered by mountains. The Pamirs, known as "the roof of the world," contain some of the highest peaks outside the Himalayas and Karakoram.', fact:'93% of Tajikistan is covered by mountains — the Pamirs are known as "the roof of the world."'},
+        {k:'thailand',     name:'Thailand',              continent:'Asia',          capital:'Bangkok',         currency:'Thai Baht (THB)',       language:'Thai',              pop:'72M',  desc:'Thailand is the only Southeast Asian country never colonised by a European power. Bangkok\'s official ceremonial name is 169 characters long — the longest place name in the world. Thailand is the world\'s largest exporter of rice. The tuk-tuk and Muay Thai boxing both originate here.', fact:'Bangkok\'s full ceremonial name is 169 characters long — the world\'s longest official city name.'},
+        {k:'timorleste',   name:'Timor-Leste',           continent:'Asia',          capital:'Dili',            currency:'US Dollar (USD)',       language:'Tetum, Portuguese', pop:'1.4M', desc:'Timor-Leste is one of the world\'s youngest nations, gaining independence from Indonesia in 2002 after a 24-year occupation and a devastating independence war. The country\'s Atauro Island is considered to have the highest marine fish diversity ever recorded anywhere on Earth.', fact:'Atauro Island in Timor-Leste has the highest fish diversity ever recorded on Earth.'},
+        {k:'turkey',       name:'Turkey',                continent:'Asia/Europe',   capital:'Ankara',          currency:'Turkish Lira (TRY)',    language:'Turkish',           pop:'85M',  desc:'Turkey straddles two continents — Europe and Asia are divided by the Bosphorus Strait. Istanbul has served as capital of three empires: Roman, Byzantine, and Ottoman. The tulip originated in Turkey — not the Netherlands — and Turkey produces 75% of the world\'s hazelnuts.', fact:'Istanbul is the only city in the world situated on two continents simultaneously.'},
+        {k:'turkmenistan', name:'Turkmenistan',          continent:'Asia',          capital:'Ashgabat',        currency:'Turkmenistani Manat (TMT)', language:'Turkmen',       pop:'6M',   desc:'Turkmenistan holds the fourth-largest natural gas reserves in the world. The "Darvaza gas crater" — a massive burning pit nicknamed the "Door to Hell" — has been on fire since Soviet geologists accidentally ignited it in 1971. The country is one of the world\'s most isolated.', fact:'The Darvaza gas crater in Turkmenistan has been continuously burning since 1971 — called the "Door to Hell."'},
+        {k:'uae',          name:'United Arab Emirates', continent:'Asia',          capital:'Abu Dhabi',       currency:'UAE Dirham (AED)',      language:'Arabic',            pop:'10M',  desc:'The UAE transformed from a pearl-fishing economy into a global hub in just 50 years. Dubai\'s Burj Khalifa is the world\'s tallest building at 828m. The country has the most nationalities living together per capita. Abu Dhabi holds about 6% of the world\'s proven oil reserves.', fact:'The Burj Khalifa in Dubai is the world\'s tallest building at 828 metres.'},
+        {k:'uzbekistan',   name:'Uzbekistan',            continent:'Asia',          capital:'Tashkent',        currency:'Uzbekistani Sum (UZS)', language:'Uzbek',             pop:'36M',  desc:'Uzbekistan sits at the heart of the ancient Silk Road. Samarkand — where Timur (Tamerlane) built his empire — contains some of the Islamic world\'s most breathtaking architecture. The country is the world\'s second-largest cotton exporter.', fact:'Samarkand\'s Registan Square is considered one of the most beautiful public spaces in the world.'},
+        {k:'vietnam',      name:'Vietnam',               continent:'Asia',          capital:'Hanoi',           currency:'Vietnamese Dong (VND)', language:'Vietnamese',        pop:'98M',  desc:'Vietnam has one of the world\'s fastest-growing economies. Halong Bay — 1,969 islands rising from emerald waters — is one of Asia\'s great natural wonders. The country has 54 ethnic groups and is the world\'s largest producer of cashews and second-largest of coffee.', fact:'Vietnam is the world\'s second-largest coffee producer, growing primarily robusta beans.'},
+        {k:'yemen',        name:'Yemen',                 continent:'Asia',          capital:'Sana\'a',         currency:'Yemeni Rial (YER)',     language:'Arabic',            pop:'34M',  desc:'Sana\'a is one of the world\'s oldest inhabited cities, with tower houses dating back 2,500 years. Yemen is home to Socotra Island — called the "Galapagos of the Indian Ocean" for its alien-looking dragon blood trees found nowhere else on Earth.', fact:'Socotra Island\'s dragon blood trees are found nowhere else on Earth — called the Galapagos of the Indian Ocean.'},
+        // Europe
+        {k:'albania',      name:'Albania',               continent:'Europe',        capital:'Tirana',          currency:'Albanian Lek (ALL)',    language:'Albanian',          pop:'2.8M', desc:'Albania is home to the ancient city of Butrint — a UNESCO World Heritage Site that was inhabited by Greeks, Romans, Byzantines, and Venetians. Lake Ohrid, shared with North Macedonia, is one of Europe\'s oldest and deepest lakes, with unique endemic species.', fact:'Albania has more UNESCO World Heritage Sites per capita than most European countries.'},
+        {k:'andorra',      name:'Andorra',               continent:'Europe',        capital:'Andorra la Vella', currency:'Euro (EUR)',           language:'Catalan',           pop:'77K',  desc:'Andorra, nestled in the Pyrenees between France and Spain, is one of Europe\'s smallest and wealthiest countries. At 1,023m, Andorra la Vella is the highest capital city in Europe. The country has no airport, no railway, and no army — yet has excellent ski resorts and tax-free shopping.', fact:'Andorra la Vella is the highest-altitude capital city in Europe at 1,023 metres.'},
+        {k:'austria',      name:'Austria',               continent:'Europe',        capital:'Vienna',          currency:'Euro (EUR)',            language:'German',            pop:'9M',   desc:'Austria was the centre of the Habsburg Empire for 600 years — one of history\'s longest-lasting dynasties. Vienna was the birthplace of Mozart, Beethoven (adopted), Freud, and the waltz. The Austrian Alps cover two-thirds of the country.', fact:'Vienna was home to Mozart, Beethoven, Brahms, and Schubert — the undisputed capital of classical music.'},
+        {k:'belarus',      name:'Belarus',               continent:'Europe',        capital:'Minsk',           currency:'Belarusian Ruble (BYN)', language:'Belarusian, Russian', pop:'9.4M', desc:'Belarus, the "last dictatorship in Europe," is heavily forested and contains the Białowieża Forest — Europe\'s last primeval forest, home to the European bison. The country was the most devastated of all Soviet republics in World War II, losing a quarter of its population.', fact:'Belarus\'s Białowieża Forest is Europe\'s last primeval forest, home to the European bison.'},
+        {k:'belgium',      name:'Belgium',               continent:'Europe',        capital:'Brussels',        currency:'Euro (EUR)',            language:'Dutch, French, German', pop:'11.6M', desc:'Belgium is the de-facto capital of the European Union and NATO, both headquartered in Brussels. The country produces over 220,000 tonnes of chocolate per year and has over 1,500 varieties of beer. The Belgian waffle and french fries (actually Belgian) changed global cuisine.', fact:'French fries were invented in Belgium, not France — and Belgium has over 1,500 varieties of beer.'},
+        {k:'bih',          name:'Bosnia & Herzegovina',  continent:'Europe',        capital:'Sarajevo',        currency:'Bosnian Mark (BAM)',    language:'Bosnian, Serbian, Croatian', pop:'3.3M', desc:'Sarajevo is where World War I began — Archduke Franz Ferdinand was assassinated here in 1914. The city hosted the 1984 Winter Olympics and later survived a 44-month siege during the Bosnian War — the longest siege of a capital city in modern warfare.', fact:'Sarajevo\'s 44-month siege was the longest siege of a capital city in modern warfare history.'},
+        {k:'bulgaria',     name:'Bulgaria',              continent:'Europe',        capital:'Sofia',           currency:'Bulgarian Lev (BGN)',   language:'Bulgarian',         pop:'6.8M', desc:'Bulgaria invented the Cyrillic alphabet — Saints Cyril and Methodius were Bulgarian. The country contains the Rose Valley, which produces the majority of the world\'s rose oil used in perfumery. Bulgaria has the oldest gold treasure ever found, dating to 4,600 BCE.', fact:'Bulgaria is home to the world\'s oldest gold treasure, found at Varna and dating to 4,600 BCE.'},
+        {k:'croatia',      name:'Croatia',               continent:'Europe',        capital:'Zagreb',          currency:'Euro (EUR)',            language:'Croatian',          pop:'4M',   desc:'Croatia invented the necktie — the word "cravat" comes from Croatian soldiers who wore them in the 17th century. The country has 1,244 islands along its Adriatic coast. Dubrovnik, the "Pearl of the Adriatic," was the setting for King\'s Landing in Game of Thrones.', fact:'Croatia invented the necktie — "cravat" is derived from "Croat," after Croatian soldiers who wore them.'},
+        {k:'czechia',      name:'Czech Republic',        continent:'Europe',        capital:'Prague',          currency:'Czech Koruna (CZK)',   language:'Czech',             pop:'10.9M', desc:'Czech Republic has the highest beer consumption per capita in the world. Prague, one of Europe\'s best-preserved medieval cities, escaped World War II bombing and retains its Gothic, Baroque, and Art Nouveau architecture. Czechs invented the sugar cube and contact lenses.', fact:'Czech Republic has the world\'s highest beer consumption per capita — about 188 litres per person per year.'},
+        {k:'denmark',      name:'Denmark',               continent:'Europe',        capital:'Copenhagen',      currency:'Danish Krone (DKK)',    language:'Danish',            pop:'5.9M', desc:'Denmark consistently ranks as the world\'s happiest country. It invented Lego, the world\'s most popular toy. Danish design — from Arne Jacobsen chairs to Bang & Olufsen — has shaped global aesthetics. Greenland, the world\'s largest island, belongs to Denmark.', fact:'Denmark invented Lego, the world\'s most popular toy — over 400 billion bricks have been produced.'},
+        {k:'estonia',      name:'Estonia',               continent:'Europe',        capital:'Tallinn',         currency:'Euro (EUR)',            language:'Estonian',          pop:'1.3M', desc:'Estonia is the world\'s most digital country — it was the first to offer e-residency, online voting, and digital cabinet meetings. Tallinn\'s medieval old town is one of Europe\'s best-preserved. Estonia invented Skype.', fact:'Estonia is the world\'s most digitally advanced society — it offers e-residency to people worldwide.'},
+        {k:'finland',      name:'Finland',               continent:'Europe',        capital:'Helsinki',        currency:'Euro (EUR)',            language:'Finnish, Swedish',  pop:'5.5M', desc:'Finland is the happiest country in the world for seven consecutive years. It has 188,000 lakes and invented the sauna — there are more saunas than cars in Finland. Santa Claus is said to live in Lapland, Finland, at Rovaniemi on the Arctic Circle.', fact:'Finland has more saunas than cars — approximately 3 million saunas for 5.5 million people.'},
+        {k:'france',       name:'France',                continent:'Europe',        capital:'Paris',           currency:'Euro (EUR)',            language:'French',            pop:'68M',  desc:'France is the most visited country on Earth — over 90 million tourists a year. It has 13 time zones — more than any other country — due to its overseas territories. Paris was built on a limestone foundation riddled with the Catacombs, holding the bones of six million people.', fact:'France has 13 time zones — more than any other country — due to its overseas territories.'},
+        {k:'germany',      name:'Germany',               continent:'Europe',        capital:'Berlin',          currency:'Euro (EUR)',            language:'German',            pop:'84M',  desc:'Germany is Europe\'s largest economy and the world\'s third-largest exporter. Berlin has more bridges than Venice. The country reunified in 1990 after 45 years of division. Germany has over 1,500 breweries and 1,300 types of beer, and sections of its autobahn have no speed limit.', fact:'Germany has sections of autobahn with no speed limit — one of the only countries in the world.'},
+        {k:'greece',       name:'Greece',                continent:'Europe',        capital:'Athens',          currency:'Euro (EUR)',            language:'Greek',             pop:'10.7M', desc:'Western civilisation was born in Greece — democracy, philosophy, the Olympic Games, theatre, and much of mathematics and science originated here. Athens is the world\'s oldest capital city with a continuous history. Greece has 6,000 islands, of which 227 are inhabited.', fact:'Greece has 6,000 islands and is home to 18 UNESCO World Heritage Sites.'},
+        {k:'hungary',      name:'Hungary',               continent:'Europe',        capital:'Budapest',        currency:'Hungarian Forint (HUF)', language:'Hungarian (Magyar)', pop:'9.7M', desc:'Hungary has a completely unique language — Hungarian is unrelated to any other European language except Finnish and Estonian. Budapest, formed by the merger of Buda and Pest in 1873, is one of Europe\'s most beautiful capitals, split by the Danube River.', fact:'Hungarian is unrelated to any other major European language — a true linguistic island.'},
+        {k:'iceland',      name:'Iceland',               continent:'Europe',        capital:'Reykjavík',       currency:'Icelandic Króna (ISK)', language:'Icelandic',         pop:'376K', desc:'Iceland runs on nearly 100% renewable energy — geothermal and hydroelectric power. It has no army and has been ranked the world\'s most peaceful country for over a decade. The Northern Lights are visible on dark winter nights. Iceland has no mosquitoes.', fact:'Iceland runs on nearly 100% renewable energy and has been ranked the world\'s most peaceful nation.'},
+        {k:'ireland',      name:'Ireland',               continent:'Europe',        capital:'Dublin',          currency:'Euro (EUR)',            language:'Irish, English',    pop:'5.1M', desc:'Ireland has produced four Nobel laureates in literature — Joyce, Beckett, Yeats, and Heaney — from a population of just 5 million. The Irish diaspora is enormous: over 70 million people worldwide claim Irish descent. The country has the youngest population in Europe.', fact:'Ireland has produced four Nobel Literature laureates from a population of just 5 million people.'},
+        {k:'italy',        name:'Italy',                 continent:'Europe',        capital:'Rome',            currency:'Euro (EUR)',            language:'Italian',           pop:'60M',  desc:'Italy has more UNESCO World Heritage Sites than any other country — 58. It gave the world the Renaissance, opera, pizza, pasta, and espresso. Rome was the capital of the largest empire of the ancient world. Italy\'s Ferrari, Lamborghini, and Alfa Romeo define automotive passion.', fact:'Italy has more UNESCO World Heritage Sites than any other country in the world — 58 sites.'},
+        {k:'kosovo',       name:'Kosovo',                continent:'Europe',        capital:'Pristina',        currency:'Euro (EUR)',            language:'Albanian, Serbian', pop:'1.8M', desc:'Kosovo declared independence from Serbia in 2008 and is one of the world\'s youngest countries, though recognition is disputed. Despite its troubled recent history, it has the youngest population in Europe and a vibrant emerging economy.', fact:'Kosovo is one of the world\'s newest countries, declaring independence in 2008.'},
+        {k:'latvia',       name:'Latvia',                continent:'Europe',        capital:'Riga',            currency:'Euro (EUR)',            language:'Latvian',           pop:'1.8M', desc:'Latvia has the world\'s highest proportion of women in parliament. Riga, its Art Nouveau-rich capital, has the largest collection of Art Nouveau architecture in the world — over 800 buildings. Latvia invented the dental drill and the miniskirt.', fact:'Riga has the largest collection of Art Nouveau architecture in the world — over 800 buildings.'},
+        {k:'liechtenstein',name:'Liechtenstein',         continent:'Europe',        capital:'Vaduz',           currency:'Swiss Franc (CHF)',     language:'German',            pop:'38K',  desc:'Liechtenstein is one of only two doubly landlocked countries in the world (surrounded by landlocked countries). Despite its tiny size, it has one of the world\'s highest GDP per capita and is a major centre of the global dentures industry.', fact:'Liechtenstein is one of only two doubly-landlocked countries in the world.'},
+        {k:'lithuania',    name:'Lithuania',             continent:'Europe',        capital:'Vilnius',         currency:'Euro (EUR)',            language:'Lithuanian',        pop:'2.8M', desc:'Lithuania was the last European country to convert to Christianity, in 1387. Lithuanian is considered the most archaic of all living Indo-European languages. Vilnius has the world\'s largest baroque old town outside of Rome. The country invented the hot air balloon basket.', fact:'Lithuanian is considered the most archaic surviving Indo-European language — a key to understanding ancient languages.'},
+        {k:'luxembourg',   name:'Luxembourg',            continent:'Europe',        capital:'Luxembourg City', currency:'Euro (EUR)',            language:'Luxembourgish, French, German', pop:'660K', desc:'Luxembourg is one of the world\'s smallest countries but has the highest GDP per capita in the European Union. It is one of the world\'s most important financial centres. Its medieval fortress, the Bock, is a UNESCO World Heritage Site.', fact:'Luxembourg has the highest GDP per capita in the European Union.'},
+        {k:'malta',        name:'Malta',                 continent:'Europe',        capital:'Valletta',        currency:'Euro (EUR)',            language:'Maltese, English',  pop:'540K', desc:'Malta\'s megalithic temples — the Ġgantija temples on Gozo — are the world\'s oldest free-standing stone structures, older than Stonehenge and the Egyptian pyramids. Valletta is Europe\'s smallest national capital. Malta was besieged by Axis forces in WWII and was awarded the George Cross.', fact:'Malta\'s Ġgantija temples are the world\'s oldest free-standing stone structures — older than the pyramids.'},
+        {k:'moldova',      name:'Moldova',               continent:'Europe',        capital:'Chișinău',        currency:'Moldovan Leu (MDL)',    language:'Moldovan (Romanian)', pop:'2.6M', desc:'Moldova is Europe\'s least-visited country and one of the poorest in Europe, yet it has one of the world\'s largest wine cellars — the Mileștii Mici cellar stretches 200km of underground tunnels. It is one of the world\'s great wine producers per capita.', fact:'Moldova\'s Mileștii Mici wine cellar holds over 1.5 million bottles — possibly the world\'s largest.'},
+        {k:'monaco',       name:'Monaco',                continent:'Europe',        capital:'Monaco',          currency:'Euro (EUR)',            language:'French',            pop:'39K',  desc:'Monaco is the world\'s most densely populated country and second-smallest country (after Vatican). It has no income tax, which attracts the world\'s wealthy. The Monaco Grand Prix — run through the streets of the city-state — is one of motorsport\'s most prestigious races.', fact:'Monaco is the world\'s most densely populated country — 26,000 people per square kilometre.'},
+        {k:'montenegro',   name:'Montenegro',            continent:'Europe',        capital:'Podgorica',       currency:'Euro (EUR)',            language:'Montenegrin',       pop:'620K', desc:'Montenegro ("Black Mountain") is one of Europe\'s newest countries, gaining independence in 2006. Despite its small size, it has extraordinary natural diversity — fjord-like Bay of Kotor, Durmitor National Park, and Adriatic beaches all within a few hours\' drive.', fact:'Montenegro is one of Europe\'s newest countries, gaining independence from Serbia in 2006.'},
+        {k:'netherlands',  name:'Netherlands',           continent:'Europe',        capital:'Amsterdam',       currency:'Euro (EUR)',            language:'Dutch',             pop:'17.9M', desc:'One-third of the Netherlands is below sea level — the Dutch have engineered an extraordinary system of dikes, pumps, and polders to reclaim land from the sea. The country is the world\'s second-largest food exporter after the United States, despite its small size.', fact:'The Netherlands is the world\'s second-largest food exporter despite being a small country.'},
+        {k:'northmacedonia',name:'North Macedonia',      continent:'Europe',        capital:'Skopje',          currency:'Macedonian Denar (MKD)', language:'Macedonian, Albanian', pop:'2.1M', desc:'North Macedonia changed its name in 2019 after a dispute with Greece. Ohrid Lake, shared with Albania, is one of Europe\'s deepest and oldest lakes, considered Europe\'s equivalent of the Galapagos for its unique endemic species. Alexander the Great was from ancient Macedon.', fact:'Lake Ohrid is considered Europe\'s equivalent of the Galapagos — with unique endemic species found nowhere else.'},
+        {k:'norway',       name:'Norway',                continent:'Europe',        capital:'Oslo',            currency:'Norwegian Krone (NOK)', language:'Norwegian',         pop:'5.4M', desc:'Norway invented the cheese slicer, the aerosol can, and the paper clip. The fjords that define its coastline were carved by glaciers. Norway has more electric vehicles per capita than anywhere else. In summer, the sun doesn\'t set for months in northern Norway — the midnight sun.', fact:'Norway is so far north that the sun doesn\'t set in summer for months — the midnight sun phenomenon.'},
+        {k:'poland',       name:'Poland',                continent:'Europe',        capital:'Warsaw',          currency:'Polish Zloty (PLN)',    language:'Polish',            pop:'38M',  desc:'Poland is the birthplace of Marie Curie — the first woman to win a Nobel Prize and the only person to win in two different sciences. Warsaw was 85% destroyed in World War II and was entirely rebuilt — it is one of history\'s most extraordinary reconstruction efforts.', fact:'Warsaw was 85% destroyed in WWII and completely rebuilt — an extraordinary feat of reconstruction.'},
+        {k:'portugal',     name:'Portugal',              continent:'Europe',        capital:'Lisbon',          currency:'Euro (EUR)',            language:'Portuguese',        pop:'10.3M', desc:'Portugal is the westernmost country in mainland Europe and one of the world\'s oldest nation-states — its borders have barely changed since 1267. It spread Portuguese to 260 million people across four continents. Fado, its melancholic music, is a UNESCO Intangible Heritage.', fact:'Portugal\'s borders have remained essentially unchanged since 1267 — making it one of the world\'s oldest nation-states.'},
+        {k:'romania',      name:'Romania',               continent:'Europe',        capital:'Bucharest',       currency:'Romanian Leu (RON)',    language:'Romanian',          pop:'19M',  desc:'Romania is home to Transylvania — the land of Vlad the Impaler, who inspired Bram Stoker\'s Dracula. The Danube Delta — where Europe\'s second-longest river meets the Black Sea — is one of Europe\'s great wildlife refuges and a UNESCO World Heritage Site.', fact:'Romania\'s Danube Delta is Europe\'s largest and best-preserved river delta.'},
+        {k:'russia',       name:'Russia',                continent:'Europe/Asia',   capital:'Moscow',          currency:'Russian Ruble (RUB)',   language:'Russian',           pop:'145M', desc:'Russia is the world\'s largest country — spanning 11 time zones and covering 17% of the Earth\'s land surface. Lake Baikal contains 20% of the world\'s unfrozen fresh water. The Trans-Siberian Railway — the world\'s longest — stretches 9,289km from Moscow to Vladivostok.', fact:'Russia spans 11 time zones and covers 17% of Earth\'s land surface — larger than Pluto.'},
+        {k:'sanmarino',    name:'San Marino',            continent:'Europe',        capital:'San Marino City', currency:'Euro (EUR)',            language:'Italian',           pop:'34K',  desc:'San Marino claims to be the world\'s oldest republic, founded in 301 CE. It is entirely surrounded by Italy and is smaller than Washington D.C. Remarkably, it has no national debt and more cars than people. Its constitution has been in place since 1600.', fact:'San Marino claims to be the world\'s oldest republic, founded in 301 CE — over 1,700 years old.'},
+        {k:'serbia',       name:'Serbia',                continent:'Europe',        capital:'Belgrade',        currency:'Serbian Dinar (RSD)',   language:'Serbian',           pop:'6.8M', desc:'Serbia is where nickel, cadmium, and several other elements were discovered. Belgrade, at the confluence of the Sava and Danube rivers, has been destroyed and rebuilt 44 times in its history. Tesla was Serbian-American — his research laboratory is preserved as a museum in Belgrade.', fact:'Nikola Tesla was Serbian — Belgrade\'s Nikola Tesla Airport is named after the inventor.'},
+        {k:'slovakia',     name:'Slovakia',              continent:'Europe',        capital:'Bratislava',      currency:'Euro (EUR)',            language:'Slovak',            pop:'5.5M', desc:'Slovakia has the highest number of castles and chateaux per capita in the world. Bratislava is one of only two capital cities that borders two countries. The High Tatras mountains offer some of central Europe\'s finest alpine scenery.', fact:'Slovakia has more castles per capita than any other country in the world.'},
+        {k:'slovenia',     name:'Slovenia',              continent:'Europe',        capital:'Ljubljana',       currency:'Euro (EUR)',            language:'Slovenian',         pop:'2.1M', desc:'Slovenia is one of Europe\'s greenest countries — 60% of its territory is covered in forest. Lake Bled, with its tiny island church in the middle of a glacial lake, is one of Europe\'s most photographed spots. Slovenia is the only country in the world with "love" in its name.', fact:'Slovenia is the only country name in the world that contains the word "love" — Slo-LOVE-nia.'},
+        {k:'spain',        name:'Spain',                 continent:'Europe',        capital:'Madrid',          currency:'Euro (EUR)',            language:'Spanish',           pop:'47M',  desc:'Spain has the world\'s oldest restaurant — Sobrino de Botín in Madrid, opened in 1725. La Sagrada Família in Barcelona has been under construction since 1882. Spain contains Europe\'s only desert and has 50 UNESCO World Heritage Sites.', fact:'Sobrino de Botín in Madrid, opened 1725, is the world\'s oldest restaurant still in operation.'},
+        {k:'sweden',       name:'Sweden',                continent:'Europe',        capital:'Stockholm',       currency:'Swedish Krona (SEK)',   language:'Swedish',           pop:'10.5M', desc:'Sweden invented the three-point seatbelt, Bluetooth, the pacemaker, the zipper, and Spotify. IKEA and H&M are Swedish. Stockholm is built on 14 islands where Lake Mälaren meets the Baltic Sea. Sweden has been at peace since 1814 — over 200 years of non-aggression.', fact:'Sweden invented the three-point seatbelt — the safety device that has saved over a million lives.'},
+        {k:'switzerland',  name:'Switzerland',           continent:'Europe',        capital:'Bern',            currency:'Swiss Franc (CHF)',     language:'German, French, Italian, Romansh', pop:'8.7M', desc:'Switzerland has been neutral in every conflict since 1815, making it the world\'s permanent negotiation ground. It invented the World Wide Web (Tim Berners-Lee at CERN in Geneva), milk chocolate, velcro, and the Swiss Army knife.', fact:'The World Wide Web was invented at CERN in Geneva, Switzerland, by Tim Berners-Lee in 1989.'},
+        {k:'ukraine',      name:'Ukraine',               continent:'Europe',        capital:'Kyiv',            currency:'Ukrainian Hryvnia (UAH)', language:'Ukrainian',       pop:'43M',  desc:'Ukraine is Europe\'s largest country by area (excluding Russia). The fertile black soil (chernozem) that covers much of the country made it the "breadbasket of Europe" — producing a quarter of the world\'s wheat. Kyiv\'s Saint Sophia Cathedral has been standing since 1037 CE.', fact:'Ukraine has the world\'s largest reserves of chernozem — the most fertile soil on Earth.'},
+        {k:'uk',           name:'United Kingdom',        continent:'Europe',        capital:'London',          currency:'Pound Sterling (GBP)',  language:'English',           pop:'67M',  desc:'The UK was the first country to industrialise, transforming the global economy. At its peak, the British Empire covered 24% of the Earth\'s land. The UK invented the World Wide Web, the jet engine, the steam engine, and penicillin. London has been continuously inhabited for 2,000 years.', fact:'At its peak, the British Empire covered 24% of Earth\'s land — "the empire on which the sun never sets."'},
+        {k:'vatican',      name:'Vatican City',          continent:'Europe',        capital:'Vatican City',    currency:'Euro (EUR)',            language:'Italian, Latin',    pop:'800',  desc:'Vatican City is the world\'s smallest country — 44 hectares, smaller than most city parks. It is the headquarters of the Roman Catholic Church and home to the Pope. The Sistine Chapel ceiling, painted by Michelangelo between 1508 and 1512, is one of humanity\'s supreme artistic achievements.', fact:'Vatican City is the world\'s smallest country — 800 residents in 44 hectares.'},
+        // North America
+        {k:'antiguabarbuda',name:'Antigua & Barbuda',    continent:'North America',  capital:'Saint John\'s',  currency:'East Caribbean Dollar', language:'English',           pop:'100K', desc:'Antigua & Barbuda is famous for having 365 beaches — one for every day of the year. It was an important sugar-producing colony and English Harbour was the headquarters of Nelson\'s fleet. The country is one of the Caribbean\'s most sailing-focused nations.', fact:'Antigua is said to have 365 beaches — one for every day of the year.'},
+        {k:'bahamas',      name:'Bahamas',               continent:'North America',  capital:'Nassau',          currency:'Bahamian Dollar (BSD)', language:'English',           pop:'400K', desc:'The Bahamas consists of 700 islands and 2,400 cays in the Atlantic Ocean. It was the first place Christopher Columbus landed in the Americas in 1492. The Blue Holes of the Bahamas — underwater cave systems — are among the world\'s deepest.', fact:'Christopher Columbus first made landfall in the Americas on San Salvador island in the Bahamas in 1492.'},
+        {k:'barbados',     name:'Barbados',              continent:'North America',  capital:'Bridgetown',      currency:'Barbadian Dollar (BBD)', language:'English',          pop:'290K', desc:'Barbados was the birthplace of rum — sugar cane plantations in the 1600s led to rum production, which fuelled the Atlantic trade. Rihanna — one of the world\'s best-selling music artists — is Barbadian. The country became a republic in 2021.', fact:'Barbados is the birthplace of rum — the first rum distillery in the world was established here in the 1620s.'},
+        {k:'belize',       name:'Belize',                continent:'North America',  capital:'Belmopan',        currency:'Belize Dollar (BZD)',   language:'English',           pop:'430K', desc:'Belize has the second-largest barrier reef in the world — the Mesoamerican Barrier Reef System. It is the only Central American country with English as its official language and no Pacific coastline. The Great Blue Hole, a massive underwater sinkhole, is one of the world\'s top dive sites.', fact:'Belize\'s Great Blue Hole is one of the world\'s top scuba diving sites — a massive underwater sinkhole.'},
+        {k:'canada',       name:'Canada',                continent:'North America',  capital:'Ottawa',          currency:'Canadian Dollar (CAD)', language:'English, French',   pop:'38M',  desc:'Canada is the world\'s second-largest country by land area, but 90% of its population lives within 160km of the US border. It has more lakes than all other countries combined — over 2 million. Canada also has the world\'s longest coastline at 202,080km.', fact:'Canada has more lakes than all other countries in the world combined — over 2 million lakes.'},
+        {k:'costarica',    name:'Costa Rica',            continent:'North America',  capital:'San José',        currency:'Costa Rican Colón (CRC)', language:'Spanish',         pop:'5.2M', desc:'Costa Rica abolished its army in 1948 — one of the few countries in the world with no military. Despite covering just 0.03% of Earth\'s surface, it holds 5% of the world\'s biodiversity. Over 25% of its territory is protected as national parks.', fact:'Costa Rica abolished its military in 1948 and is now one of the world\'s most biodiverse countries.'},
+        {k:'cuba',         name:'Cuba',                  continent:'North America',  capital:'Havana',          currency:'Cuban Peso (CUP)',      language:'Spanish',           pop:'11M',  desc:'Cuba has one of the best healthcare systems in the developing world and one of the world\'s highest literacy rates. Havana\'s vintage American cars from the 1950s (preserved due to the US embargo) make it look like a living museum. Cuba produces some of the world\'s finest cigars and rum.', fact:'Cuba\'s doctor-to-patient ratio is higher than most developed nations — a source of national pride.'},
+        {k:'dominica',     name:'Dominica',              continent:'North America',  capital:'Roseau',          currency:'East Caribbean Dollar', language:'English',           pop:'73K',  desc:'Dominica is known as the "Nature Isle of the Caribbean" — 60% of it is covered in forest. It has more volcanoes per square kilometre than almost anywhere in the world. The Boiling Lake — the world\'s second-largest hot lake — sits in the middle of a rainforest.', fact:'Dominica has the world\'s second-largest boiling lake, sitting in the middle of a rainforest.'},
+        {k:'dominicanrep', name:'Dominican Republic',    continent:'North America',  capital:'Santo Domingo',   currency:'Dominican Peso (DOP)',  language:'Spanish',           pop:'11.2M', desc:'Santo Domingo, founded in 1498, is the oldest continuously inhabited European settlement in the Americas. The Dominican Republic shares the island of Hispaniola with Haiti. It is the Caribbean\'s largest economy and has the most visitors of any Caribbean nation.', fact:'Santo Domingo (1498) is the oldest continuously inhabited European city in the Americas.'},
+        {k:'elsalvador',   name:'El Salvador',           continent:'North America',  capital:'San Salvador',    currency:'US Dollar (USD)',       language:'Spanish',           pop:'6.5M', desc:'El Salvador is the smallest and most densely populated country in Central America. It was the first country in the world to adopt Bitcoin as legal tender, in 2021. The country has a string of active volcanoes known as the "Ring of Fire" Pacific range.', fact:'El Salvador became the first country in the world to adopt Bitcoin as legal tender in 2021.'},
+        {k:'grenada',      name:'Grenada',               continent:'North America',  capital:'St. George\'s',   currency:'East Caribbean Dollar', language:'English',           pop:'125K', desc:'Grenada, the "Spice Isle," is the world\'s second-largest producer of nutmeg. Its underwater sculpture park off the coast is one of the Caribbean\'s most unusual dive sites. The country gained independence in 1974 and was invaded by the US in 1983.', fact:'Grenada is the world\'s second-largest producer of nutmeg — the spice appears on its national flag.'},
+        {k:'guatemala',    name:'Guatemala',             continent:'North America',  capital:'Guatemala City',  currency:'Guatemalan Quetzal (GTQ)', language:'Spanish',        pop:'17.6M', desc:'Guatemala is the heart of the ancient Maya civilisation — Tikal, one of the greatest Maya cities, sits deep in its jungle. The country has 33 volcanoes, 3 of which are among the most active in the world. Lake Atitlán — set amid volcanoes — is one of the world\'s most beautiful lakes.', fact:'Guatemala\'s Tikal was one of the largest Maya cities — its pyramids rise above the rainforest canopy.'},
+        {k:'haiti',        name:'Haiti',                 continent:'North America',  capital:'Port-au-Prince',  currency:'Haitian Gourde (HTG)', language:'Haitian Creole, French', pop:'11.5M', desc:'Haiti was the first Black republic in the world, gaining independence from France in 1804 after the only successful slave revolt in history. The country gave us the word "barbecue" and Haitian Vodou is a recognised religion. The 2010 earthquake was one of the deadliest natural disasters ever.', fact:'Haiti was the first Black republic and the first Caribbean nation to gain independence, in 1804.'},
+        {k:'honduras',     name:'Honduras',              continent:'North America',  capital:'Tegucigalpa',     currency:'Honduran Lempira (HNL)', language:'Spanish',         pop:'10.3M', desc:'Honduras was the world\'s original "banana republic" — United Fruit Company once controlled its government and economy. The ancient Mayan city of Copán, with its extraordinary carved stelae and hieroglyphic stairway, is one of the finest Maya sites in the Americas.', fact:'Copán\'s hieroglyphic stairway is the longest known Maya inscription in the world.'},
+        {k:'jamaica',      name:'Jamaica',               continent:'North America',  capital:'Kingston',        currency:'Jamaican Dollar (JMD)', language:'English, Patois',  pop:'2.9M', desc:'Jamaica gave the world reggae, Bob Marley, and Usain Bolt. The island has produced more world record sprinters per capita than any country. Blue Mountain coffee, grown at altitude in Jamaica\'s mountains, is one of the world\'s rarest and most expensive coffees.', fact:'Jamaica has produced more world-record sprinters per capita than any other country.'},
+        {k:'mexico',       name:'Mexico',                continent:'North America',  capital:'Mexico City',     currency:'Mexican Peso (MXN)',   language:'Spanish',           pop:'130M', desc:'Mexico City is built on the dried lake bed of Lake Texcoco, where the Aztec capital Tenochtitlán once stood — it sinks by up to 50cm a year. Mexico is the birthplace of chocolate, avocados, and chilli. It has 35 UNESCO World Heritage Sites.', fact:'Mexico City sinks up to 50cm per year — it\'s built on the dried bed of an ancient lake.'},
+        {k:'nicaragua',    name:'Nicaragua',             continent:'North America',  capital:'Managua',         currency:'Nicaraguan Córdoba (NIO)', language:'Spanish',       pop:'6.8M', desc:'Nicaragua has more volcanoes than any other Central American country — 19 of them. The country is the largest in Central America. Lake Nicaragua is the only freshwater lake in the world with oceanic-type fish, including sharks that swim up the San Juan River from the Caribbean.', fact:'Lake Nicaragua is the only freshwater lake in the world that contains oceanic fish — including sharks.'},
+        {k:'panama',       name:'Panama',                continent:'North America',  capital:'Panama City',     currency:'Balboa / US Dollar',   language:'Spanish',           pop:'4.4M', desc:'The Panama Canal — one of the greatest engineering achievements in history — connects the Atlantic and Pacific oceans and cuts 12,600km off the sea route around South America. Panama is the only place in the world where you can watch the sun rise over the Pacific and set over the Atlantic.', fact:'From Panama, you can watch the sun rise over the Pacific and set over the Atlantic on the same day.'},
+        {k:'stkittsnevis', name:'St. Kitts & Nevis',     continent:'North America',  capital:'Basseterre',      currency:'East Caribbean Dollar', language:'English',          pop:'56K',  desc:'St. Kitts & Nevis is the smallest country in the Americas by area and population. It was the first English and French colony in the Caribbean. Brimstone Hill Fortress — a UNESCO World Heritage Site — is one of the best-preserved colonial fortresses in the Caribbean.', fact:'St. Kitts & Nevis is the smallest country in the Americas by both area and population.'},
+        {k:'saintlucia',   name:'Saint Lucia',           continent:'North America',  capital:'Castries',        currency:'East Caribbean Dollar', language:'English',          pop:'180K', desc:'Saint Lucia has won more Nobel Prizes per capita than any other country in the world — two, both in one year (1979). Derek Walcott (Literature) and W. Arthur Lewis (Economics) were both Saint Lucian. The twin Piton mountains are a UNESCO World Heritage Site.', fact:'Saint Lucia has won more Nobel Prizes per capita than any other country — two prizes from 180,000 people.'},
+        {k:'saintvincent',name:'St. Vincent & Grenadines', continent:'North America', capital:'Kingstown',      currency:'East Caribbean Dollar', language:'English',          pop:'110K', desc:'St. Vincent & the Grenadines is an archipelago of 32 islands and cays. The Pirates of the Caribbean films were largely shot here. La Soufrière volcano on St. Vincent erupted dramatically in 2021. The country produces arrowroot, used in the production of computer paper.', fact:'Pirates of the Caribbean was filmed largely in St. Vincent & the Grenadines.'},
+        {k:'trinidadtobago',name:'Trinidad & Tobago',    continent:'North America',  capital:'Port of Spain',   currency:'Trinidad & Tobago Dollar', language:'English',       pop:'1.4M', desc:'Trinidad is the birthplace of steel pan music — the only acoustic instrument invented in the 20th century. It is also the origin of Carnival and calypso music. The Pitch Lake in Trinidad is the world\'s largest natural asphalt lake, used to parmac roads worldwide.', fact:'The steel pan is the only acoustic musical instrument invented in the 20th century — from Trinidad.'},
+        {k:'usa',          name:'United States',         continent:'North America',  capital:'Washington D.C.', currency:'US Dollar (USD)',       language:'English (de facto)', pop:'335M', desc:'The US has the world\'s largest economy and is the third-largest country by area and population. It landed humans on the Moon six times. The country has won more Olympic medals than any other nation. The internet, GPS, and the iPhone were all developed in the US.', fact:'The US has won more Olympic medals than any other country in history — over 2,600 total.'},
+        // South America
+        {k:'argentina',    name:'Argentina',             continent:'South America',  capital:'Buenos Aires',    currency:'Argentine Peso (ARS)', language:'Spanish',           pop:'45M',  desc:'Argentina stretches from the subtropical north to the sub-Antarctic south. Buenos Aires, the "Paris of South America," has the world\'s widest avenue — 9 de Julio, named after independence day. The Pampas grasslands produce some of the world\'s finest beef. Argentina has won the FIFA World Cup three times.', fact:'Argentina has the highest rate of psychotherapy per capita of any country in the world.'},
+        {k:'bolivia',      name:'Bolivia',               continent:'South America',  capital:'Sucre / La Paz',  currency:'Bolivian Boliviano (BOB)', language:'Spanish, Quechua, Aymara', pop:'12M', desc:'Bolivia is the highest country in the world — La Paz, the seat of government, is the world\'s highest-altitude capital at 3,640m. The Salar de Uyuni is the world\'s largest salt flat — so reflective when wet that it is used to calibrate satellites. Bolivia has two capitals.', fact:'Bolivia\'s Salar de Uyuni is the world\'s largest salt flat — used to calibrate Earth-observation satellites.'},
+        {k:'brazil',       name:'Brazil',                continent:'South America',  capital:'Brasília',        currency:'Brazilian Real (BRL)',  language:'Portuguese',        pop:'215M', desc:'Brazil contains roughly 60% of the Amazon rainforest — the world\'s largest tropical forest. Brasília was built from scratch in 41 months and inaugurated in 1960 — one of the world\'s most remarkable planned cities. Brazil has won the FIFA World Cup five times.', fact:'Brazil was the last country in the Western Hemisphere to abolish slavery, in 1888.'},
+        {k:'chile',        name:'Chile',                 continent:'South America',  capital:'Santiago',        currency:'Chilean Peso (CLP)',    language:'Spanish',           pop:'19M',  desc:'Chile is the world\'s longest country — 4,270km from north to south, but only 177km wide on average. It contains the world\'s driest non-polar desert (Atacama) and the world\'s southernmost city (Puerto Williams). Chile produces a third of the world\'s copper.', fact:'Chile is the world\'s longest country — stretching 4,270km from north to south.'},
+        {k:'colombia',     name:'Colombia',              continent:'South America',  capital:'Bogotá',          currency:'Colombian Peso (COP)',  language:'Spanish',           pop:'51M',  desc:'Colombia is the world\'s only country with coastlines on both the Pacific Ocean and the Caribbean Sea. It is the world\'s largest producer of emeralds and second-largest producer of cut flowers. The Lost City (Ciudad Perdida) predates Machu Picchu by 650 years.', fact:'Colombia produces 55% of the world\'s emeralds — the finest come from the Muzo mines.'},
+        {k:'ecuador',      name:'Ecuador',               continent:'South America',  capital:'Quito',           currency:'US Dollar (USD)',       language:'Spanish',           pop:'18M',  desc:'Ecuador sits on the equator — its name literally means "equator." The Galápagos Islands, 1,000km off its coast, were the inspiration for Darwin\'s theory of evolution. Ecuador is the world\'s largest exporter of bananas. Quito is the world\'s highest capital city in South America.', fact:'Ecuador\'s Galápagos Islands directly inspired Charles Darwin\'s theory of evolution by natural selection.'},
+        {k:'guyana',       name:'Guyana',                continent:'South America',  capital:'Georgetown',      currency:'Guyanese Dollar (GYD)', language:'English',           pop:'800K', desc:'Guyana is the only English-speaking country in South America. It has one of the world\'s highest proportions of rainforest — 70% of its territory is pristine jungle. Kaieteur Falls, deep in the Amazon basin, is the world\'s most powerful waterfall by volume.', fact:'Kaieteur Falls in Guyana is the world\'s most powerful waterfall — 5 times the height of Niagara.'},
+        {k:'paraguay',     name:'Paraguay',              continent:'South America',  capital:'Asunción',        currency:'Paraguayan Guaraní (PYG)', language:'Spanish, Guaraní', pop:'7.4M', desc:'Paraguay is one of only two landlocked countries in South America. It is one of the world\'s top soya and beef exporters. The Guaraní language — spoken alongside Spanish — is one of the few indigenous languages in the Americas to survive as a national language.', fact:'Paraguay is one of two countries in South America where an indigenous language (Guaraní) is co-official.'},
+        {k:'peru',         name:'Peru',                  continent:'South America',  capital:'Lima',            currency:'Peruvian Sol (PEN)',    language:'Spanish, Quechua',  pop:'33M',  desc:'Peru is home to Machu Picchu at 2,430m altitude — one of the world\'s great archaeological wonders. The potato originated in Peru; over 3,000 varieties grow here. Lima is considered South America\'s gastronomic capital. The Inca Empire was the largest in pre-Columbian America.', fact:'Peru is home to over 3,000 varieties of potato — the crop that transformed global food supply.'},
+        {k:'suriname',     name:'Suriname',              continent:'South America',  capital:'Paramaribo',      currency:'Surinamese Dollar (SRD)', language:'Dutch',            pop:'620K', desc:'Suriname is the smallest country in South America and the only country outside Europe where Dutch is the official language. Over 90% of the country is covered by tropical rainforest. Suriname is home to extraordinary biodiversity and has one of the lowest deforestation rates in the world.', fact:'Suriname is the only country outside Europe where Dutch is the official national language.'},
+        {k:'uruguay',      name:'Uruguay',               continent:'South America',  capital:'Montevideo',      currency:'Uruguayan Peso (UYU)', language:'Spanish',            pop:'3.5M', desc:'Uruguay was the first country in the world to legalise marijuana at a state level (2013) and the first to provide a laptop to every school child. It has the highest rate of renewable energy use in Latin America — over 95% of its electricity comes from renewables.', fact:'Uruguay was the first country in the world to fully legalise marijuana for recreational use, in 2013.'},
+        {k:'venezuela',    name:'Venezuela',             continent:'South America',  capital:'Caracas',         currency:'Venezuelan Bolívar (VES)', language:'Spanish',        pop:'28M',  desc:'Venezuela has the world\'s largest proven oil reserves — bigger than Saudi Arabia\'s. Angel Falls — the world\'s highest uninterrupted waterfall at 979m — is in Venezuela\'s Gran Sabana. The country once had one of South America\'s strongest economies.', fact:'Angel Falls in Venezuela is the world\'s highest uninterrupted waterfall at 979 metres.'},
+        // Oceania
+        {k:'australia',    name:'Australia',             continent:'Oceania',        capital:'Canberra',        currency:'Australian Dollar (AUD)', language:'English',          pop:'26M',  desc:'Australia is both a country and a continent — the world\'s sixth-largest nation by area. 80% of its animals exist nowhere else on Earth. The Great Barrier Reef, visible from space, is the world\'s largest living structure. Canberra was chosen as capital over Sydney and Melbourne by compromise.', fact:'80% of Australia\'s animals are unique to the continent and found nowhere else on Earth.'},
+        {k:'fiji',         name:'Fiji',                  continent:'Oceania',        capital:'Suva',            currency:'Fijian Dollar (FJD)',   language:'English, Fijian, Hindi', pop:'930K', desc:'Fiji consists of 332 islands and 522 smaller islets in the South Pacific. It is one of the world\'s most multicultural countries — about 38% of the population is Indo-Fijian, descendants of labourers brought by the British. Fiji water is one of the world\'s best-selling premium waters.', fact:'Fiji has 332 islands and is home to some of the world\'s most pristine coral reefs.'},
+        {k:'kiribati',     name:'Kiribati',              continent:'Oceania',        capital:'South Tarawa',    currency:'Australian Dollar (AUD)', language:'English, Gilbertese', pop:'120K', desc:'Kiribati spans the equator and crosses the International Date Line — making it the first place on Earth to see each new day. It is one of the countries most threatened by sea level rise; several of its low-lying islands could become uninhabitable within decades.', fact:'Kiribati is the first country to see each new day — it crosses the International Date Line.'},
+        {k:'marshallislands',name:'Marshall Islands',    continent:'Oceania',        capital:'Majuro',          currency:'US Dollar (USD)',       language:'Marshallese, English', pop:'42K', desc:'The Marshall Islands were the site of 67 US nuclear weapons tests between 1946 and 1958, including the Castle Bravo hydrogen bomb — the most powerful US nuclear test ever. Bikini Atoll, now a UNESCO World Heritage Site, remains uninhabitable due to radioactive contamination.', fact:'Bikini Atoll in the Marshall Islands was the site of US nuclear tests — still radioactive today.'},
+        {k:'micronesia',   name:'Micronesia',            continent:'Oceania',        capital:'Palikir',         currency:'US Dollar (USD)',       language:'English',           pop:'115K', desc:'The Federated States of Micronesia spans 607 islands across the western Pacific. The ancient city of Nan Madol — built on a coral reef — is sometimes called the "Venice of the Pacific" and is a UNESCO World Heritage Site. The country has no natural rivers.', fact:'Nan Madol\'s ancient stone city built on a coral reef is called "the Venice of the Pacific."'},
+        {k:'nauru',        name:'Nauru',                 continent:'Oceania',        capital:'Yaren',           currency:'Australian Dollar (AUD)', language:'Nauruan, English', pop:'10K',  desc:'Nauru is the world\'s smallest island nation and the third-smallest country by area (after Vatican and Monaco). It was once one of the world\'s richest countries due to phosphate mining. When the phosphate ran out, the country faced economic collapse.', fact:'Nauru was once one of the richest countries per capita in the world, thanks to phosphate mining.'},
+        {k:'newzealand',   name:'New Zealand',           continent:'Oceania',        capital:'Wellington',      currency:'New Zealand Dollar (NZD)', language:'English, Māori',   pop:'5.1M', desc:'New Zealand was the first country to give women the right to vote in 1893. The indigenous Māori culture is deeply embedded — the haka before All Blacks matches is known worldwide. New Zealand provided the setting for the Lord of the Rings films and has 50 active volcanoes.', fact:'New Zealand was the first self-governing country to give women the right to vote, in 1893.'},
+        {k:'palau',        name:'Palau',                 continent:'Oceania',        capital:'Ngerulmud',       currency:'US Dollar (USD)',       language:'Palauan, English',  pop:'18K',  desc:'Palau\'s Jellyfish Lake contains millions of golden jellyfish that have lost their sting through evolution — swimmers can snorkel through them safely. The country was one of the first to declare a marine sanctuary banning commercial fishing in its waters.', fact:'Palau\'s Jellyfish Lake contains millions of harmless jellyfish — they lost their sting through evolution.'},
+        {k:'papuanewguinea',name:'Papua New Guinea',     continent:'Oceania',        capital:'Port Moresby',    currency:'Papua New Guinean Kina', language:'Tok Pisin, English, Hiri Motu', pop:'10M', desc:'Papua New Guinea has the world\'s greatest linguistic diversity — 800+ languages spoken in a country of 10 million people, representing about 12% of all the world\'s languages. Its interior rainforests contain some of the last truly uncontacted tribes on Earth.', fact:'Papua New Guinea has over 800 languages — 12% of all the world\'s languages in one country.'},
+        {k:'samoa',        name:'Samoa',                 continent:'Oceania',        capital:'Apia',            currency:'Samoan Tālā (WST)',     language:'Samoan, English',   pop:'220K', desc:'Samoa switched the side of the road it drives on in 2011 — from right to left — to align with Australia and New Zealand. The country also moved to the other side of the International Date Line, losing a day. Robert Louis Stevenson spent his last years in Samoa.', fact:'Samoa switched from driving on the right to the left in 2011 — and skipped a day by crossing the Date Line.'},
+        {k:'solomonislands',name:'Solomon Islands',      continent:'Oceania',        capital:'Honiara',         currency:'Solomon Islands Dollar', language:'English',           pop:'720K', desc:'The Solomon Islands were the site of one of the fiercest naval battles in history — the Battle of Guadalcanal (1942–43). The islands have some of the most pristine coral reefs in the world and extraordinary marine biodiversity. Skull Island has ancient headhunting relics.', fact:'The Battle of Guadalcanal (1942) in the Solomons was one of the most brutal battles of World War II.'},
+        {k:'tonga',        name:'Tonga',                 continent:'Oceania',        capital:'Nuku\'alofa',     currency:'Tongan Paʻanga (TOP)',  language:'Tongan, English',   pop:'100K', desc:'Tonga is the only Pacific nation never colonised — it was a protected state under British guidance but retained full sovereignty. It is the last Polynesian monarchy. The Ha\'amonga\'a Maui Trilithon, built around 1200 CE, is sometimes called "Tonga\'s Stonehenge."', fact:'Tonga is the last remaining Polynesian monarchy and the only Pacific nation never fully colonised.'},
+        {k:'tuvalu',       name:'Tuvalu',                continent:'Oceania',        capital:'Funafuti',        currency:'Australian Dollar (AUD)', language:'Tuvaluan, English', pop:'11K', desc:'Tuvalu is the world\'s fourth-smallest country and one of the most threatened by sea level rise — its highest point is just 4.6m above sea level. The country earns a significant portion of its income from leasing its internet domain ".tv" to television companies.', fact:'Tuvalu earns millions annually from leasing its ".tv" internet domain to television broadcasters.'},
+        {k:'vanuatu',      name:'Vanuatu',               continent:'Oceania',        capital:'Port Vila',       currency:'Vanuatu Vatu (VUV)',    language:'Bislama, English, French', pop:'330K', desc:'Vanuatu has more languages per capita than any other country — 113 languages for 330,000 people. The island of Tanna is home to one of the world\'s most accessible active volcanoes, Mount Yasur, which you can stand on the rim of. The country invented bungee jumping — inspired by land diving rituals.', fact:'Vanuatu inspired bungee jumping — the Naghol land-diving ritual on Pentecost Island is its origin.'}
+      ];
+
+      /* ── Economy tier lookup ── */
+      var HIGH_INC = ['andorra','australia','austria','bahamas','bahrain','barbados',
+        'belgium','brunei','canada','croatia','czechia','cyprus','denmark','estonia',
+        'finland','france','germany','greece','hungary','iceland','ireland','israel',
+        'italy','japan','kuwait','latvia','liechtenstein','lithuania','luxembourg',
+        'malta','monaco','netherlands','newzealand','norway','oman','qatar','poland',
+        'romania','sanmarino','saudiarabia','singapore','slovakia','slovenia',
+        'southkorea','spain','sweden','switzerland','taiwan','trinidadtobago','uae',
+        'uk','usa','vatican','stkittsnevis','antiguabarbuda','palau','nauru'];
+      var LOW_INC = ['afghanistan','burkinafaso','burundi','car','chad','drc',
+        'eritrea','gambia','guineabissau','haiti','liberia','madagascar','malawi',
+        'mali','mozambique','niger','northkorea','somalia','southsudan','sudan',
+        'togo','uganda','ethiopia','sierraleone','guinea'];
+
+      function getEconomy(k){
+        if(HIGH_INC.indexOf(k)!==-1) return 'High Income';
+        if(LOW_INC.indexOf(k)!==-1) return 'Low Income';
+        return 'Middle Income';
+      }
+
+      function getLangGroup(lang){
+        var l = (lang||'').toLowerCase();
+        if(l.indexOf('english')!==-1) return 'English';
+        if(l.indexOf('french')!==-1) return 'French';
+        if(l.indexOf('spanish')!==-1) return 'Spanish';
+        if(l.indexOf('arabic')!==-1) return 'Arabic';
+        if(l.indexOf('portuguese')!==-1) return 'Portuguese';
+        if(l.indexOf('russian')!==-1) return 'Russian';
+        return 'Other';
+      }
+
+      function getPopGroup(pop){
+        var s = (pop||'').toUpperCase().trim();
+        var n = parseFloat(s);
+        var unit = s.slice(-1);
+        if(unit==='K') n = n/1000;
+        if(unit==='B') n = n*1000;
+        if(n < 0.5) return 'Micro';
+        if(n < 10)  return 'Small';
+        if(n < 50)  return 'Medium';
+        return 'Large';
+      }
+
+      /* ── Filter state ── */
+      var placeFilters = { letter:'', continent:'', pop:'', lang:'', economy:'' };
+
+      function getFilteredPlaces(){
+        return PLACES.filter(function(p){
+          if(placeFilters.letter && p.name.charAt(0).toUpperCase() !== placeFilters.letter) return false;
+          if(placeFilters.continent && p.continent.indexOf(placeFilters.continent)===-1) return false;
+          if(placeFilters.pop && getPopGroup(p.pop) !== placeFilters.pop) return false;
+          if(placeFilters.lang && getLangGroup(p.language) !== placeFilters.lang) return false;
+          if(placeFilters.economy && getEconomy(p.k) !== placeFilters.economy) return false;
+          return true;
+        });
+      }
+
+      /* ── render country detail ── */
+      function renderPlace(idx){
+        var p = PLACES[idx];
+        if(!p) return;
+        document.getElementById('places-detail').innerHTML =
+          '<div class="coffee-detail__name">'+p.name+'</div>'
+          +'<div class="coffee-tag-row">'
+            +'<span class="tag">'+p.continent+'</span>'
+            +'<span class="tag tag--alt">'+p.language+'</span>'
+            +'<span class="tag">'+getEconomy(p.k)+'</span>'
+          +'</div>'
+          +'<p class="coffee-detail__desc">'+p.desc+'</p>'
+          +'<div class="coffee-detail__notes-label">Key Facts</div>'
+          +'<div class="coffee-detail__notes">'
+            +'<span class="tag">Capital: '+p.capital+'</span>'
+            +'<span class="tag">Currency: '+p.currency+'</span>'
+            +'<span class="tag">Population: '+p.pop+'</span>'
+          +'</div>'
+          +'<div class="coffee-detail__spec">'+p.fact+'</div>';
+      }
+
+      /* ── build / re-build sidebar ── */
+      function renderSidebar(){
+        var filtered = getFilteredPlaces();
+        var sidebar = document.getElementById('places-sidebar');
+        sidebar.innerHTML = '';
+
+        var countEl = document.getElementById('places-count');
+        if(countEl) countEl.textContent = filtered.length + (filtered.length===1?' country':' countries');
+
+        if(filtered.length === 0){
+          sidebar.innerHTML = '<p class="places-no-results">No countries match these filters.</p>';
+          document.getElementById('places-detail').innerHTML =
+            '<p class="places-no-results" style="padding:24px;opacity:.45;">Adjust the filters to see countries.</p>';
+          return;
+        }
+
+        filtered.forEach(function(p, i){
+          var btn = document.createElement('button');
+          btn.className = 'coffee-list__item' + (i===0?' coffee-list__item--active':'');
+          btn.dataset.k = p.k;
+          btn.innerHTML = '<span class="coffee-list__num">'+String(i+1).padStart(2,'0')+'</span>'
+                         +'<span class="coffee-list__name">'+p.name+'</span>';
+          btn.addEventListener('click', function(){
+            document.querySelectorAll('#places-sidebar .coffee-list__item')
+              .forEach(function(b){ b.classList.remove('coffee-list__item--active'); });
+            btn.classList.add('coffee-list__item--active');
+            var globalIdx = PLACES.findIndex(function(q){ return q.k===p.k; });
+            renderPlace(globalIdx);
+          });
+          sidebar.appendChild(btn);
+        });
+
+        var firstIdx = PLACES.findIndex(function(q){ return q.k===filtered[0].k; });
+        renderPlace(firstIdx);
+      }
+
+      /* ── alphabet bar ── */
+      (function(){
+        var alphaBar = document.getElementById('places-alpha');
+        if(!alphaBar) return;
+
+        // chars row
+        var charsRow = document.createElement('span');
+        charsRow.className = 'places-alpha__chars';
+        alphaBar.appendChild(charsRow);
+
+        var letterBtns = [];
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(l){
+          var btn = document.createElement('button');
+          btn.className = 'places-alpha__btn';
+          btn.textContent = l;
+          btn.dataset.letter = l;
+          btn.addEventListener('click', function(){
+            var wasActive = btn.classList.contains('places-alpha__btn--active');
+            letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
+            if(wasActive){
+              // toggle off — reset
+              placeFilters.letter = '';
+              resetBtn.classList.remove('is-visible');
+            } else {
+              btn.classList.add('places-alpha__btn--active');
+              placeFilters.letter = l;
+              resetBtn.classList.add('is-visible');
+            }
+            renderSidebar();
+          });
+          letterBtns.push(btn);
+          charsRow.appendChild(btn);
+        });
+
+        // sub-label + reset
+        var sublabel = document.createElement('span');
+        sublabel.className = 'places-alpha__sublabel';
+        sublabel.textContent = 'Latin alphabet · click a letter to filter';
+        alphaBar.appendChild(sublabel);
+
+        var resetBtn = document.createElement('button');
+        resetBtn.className = 'places-alpha__reset';
+        resetBtn.textContent = 'Clear ×';
+        resetBtn.addEventListener('click', function(){
+          letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
+          resetBtn.classList.remove('is-visible');
+          placeFilters.letter = '';
+          renderSidebar();
+        });
+        sublabel.appendChild(resetBtn);
+      })();
+
+      /* ── filter selects ── */
+      function bindSelect(id, key){
+        var el = document.getElementById(id);
+        if(!el) return;
+        el.addEventListener('change', function(){
+          placeFilters[key] = el.value;
+          renderSidebar();
+        });
+      }
+      bindSelect('pf-continent', 'continent');
+      bindSelect('pf-pop',       'pop');
+      bindSelect('pf-lang',      'lang');
+      bindSelect('pf-economy',   'economy');
+
+      renderSidebar();
+
+      /* ── capital test ── */
+      var ptScore=0, ptCurrent=0, ptQuestions=[];
+
+      function ptShuffle(arr){ var a=arr.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+      function buildPT(){
+        ptScore=0; ptCurrent=0;
+        ptQuestions = ptShuffle(PLACES).slice(0,12);
+      }
+
+      function showPTState(id){
+        ['pt-idle','pt-game','pt-result'].forEach(function(s){
+          var el=document.getElementById(s);
+          if(!el) return;
+          el.classList.toggle('lang-test__game--hidden', s!==id);
+        });
+      }
+
+      function renderPTQ(){
+        var q = ptQuestions[ptCurrent];
+        var wrong = ptShuffle(PLACES.filter(function(p){ return p.capital!==q.capital; })).slice(0,3).map(function(p){ return p.capital; });
+        var opts = ptShuffle([q.capital].concat(wrong));
+
+        document.getElementById('pt-counter').textContent = (ptCurrent+1)+' / '+ptQuestions.length;
+        document.getElementById('pt-bar').style.width = Math.round((ptCurrent/ptQuestions.length)*100)+'%';
+        document.getElementById('pt-prompt').textContent = q.name;
+        document.getElementById('pt-continent').textContent = q.continent;
+        var optWrap = document.getElementById('pt-options');
+        optWrap.innerHTML='';
+        opts.forEach(function(opt){
+          var btn=document.createElement('button');
+          btn.className='lang-test__opt';
+          btn.textContent=opt;
+          btn.addEventListener('click',function(){
+            optWrap.querySelectorAll('.lang-test__opt').forEach(function(b){ b.disabled=true; });
+            if(opt===q.capital){
+              btn.classList.add('lang-test__opt--correct'); ptScore++;
+            } else {
+              btn.classList.add('lang-test__opt--wrong');
+              optWrap.querySelectorAll('.lang-test__opt').forEach(function(b){
+                if(b.textContent===q.capital) b.classList.add('lang-test__opt--correct');
+              });
+            }
+            setTimeout(function(){
+              ptCurrent++;
+              if(ptCurrent<ptQuestions.length){ renderPTQ(); }
+              else { showPTResult(); }
+            },900);
+          });
+          optWrap.appendChild(btn);
+        });
+      }
+
+      function showPTResult(){
+        document.getElementById('pt-bar').style.width='100%';
+        var pct=Math.round((ptScore/ptQuestions.length)*100);
+        var v = pct>=90 ? 'Impressive — you really know your world capitals.'
+          : pct>=70 ? 'Solid geography. A few more to master.'
+          : pct>=50 ? 'Not bad — the tricky ones trip everyone up.'
+          : 'Keep exploring — every wrong answer is a place to remember.';
+        document.getElementById('pt-score').textContent=ptScore+' / '+ptQuestions.length;
+        document.getElementById('pt-verdict').textContent=v;
+        showPTState('pt-result');
+      }
+
+      document.getElementById('pt-start').addEventListener('click',function(){
+        buildPT(); showPTState('pt-game'); renderPTQ();
+      });
+
+      document.getElementById('pt-retry').addEventListener('click',function(){
+        buildPT(); showPTState('pt-game'); renderPTQ();
+      });
+
+    })();
 
   </script>
 </body>

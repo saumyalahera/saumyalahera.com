@@ -1360,6 +1360,175 @@ h2.about__title{
   padding: 0 24px 100px;
 }
 
+/* ===== Places Overlay ===== */
+.places-overlay{
+  background: #F6F7F9; /* same cool-grey as language page */
+  position: relative; /* for shader canvas */
+}
+
+/* ─── Places Filter Bar ─── */
+.places-filters{
+  margin-bottom: 16px;
+}
+
+.places-alpha{
+  text-align: center;
+  padding: 32px 0 22px;
+  border-top: 1px solid rgba(0,0,0,.07);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  margin-bottom: 18px;
+}
+
+.places-alpha__chars{
+  display: block;
+  line-height: 2;
+}
+
+.places-alpha__btn{
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.30em;
+  color: rgba(0,0,0,.18);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color .15s ease;
+}
+.places-alpha__btn:hover{
+  color: rgba(0,0,0,.52);
+}
+.places-alpha__btn--active{
+  color: rgba(60,80,130,.75);
+  font-weight: 600;
+}
+
+.places-alpha__sublabel{
+  display: block;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.18);
+  margin-top: 10px;
+}
+
+.places-alpha__reset{
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(60,80,130,.60);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  margin-left: 8px;
+  display: none;
+}
+.places-alpha__reset.is-visible{
+  display: inline;
+}
+
+.places-filter-row{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+}
+
+.places-select{
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' stroke='rgba%280%2C0%2C0%2C.35%29' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  border: none;
+  border-bottom: 0.8px solid rgba(0,0,0,.16);
+  border-radius: 0;
+  padding: 4px 16px 4px 0;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.48);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color .15s ease, color .15s ease;
+}
+.places-select:hover{
+  border-bottom-color: rgba(0,0,0,.38);
+  color: rgba(0,0,0,.72);
+}
+.places-select:focus{
+  outline: none;
+  border-bottom-color: rgba(60,80,130,.55);
+  color: rgba(0,0,0,.72);
+}
+
+.places-count{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+  margin-left: auto;
+}
+
+.places-no-results{
+  font-size: 11px;
+  color: rgba(0,0,0,.4);
+  padding: 20px 16px;
+  font-style: italic;
+}
+
+/* make the country list a bit taller to show more items */
+.places-explorer.coffee-explorer{
+  min-height: 420px;
+}
+.places-explorer .coffee-list{
+  max-height: 520px;
+  overflow-y: auto;
+}
+/* sidebar scroll for 195 countries */
+.places-explorer .coffee-explorer__sidebar{
+  max-height: 560px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* test prompt — larger country name */
+.places-test{
+  margin-top: 24px;
+}
+.places-test__idle{
+  text-align: center;
+  padding: 16px 0;
+}
+.places-test__prompt{
+  font-size: clamp(26px, 5vw, 44px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: rgba(0,0,0,.82);
+  text-align: center;
+  margin: 0 0 6px;
+  line-height: 1.1;
+}
+.places-test__continent{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+  text-align: center;
+  margin: 0 0 24px;
+}
+
 /* lang overlay reuses .coffee-overlay__header for the centered header */
 
 /* ── intro text ── */

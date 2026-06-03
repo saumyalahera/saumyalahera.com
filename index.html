@@ -584,6 +584,13 @@
           <span class="pill">Watch Dogs Legion</span>
           <span class="pill">Resident Evil 4</span>
         </div>
+        <!-- Games trigger -->
+        <button class="lang-trigger" id="games-trigger" aria-label="Explore games I admire" style="margin-top:36px;">
+          <span class="lang-trigger__label">Games I Admire</span>
+          <svg class="lang-trigger__icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="12" height="12" aria-hidden="true">
+            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
       <!--
       Games Ends
@@ -3572,6 +3579,520 @@
     })();
 
   </script>
+
+  <!-- ===== Games Overlay ===== -->
+  <div class="coffee-overlay games-overlay" id="games-overlay" role="dialog" aria-modal="true" aria-label="PS5 Games" aria-hidden="true">
+    <canvas id="games-shader" class="lang-shader"></canvas>
+    <div class="coffee-overlay__scroll">
+      <div class="coffee-overlay__content">
+
+        <div class="coffee-overlay__header">
+          <p class="footer-signature">
+            <span>Saumya</span>
+            <img class="footer-avatar" src="assets/avatar.jpg" alt="Saumya Lahera" />
+            <span>Lahera</span>
+          </p>
+          <p class="footer-websiteupdate" style="margin-top:4px;">
+            <span>GAMES</span>
+            <span>&amp;</span>
+            <span>PLAY</span>
+          </p>
+          <button class="coffee-overlay__close" id="games-close" aria-label="Close games">
+            <span class="coffee-overlay__close-label">Close</span>
+            <svg class="coffee-overlay__close-chevron" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="14" height="14" aria-hidden="true">
+              <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- intro -->
+        <div class="coffee-sub-section" style="text-align:center;padding-bottom:0;">
+          <h2 class="about__title" style="font-size:clamp(2rem,4.5vw,3rem);margin-bottom:10px;">Find your next game</h2>
+          <p class="coffee-sub-intro" style="max-width:480px;margin:0 auto;">106 games — filter by genre, rating, mode, and length.</p>
+        </div>
+
+        <br/>
+
+        <!-- ── Games filter + explorer — same structure as Countries ── -->
+        <div class="coffee-sub-section">
+          <span class="places-count" id="gsearch-count" style="display:block;text-align:center;margin-bottom:8px;"></span>
+
+          <div class="places-filters">
+            <!-- A–Z bar — identical to Countries -->
+            <div class="places-alpha" id="games-alpha"></div>
+
+            <!-- filter dropdowns — identical to Countries -->
+            <div class="places-filter-row">
+              <select class="places-select" id="gsearch-genre" aria-label="Filter by genre">
+                <option value="">All Genres</option>
+              </select>
+              <select class="places-select" id="gsearch-rating" aria-label="Filter by rating">
+                <option value="">Any Rating</option>
+                <option value="90">90+</option>
+                <option value="80">80+</option>
+                <option value="70">70+</option>
+              </select>
+              <select class="places-select" id="gsearch-mode" aria-label="Filter by mode">
+                <option value="">Any Mode</option>
+                <option value="Single-player">Single-player</option>
+                <option value="Multiplayer">Multiplayer</option>
+                <option value="Co-op">Co-op</option>
+              </select>
+              <select class="places-select" id="gsearch-length" aria-label="Filter by length">
+                <option value="">Any Length</option>
+                <option value="Short">Short (&lt;10h)</option>
+                <option value="Medium">Medium (10–30h)</option>
+                <option value="Long">Long (30–60h)</option>
+                <option value="Very Long">60h+</option>
+              </select>
+              <select class="places-select" id="gsearch-platform" aria-label="Filter by platform">
+                <option value="">All Platforms</option>
+                <option value="PlayStation">PlayStation Only</option>
+                <option value="PC">Includes PC</option>
+                <option value="Multi">Multiplatform</option>
+              </select>
+              <select class="places-select" id="gsearch-sort" aria-label="Sort">
+                <option value="score">Best Rated</option>
+                <option value="year">Newest First</option>
+                <option value="az">A → Z</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- scrollable list of game cards -->
+          <div class="games-card-list" id="games-card-list"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+  /* ===== Games Overlay ===== */
+  (function(){
+    var trigger  = document.getElementById('games-trigger');
+    var overlay  = document.getElementById('games-overlay');
+    var closeBtn = document.getElementById('games-close');
+    if(!trigger || !overlay) return;
+
+    var initialized = false;
+
+    function openGames(){
+      overlay.classList.add('is-open');
+      overlay.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+      if(!initialized){ initSearch(); initialized = true; }
+    }
+    function closeGames(){
+      overlay.classList.remove('is-open');
+      overlay.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+    trigger.addEventListener('click', openGames);
+    closeBtn.addEventListener('click', closeGames);
+    overlay.addEventListener('click', function(e){
+      if(e.target === overlay || e.target.classList.contains('coffee-overlay__scroll')) closeGames();
+    });
+    document.addEventListener('keydown', function(e){
+      if(e.key === 'Escape' && overlay.classList.contains('is-open')) closeGames();
+    });
+
+    /* ── games data ── */
+    var GAMES=[
+      {t:'Elden Ring',d:'FromSoftware',y:2022,g:'Action RPG',s:96,m:'Single-player',len:'Very Long',desc:'Open-world masterwork. Vast, intricate, uncompromising. The freedom to approach any challenge in any order — and the satisfaction of Malenia — make this the gold standard of the genre.'},
+      {t:'Baldur\'s Gate 3',d:'Larian Studios',y:2023,g:'RPG',s:96,m:'Co-op',len:'Very Long',desc:'A tabletop RPG realized with staggering fidelity. Every choice has consequence, every NPC has depth, and the sheer breadth of what you can do and who you can be is unmatched.'},
+      {t:'Disco Elysium',d:'ZA/UM',y:2021,g:'RPG',s:97,m:'Single-player',len:'Long',desc:'The most literary RPG ever made. You play a detective with no memory solving a murder in a dying city. Every skill is a voice in your head. Nothing else plays like this.'},
+      {t:'Persona 5 Royal',d:'Atlus',y:2022,g:'RPG',s:95,m:'Single-player',len:'Very Long',desc:'Style, substance, and the most confident aesthetic in JRPG history. Phantom thieves stealing corrupt hearts in modern Tokyo, with social systems that reward every hour.'},
+      {t:'Metaphor: ReFantazio',d:'Atlus / Studio Zero',y:2024,g:'RPG',s:94,m:'Single-player',len:'Very Long',desc:'Atlus\'s grand new IP: a political fantasy RPG with the calendar systems of Persona married to a world of archetype warriors and monarchic succession. Extraordinary.'},
+      {t:'God of War Ragnarök',d:'Santa Monica Studio',y:2022,g:'Action-Adventure',s:94,m:'Single-player',len:'Long',desc:'Kratos and Atreus traverse the nine realms in a saga about fathers, sons, and fate. The combat is brutal and elegant; the storytelling is patient and earned.'},
+      {t:'Astro Bot',d:'Team Asobi',y:2024,g:'Platformer',s:94,m:'Single-player',len:'Medium',desc:'Pure joy in game form. A love letter to PlayStation history that works as a flawless platformer first. The DualSense integration makes you feel every surface, every step.'},
+      {t:'God of War',d:'Santa Monica Studio',y:2018,g:'Action-Adventure',s:94,m:'Single-player',len:'Long',desc:'The soft reboot that turned Kratos from symbol to father. A seamless single-shot adventure through Norse mythology that never stops surprising.'},
+      {t:'Resident Evil 4',d:'Capcom',y:2023,g:'Survival Horror',s:93,m:'Single-player',len:'Medium',desc:'The gold standard remake. Every system refreshed, every pacing decision sharpened. The Merchant is still iconic. Leon is even better.'},
+      {t:'Like a Dragon: Infinite Wealth',d:'RGG Studio',y:2024,g:'Action RPG',s:93,m:'Single-player',len:'Very Long',desc:'Ichiban Kasuga goes to Hawaii in the most ambitious RGG entry. Turn-based combat at its finest, deep substories, and an incredible amount of heart.'},
+      {t:'Hades',d:'Supergiant Games',y:2021,g:'Roguelike',s:93,m:'Single-player',len:'Long',desc:'Zagreus escapes the Underworld — or tries to. The storytelling through repetition is masterful; every run reveals something new about the characters and their bonds.'},
+      {t:'Final Fantasy VII Rebirth',d:'Square Enix',y:2024,g:'Action RPG',s:92,m:'Single-player',len:'Very Long',desc:'Cloud and friends in an open-world reimagining of the Midgar exodus. Phenomenal combat, breathtaking set pieces, and a finale that is genuinely audacious.'},
+      {t:'Immortality',d:'Half Mermaid',y:2022,g:'Adventure',s:92,m:'Single-player',len:'Short',desc:'Three films. One missing actress. An investigation that becomes something profound about cinema, identity, and creation. Sam Barlow\'s most ambitious and beautiful work.'},
+      {t:'Demon\'s Souls',d:'Bluepoint Games',y:2020,g:'Action RPG',s:92,m:'Single-player',len:'Long',desc:'A stunning PS5 launch showcase rebuilt from the ground up. The fog gates, the weight of every swing, the moment you first see the Tower Knight.'},
+      {t:'Street Fighter 6',d:'Capcom',y:2023,g:'Fighting',s:92,m:'Multiplayer',len:'Long',desc:'The most complete Street Fighter in decades. The World Tour mode is a genuine RPG; Drive Rush makes the neutral game deeper than ever.'},
+      {t:'Resident Evil 2',d:'Capcom',y:2019,g:'Survival Horror',s:91,m:'Single-player',len:'Medium',desc:'Mr. X. That\'s it. The over-the-shoulder remake of the 1998 classic is lean, terrifying, and relentlessly replayable across both campaigns.'},
+      {t:'Guilty Gear Strive',d:'Arc System Works',y:2021,g:'Fighting',s:91,m:'Multiplayer',len:'Long',desc:'The most visually stunning fighting game ever made. Every frame looks like an oil painting in motion. Rollback netcode and a redesigned system make it the best entry yet.'},
+      {t:'Neon White',d:'Angel Matrix',y:2022,g:'Action',s:91,m:'Single-player',len:'Short',desc:'Speed-running heaven. Discard cards to kill angels, discover new routes, beat your friends\' times. Anime aesthetic, incredible soundtrack, brilliant systemic design.'},
+      {t:'Marvel\'s Spider-Man 2',d:'Insomniac Games',y:2023,g:'Action-Adventure',s:90,m:'Single-player',len:'Long',desc:'Peter and Miles together, with the Symbiote. Insomniac\'s most ambitious web-slinging adventure yet, with a darker tone and traversal that has never felt this good.'},
+      {t:'Sekiro: Shadows Die Twice',d:'FromSoftware',y:2019,g:'Action',s:90,m:'Single-player',len:'Long',desc:'Parry or die. The most demanding FromSoftware game, and the most rewarding when it clicks. The final boss sequence is a perfect escalation of everything you\'ve learned.'},
+      {t:'Dave the Diver',d:'MINTROCKET',y:2023,g:'Adventure',s:90,m:'Single-player',len:'Medium',desc:'Dive for fish by day, run a sushi restaurant by night. The most charming game of 2023, with an absurd amount of ideas crammed into a tiny studio\'s debut.'},
+      {t:'It Takes Two',d:'Hazelight Studios',y:2021,g:'Action-Adventure',s:90,m:'Co-op',len:'Medium',desc:'Two hours in and you\'ll wonder why more games do this. Every chapter invents a new mechanic. Heartfelt, inventive, and the best co-op game of the generation.'},
+      {t:'Cyberpunk 2077: Phantom Liberty',d:'CD Projekt Red',y:2023,g:'Action RPG',s:90,m:'Single-player',len:'Long',desc:'The expansion that vindicated Cyberpunk\'s potential. Idris Elba and Keanu Reeves in Night City\'s most gripping story, powered by the overhauled 2.0 systems.'},
+      {t:'Spelunky 2',d:'Mossmouth',y:2020,g:'Roguelike',s:90,m:'Co-op',len:'Long',desc:'The hardest game you\'ll love. Every death is a lesson. The layered secrets go deeper than almost any game ever made — Olmec is just the beginning.'},
+      {t:'Apex Legends',d:'Respawn Entertainment',y:2019,g:'Battle Royale',s:89,m:'Multiplayer',len:'Very Long',desc:'The movement system redefined the genre. Sliding, climbing, zip-lining — every fight is vertical and kinetic. The ping system is still the best communication tool in the genre.'},
+      {t:'Alan Wake 2',d:'Remedy Entertainment',y:2023,g:'Survival Horror',s:89,m:'Single-player',len:'Long',desc:'A meta-horror spiral that keeps rewriting its own rules. The Dark Place sequences are among the most inventive environments in gaming. Nothing else plays like this.'},
+      {t:'Dead Space',d:'Motive Studio',y:2023,g:'Survival Horror',s:89,m:'Single-player',len:'Medium',desc:'Isaac now speaks. The Ishimura is more atmospheric than ever. A faithful remake that improves on the original in nearly every way.'},
+      {t:'Psychonauts 2',d:'Double Fine',y:2021,g:'Platformer',s:89,m:'Single-player',len:'Long',desc:'Tim Schafer\'s best game. Platforming through mental health metaphors with wit and warmth. Some of the most inventive level design — and most humane storytelling — in the medium.'},
+      {t:'The Last of Us Part I',d:'Naughty Dog',y:2022,g:'Action-Adventure',s:89,m:'Single-player',len:'Long',desc:'Joel and Ellie\'s journey rebuilt for PS5 with stunning fidelity. The relationship that redefined emotional storytelling in games, more beautiful than ever.'},
+      {t:'Sea of Stars',d:'Sabotage Studio',y:2023,g:'RPG',s:89,m:'Co-op',len:'Long',desc:'The indie JRPG that remembered how to be a JRPG. Gorgeous pixel art, clever timed-hit combat, and a story that earns its retro inspirations.'},
+      {t:'Persona 3 Reload',d:'Atlus',y:2024,g:'RPG',s:89,m:'Single-player',len:'Very Long',desc:'The PS2 classic rebuilt with modern sensibility. The social links, memento mori theming, and haunting soundtrack are as powerful as ever — and the new content adds real depth.'},
+      {t:'Final Fantasy VII Remake',d:'Square Enix',y:2021,g:'Action RPG',s:89,m:'Single-player',len:'Long',desc:'Midgar expanded into a full game, with combat that merges real-time action and ATB strategy. The characters of 1997 have never felt more alive.'},
+      {t:'Outer Wilds',d:'Mobius Digital',y:2021,g:'Adventure',s:88,m:'Single-player',len:'Medium',desc:'You die every 22 minutes when the sun explodes. A solar system of mysteries revealed through pure curiosity. The most rewarding discovery loop in gaming — go in knowing nothing.'},
+      {t:'Horizon Forbidden West',d:'Guerrilla Games',y:2022,g:'Action RPG',s:88,m:'Single-player',len:'Very Long',desc:'Aloy in the former American West, hunting machines through stunning biomes. The traversal is dramatically improved; the world-building continues to reward curiosity.'},
+      {t:'Ratchet & Clank: Rift Apart',d:'Insomniac Games',y:2021,g:'Action-Adventure',s:88,m:'Single-player',len:'Medium',desc:'The definitive PS5 showcase. Dimension-hopping at lightning speed, zero load times, and a weapon sandbox that never gets old.'},
+      {t:'Deathloop',d:'Arkane Studios',y:2021,g:'Action',s:88,m:'Single-player',len:'Long',desc:'Kill the same eight targets in a single day. The systemic sandbox of Blackreef is Arkane at their most ambitious, and Julianna is one of gaming\'s great antagonists.'},
+      {t:'Diablo IV',d:'Blizzard Entertainment',y:2023,g:'Action RPG',s:88,m:'Co-op',len:'Very Long',desc:'The return of the dark tone the series deserved. The gothic world-building, ruthless endgame, and deep build crafting are the best the ARPG genre has offered in years.'},
+      {t:'Tunic',d:'Andrew Shouldice',y:2022,g:'Action-Adventure',s:87,m:'Single-player',len:'Medium',desc:'A fox with a sword, a game manual you piece together yourself, and secrets layered on secrets. The Fez of its generation — an experience to cherish.'},
+      {t:'Hi-Fi Rush',d:'Tango Gameworks',y:2023,g:'Rhythm',s:87,m:'Single-player',len:'Medium',desc:'Everything beats to the music. The world pulses, enemies attack on the beat, and Chai\'s adventure through a corporate hellhole is pure anarchic joy.'},
+      {t:'Armored Core VI',d:'FromSoftware',y:2023,g:'Action',s:87,m:'Single-player',len:'Medium',desc:'Mech combat distilled to its essence. Build, customize, destroy at high speed. FromSoftware proving they can do anything with a boss fight structure.'},
+      {t:'Final Fantasy XVI',d:'Square Enix',y:2023,g:'Action RPG',s:87,m:'Single-player',len:'Long',desc:'Final Fantasy goes Game of Thrones. Clive\'s revenge saga is the most cinematic FF yet, with Eikon battles that are among the most spectacular sequences in gaming.'},
+      {t:'Ghost of Tsushima',d:'Sucker Punch',y:2021,g:'Action-Adventure',s:87,m:'Co-op',len:'Long',desc:'Jin Sakai\'s samurai stand against the Mongol invasion. The combat is graceful and deadly; the Photo Mode broke the internet for a reason.'},
+      {t:'Hitman World of Assassination',d:'IO Interactive',y:2023,g:'Stealth',s:87,m:'Single-player',len:'Very Long',desc:'The complete trilogy in one package. Agent 47 in the most intricately designed sandboxes in gaming. Every level is a puzzle box you can run a hundred different ways.'},
+      {t:'Nioh 2',d:'Team Ninja',y:2021,g:'Action RPG',s:87,m:'Co-op',len:'Very Long',desc:'The most mechanically deep Soulslike ever made. Stances, Burst Counters, Yokai Shifts — the skill ceiling is extraordinary for those willing to climb it.'},
+      {t:'Gran Turismo 7',d:'Polyphony Digital',y:2022,g:'Racing',s:87,m:'Multiplayer',len:'Very Long',desc:'The definitive PlayStation racing experience. Hundreds of cars with obsessive detail, the best rain driving in any game, and DualSense haptics you feel in your bones.'},
+      {t:'Monster Hunter Rise: Sunbreak',d:'Capcom',y:2022,g:'Action RPG',s:87,m:'Co-op',len:'Very Long',desc:'The massive expansion that added Silkbind Attacks and a formidable roster across all seasons. Co-op hunting at its absolute finest.'},
+      {t:'Star Wars Jedi: Survivor',d:'Respawn Entertainment',y:2023,g:'Action-Adventure',s:87,m:'Single-player',len:'Long',desc:'Cal Kestis returns in a bigger, more ambitious sequel. New lightsaber stances add real variety; Koboh is one of the most explorable open worlds in recent memory.'},
+      {t:'Octopath Traveler II',d:'Square Enix',y:2023,g:'RPG',s:87,m:'Single-player',len:'Very Long',desc:'Eight travellers, eight stories, one of the most beautiful HD-2D worlds ever made. The job system and turn-based combat are elegantly refined over the original.'},
+      {t:'Pentiment',d:'Obsidian Entertainment',y:2023,g:'Adventure',s:87,m:'Single-player',len:'Medium',desc:'A murder mystery in a Bavarian monastery in 1518. Josh Sawyer\'s most personal game: handwritten fonts, illuminated manuscript aesthetics, and genuine historical weight.'},
+      {t:'Return to Monkey Island',d:'Terrible Toybox',y:2022,g:'Adventure',s:87,m:'Single-player',len:'Short',desc:'Ron Gilbert\'s long-awaited return to Mêlée Island. Funny, melancholy, and wise about games, memory, and the things we return to again and again.'},
+      {t:'Cocoon',d:'Geometric Interactive',y:2023,g:'Puzzle',s:89,m:'Single-player',len:'Short',desc:'Worlds within worlds within worlds. The most elegantly designed puzzle game in years — Jeppe Carlsen (Inside, Limbo) at his most inventive and surprising.'},
+      {t:'Death Stranding Director\'s Cut',d:'Kojima Productions',y:2021,g:'Action',s:86,m:'Single-player',len:'Very Long',desc:'Connect America. Walk across post-apocalyptic landscapes, build roads, carry cargo. The most divisive game of its generation — also one of the most moving.'},
+      {t:'Dragon\'s Dogma 2',d:'Capcom',y:2024,g:'Action RPG',s:86,m:'Single-player',len:'Long',desc:'The Arisen returns in a world of unprecedented systemic depth. Vocations, Pawns, and emergent encounters make every journey feel genuinely unpredictable.'},
+      {t:'Cyberpunk 2077',d:'CD Projekt Red',y:2022,g:'Action RPG',s:86,m:'Single-player',len:'Very Long',desc:'Night City fully realized in the 2.0 overhaul. The most ambitious open world of its generation, with V and Johnny Silverhand\'s dynamic unlike anything else.'},
+      {t:'Returnal',d:'Housemarque',y:2021,g:'Roguelike',s:86,m:'Co-op',len:'Long',desc:'Selene crashes on a planet that resets when she dies. Third-person bullet hell meets tight gunplay meets psychological horror. The DualSense use here is unmatched.'},
+      {t:'Destiny 2: The Final Shape',d:'Bungie',y:2024,g:'Shooter',s:85,m:'Co-op',len:'Very Long',desc:'The culmination of ten years of Destiny lore. The Prismatic subclass and The Pale Heart destination are the best content Bungie has ever shipped.'},
+      {t:'Marvel\'s Spider-Man: Miles Morales',d:'Insomniac Games',y:2020,g:'Action-Adventure',s:85,m:'Single-player',len:'Medium',desc:'Miles steps into the Spider-suit in a smaller, sharper story set at Christmas. The Venom powers add new tactical depth; the soundtrack is extraordinary.'},
+      {t:'Star Wars Jedi: Fallen Order',d:'Respawn Entertainment',y:2020,g:'Action-Adventure',s:85,m:'Single-player',len:'Long',desc:'Cal Kestis as a Soulslike Jedi. The combat borrows from the best; the story of an Order 66 survivor is told with real emotional weight.'},
+      {t:'Yakuza: Like a Dragon',d:'RGG Studio',y:2020,g:'RPG',s:85,m:'Single-player',len:'Long',desc:'Ichiban Kasuga stumbles into Dragon Quest and stays there. The turn-based pivot is genius; absurdity and sincerity in perfect RGG tension.'},
+      {t:'Control Ultimate Edition',d:'Remedy Entertainment',y:2021,g:'Action',s:85,m:'Single-player',len:'Long',desc:'Jesse Faden in the Oldest House. Telekinetic combat in a brutalist supernatural bureaucracy. Alan Wake connections everywhere. An atmosphere unlike anything else.'},
+      {t:'The Forgotten City',d:'Modern Storyteller',y:2021,g:'RPG',s:85,m:'Single-player',len:'Short',desc:'Started as a Skyrim mod; became one of the smartest RPGs of its year. A Roman city where one person\'s sin kills everyone — loop, investigate, and escape.'},
+      {t:'Astro\'s Playroom',d:'Team Asobi',y:2020,g:'Platformer',s:85,m:'Single-player',len:'Short',desc:'The best pack-in game ever made. A demonstration of the DualSense and a celebration of PlayStation history that made everyone smile. Free with every PS5.'},
+      {t:'Unpacking',d:'Witch Beam',y:2021,g:'Puzzle',s:85,m:'Single-player',len:'Short',desc:'Unpack boxes. Arrange rooms. A story told entirely through objects. The most emotionally resonant Zen game ever made.'},
+      {t:'Spiritfarer',d:'Thunder Lotus Games',y:2021,g:'Adventure',s:85,m:'Co-op',len:'Long',desc:'A cosy management game about death. Help spirits cross over. Build a boat. Say goodbye. The most tender game about loss and care ever made.'},
+      {t:'Chicory: A Colorful Tale',d:'Greg Lobanov',y:2021,g:'Adventure',s:85,m:'Co-op',len:'Medium',desc:'Color in the world. A touching story about creative block and imposter syndrome, delivered through one of the most ingenious Zelda-inspired mechanics in years.'},
+      {t:'Horizon Zero Dawn',d:'Guerrilla Games',y:2020,g:'Action RPG',s:85,m:'Single-player',len:'Long',desc:'Aloy in a world reclaimed by nature and machines. The bow combat against mechanical dinosaurs remains compelling; the mystery of the old world is elegantly unfolded.'},
+      {t:'Kena: Bridge of Spirits',d:'Ember Lab',y:2021,g:'Action-Adventure',s:82,m:'Single-player',len:'Medium',desc:'A debut that felt impossible for a small studio. Kena\'s world of forest spirits is achingly beautiful; the boss fights are genuinely demanding.'},
+      {t:'Ghostrunner',d:'One More Level',y:2021,g:'Action',s:83,m:'Single-player',len:'Short',desc:'One hit, you\'re dead. Cyber katana through cyberpunk vertical levels. The speed and precision required make every clean run feel transcendent.'},
+      {t:'Cult of the Lamb',d:'Massive Monster',y:2022,g:'Roguelike',s:83,m:'Single-player',len:'Medium',desc:'Start a cult, go on dungeon runs, manage your flock. Dark humor and genuinely addictive loop management wrapped in an adorable art style.'},
+      {t:'Stray',d:'BlueTwelve Studio',y:2022,g:'Adventure',s:83,m:'Single-player',len:'Short',desc:'Play as a cat in a city of robots. The premise alone made it a cultural moment. The world-building is quietly extraordinary; the robot civilization has genuine soul.'},
+      {t:'Lost Judgment',d:'RGG Studio',y:2021,g:'Action-Adventure',s:84,m:'Single-player',len:'Long',desc:'Yagami\'s best case. A school bullying investigation that deepens into systemic critique, with side content including dance, skateboarding, and biker gangs.'},
+      {t:'Judgment',d:'RGG Studio',y:2021,g:'Action-Adventure',s:83,m:'Single-player',len:'Long',desc:'A private detective thriller in the Yakuza engine. Yagami Takayuki\'s noir investigation is gripping; investigation mechanics add fresh texture to familiar streets.'},
+      {t:'Marvel\'s Midnight Suns',d:'Firaxis Games',y:2022,g:'Strategy',s:83,m:'Single-player',len:'Long',desc:'A deck-building tactical RPG with Marvel heroes. The social sim elements between missions are warm and surprisingly well-written. Firaxis doing something completely different.'},
+      {t:'A Plague Tale: Requiem',d:'Asobo Studio',y:2022,g:'Action-Adventure',s:84,m:'Single-player',len:'Long',desc:'Amicia and Hugo flee across Southern France in a visually stunning sequel. The rat hordes are more elaborate than ever; the emotional weight of the ending genuinely lands.'},
+      {t:'Hogwarts Legacy',d:'Avalanche Software',y:2023,g:'Action RPG',s:84,m:'Single-player',len:'Long',desc:'The Wizarding World game fans waited decades for. The castle and grounds are faithfully realized; the loop of spells and exploration is genuinely satisfying.'},
+      {t:'Resident Evil Village',d:'Capcom',y:2021,g:'Survival Horror',s:84,m:'Single-player',len:'Medium',desc:'Ethan Winters in a gothic European nightmare. Lady Dimitrescu made the internet lose its mind; the Mercenaries mode is endlessly replayable.'},
+      {t:'Silent Hill 2',d:'Bloober Team',y:2024,g:'Survival Horror',s:84,m:'Single-player',len:'Long',desc:'James Sunderland returns to Silent Hill in a faithful, gorgeous remake. The combat is more dynamic; the fog and dread are as suffocating as ever.'},
+      {t:'Dragon Age: The Veilguard',d:'BioWare',y:2024,g:'Action RPG',s:82,m:'Single-player',len:'Long',desc:'After a decade, the return to Thedas. Real-time action combat, gorgeous environments, and companions that hearken back to BioWare\'s golden era of party dynamics.'},
+      {t:'Warhammer 40K: Space Marine 2',d:'Saber Interactive',y:2024,g:'Action',s:82,m:'Co-op',len:'Long',desc:'Titus returns to slaughter Tyranids by the thousand. The power fantasy of being a Space Marine has never been better realized — visceral, glorious, and cathartic.'},
+      {t:'Black Myth: Wukong',d:'Game Science',y:2024,g:'Action RPG',s:82,m:'Single-player',len:'Long',desc:'Journey to the West as an action spectacle. Boss design that rivals FromSoftware\'s best; a Chinese mythology canvas that feels genuinely fresh.'},
+      {t:'Helldivers 2',d:'Arrowhead Game Studios',y:2024,g:'Shooter',s:82,m:'Co-op',len:'Long',desc:'Spread managed democracy across the galaxy. The chaos of friendly fire, Stratagem calls, and coordinating with randoms makes every mission feel like a war story.'},
+      {t:'Stellar Blade',d:'Shift Up',y:2024,g:'Action',s:82,m:'Single-player',len:'Long',desc:'Eve\'s mission to reclaim a ruined Earth. Stylish action combat with parry timing that rewards precision; a world-building ambition that punches above its studio\'s weight.'},
+      {t:'Ghostrunner 2',d:'One More Level',y:2023,g:'Action',s:80,m:'Single-player',len:'Medium',desc:'One-hit deaths, cyber katana, wall-running at 60fps. The sequel adds a motorcycle and enough mechanical variety to justify its existence completely.'},
+      {t:'Lies of P',d:'Round8 Studio',y:2023,g:'Action RPG',s:80,m:'Single-player',len:'Long',desc:'Pinocchio as a Soulslike in Belle Époque horror. The weapon fusion system and the choice to lie or tell the truth add real innovation to a comfortable genre.'},
+      {t:'Mortal Kombat 1',d:'NetherRealm Studios',y:2023,g:'Fighting',s:80,m:'Multiplayer',len:'Long',desc:'A genuine reboot. Kameo fighters, a reworked story mode, and the goriest finishing moves in series history. The best Mortal Kombat in years.'},
+      {t:'Sackboy: A Big Adventure',d:'Sumo Digital',y:2020,g:'Platformer',s:80,m:'Co-op',len:'Medium',desc:'LittleBigPlanet\'s spirit lives on. Sackboy\'s debut adventure is endlessly charming co-op platforming, with licensed music levels that are pure joy.'},
+      {t:'Little Nightmares II',d:'Tarsier Studios',y:2021,g:'Puzzle',s:80,m:'Single-player',len:'Short',desc:'Mono and Six in a world of grotesque predators. The Hospital chapter remains one of the most frightening things in gaming — and the ending lingers for days.'},
+      {t:'Sifu',d:'Sloclap',y:2022,g:'Action',s:81,m:'Single-player',len:'Medium',desc:'You age every time you die. Beat five bosses before your body gives out. The martial arts combat is the most technically demanding and rewarding brawler in years.'},
+      {t:'Ghostwire: Tokyo',d:'Tango Gameworks',y:2022,g:'Action-Adventure',s:80,m:'Single-player',len:'Medium',desc:'Shibuya depopulated, spirits everywhere. Akito\'s Ethereal Weaving arsenal feels unlike anything else; the ghost Tokyo atmosphere is genuinely stunning.'},
+      {t:'Solar Ash',d:'Heart Machine',y:2021,g:'Action',s:78,m:'Single-player',len:'Medium',desc:'Traverse a void of acid and debris at breathtaking speed. Heart Machine\'s follow-up to Hyper Light Drifter is looser, stranger, faster — and stunning to look at.'},
+      {t:'The Quarry',d:'Supermassive Games',y:2022,g:'Adventure',s:77,m:'Co-op',len:'Medium',desc:'Teen counselors, summer camp, werewolves. A spiritual successor to Until Dawn with a huge cast and the highest production values in the interactive drama genre.'},
+      {t:'Twelve Minutes',d:'Luis Antonio',y:2021,g:'Adventure',s:77,m:'Single-player',len:'Short',desc:'A man trapped in a 12-minute loop in his apartment. An unsettling puzzle that polarized players with one of the most discussed endings in recent memory.'},
+      {t:'Wo Long: Fallen Dynasty',d:'Team Ninja',y:2023,g:'Action RPG',s:77,m:'Co-op',len:'Long',desc:'Three Kingdoms Soulslike from Team Ninja. The deflect system at its core is clean and satisfying; the Dragon\'s Cure Point morale mechanic adds welcome tension.'},
+      {t:'Tchia',d:'Awaceb',y:2023,g:'Adventure',s:78,m:'Single-player',len:'Medium',desc:'A New Caledonian open world where you can possess any animal or object. A love letter to an island culture, with soul-jumping mechanics unlike anything else.'},
+      {t:'Need for Speed Unbound',d:'Criterion Games',y:2022,g:'Racing',s:76,m:'Multiplayer',len:'Long',desc:'The best-looking Need for Speed in a decade. Criterion returns with cel-shaded style, licensed soundtrack, and a career mode that rewards careful risk-taking.'},
+      {t:'PowerWash Simulator',d:'FuturLab',y:2023,g:'Simulation',s:76,m:'Co-op',len:'Medium',desc:'Clean things. That\'s it. The most meditative game on PS5 — and completing each level is genuinely satisfying in a way that is completely inexplicable.'},
+      {t:'Rise of the Ronin',d:'Team Ninja',y:2024,g:'Action RPG',s:76,m:'Single-player',len:'Long',desc:'Samurai in Bakumatsu Japan. Team Ninja\'s most open and cinematic game, with a historical sandbox that rewards exploration alongside its demanding blade combat.'},
+      {t:'Atomic Heart',d:'Mundfish',y:2023,g:'Action RPG',s:75,m:'Single-player',len:'Long',desc:'Soviet retro-futurism run amok. P-3 fights through a facility of murderous robots in one of the most visually distinctive shooters in years — if narratively uneven.'},
+      {t:'Evil West',d:'Flying Wild Hog',y:2022,g:'Action',s:75,m:'Co-op',len:'Medium',desc:'Punch vampires in the American West. A straightforward, satisfying action game that knows exactly what it is — and executes it with more style than expected.'},
+      {t:'Uncharted: Legacy of Thieves',d:'Naughty Dog',y:2022,g:'Action-Adventure',s:78,m:'Single-player',len:'Long',desc:'Uncharted 4 and The Lost Legacy remastered for PS5. Cinematic platforming and set-piece spectacle at 60fps with full DualSense support.'},
+      {t:'Like a Dragon: Ishin!',d:'RGG Studio',y:2023,g:'Action RPG',s:76,m:'Single-player',len:'Long',desc:'Ryoma Sakamoto in Bakumatsu Japan — played by Kiryu and Majima. The historical fiction premise is the RGG formula at its most audacious and gleefully anachronistic.'},
+      {t:'Until Dawn',d:'Supermassive Games',y:2024,g:'Adventure',s:77,m:'Single-player',len:'Short',desc:'The PS4 classic rebuilt for PS5 with extended content. The original teen horror choose-your-own-adventure remains a masterclass of interactive drama.'},
+      {t:'Bugsnax',d:'Young Horses',y:2020,g:'Adventure',s:72,m:'Single-player',len:'Short',desc:'Bug-snacks that eat people. A strange, warm, funny PS5 launch title with a surprising emotional core buried under its thoroughly absurd premise.'},
+      {t:'Forspoken',d:'Luminous Productions',y:2023,g:'Action RPG',s:67,m:'Single-player',len:'Long',desc:'Frey in Athia, with one of gaming\'s most impressive movement systems. The parkour magic traversal is genuinely spectacular — the story struggled to match it.'},
+      {t:'The Callisto Protocol',d:'Striking Distance Studios',y:2022,g:'Survival Horror',s:68,m:'Single-player',len:'Medium',desc:'Dead Space pedigree in a Jupiter moon prison. The melee-focused combat has atmosphere — but the systems don\'t quite cohere. The creature design is nightmarish.'},
+      {t:'Gotham Knights',d:'WB Games Montréal',y:2022,g:'Action RPG',s:66,m:'Co-op',len:'Long',desc:'Batgirl, Robin, Nightwing, and Red Hood patrol Gotham after Batman\'s death. The co-op is its best feature; the open world feels lighter than the license deserves.'}
+    ];
+
+    /* ── platform lookup ── */
+    (function(){
+      var p={
+        'Elden Ring':'Multiplatform',
+        'Baldur\'s Gate 3':'Multiplatform',
+        'Disco Elysium':'Multiplatform',
+        'Persona 5 Royal':'Multiplatform',
+        'Metaphor: ReFantazio':'Multiplatform',
+        'God of War Ragnarök':'PlayStation · PC',
+        'Astro Bot':'PlayStation',
+        'God of War':'PlayStation · PC',
+        'Resident Evil 4':'Multiplatform',
+        'Like a Dragon: Infinite Wealth':'Multiplatform',
+        'Hades':'Multiplatform',
+        'Final Fantasy VII Rebirth':'PlayStation · PC',
+        'Immortality':'Multiplatform',
+        'Demon\'s Souls':'PlayStation',
+        'Street Fighter 6':'Multiplatform',
+        'Resident Evil 2':'Multiplatform',
+        'Guilty Gear Strive':'PlayStation · PC',
+        'Neon White':'PlayStation · PC',
+        'Marvel\'s Spider-Man 2':'PlayStation',
+        'Sekiro: Shadows Die Twice':'Multiplatform',
+        'Dave the Diver':'Multiplatform',
+        'It Takes Two':'Multiplatform',
+        'Cyberpunk 2077: Phantom Liberty':'Multiplatform',
+        'Spelunky 2':'PlayStation · PC',
+        'Apex Legends':'Multiplatform',
+        'Alan Wake 2':'Multiplatform',
+        'Dead Space':'Multiplatform',
+        'Psychonauts 2':'Multiplatform',
+        'The Last of Us Part I':'PlayStation · PC',
+        'Sea of Stars':'Multiplatform',
+        'Persona 3 Reload':'Multiplatform',
+        'Final Fantasy VII Remake':'PlayStation · PC',
+        'Outer Wilds':'Multiplatform',
+        'Horizon Forbidden West':'PlayStation · PC',
+        'Ratchet & Clank: Rift Apart':'PlayStation · PC',
+        'Deathloop':'Multiplatform',
+        'Diablo IV':'Multiplatform',
+        'Tunic':'Multiplatform',
+        'Hi-Fi Rush':'Multiplatform',
+        'Armored Core VI':'Multiplatform',
+        'Final Fantasy XVI':'PlayStation · PC',
+        'Ghost of Tsushima':'PlayStation · PC',
+        'Hitman World of Assassination':'Multiplatform',
+        'Nioh 2':'PlayStation · PC',
+        'Gran Turismo 7':'PlayStation',
+        'Monster Hunter Rise: Sunbreak':'Multiplatform',
+        'Star Wars Jedi: Survivor':'Multiplatform',
+        'Octopath Traveler II':'Multiplatform',
+        'Pentiment':'Multiplatform',
+        'Return to Monkey Island':'Multiplatform',
+        'Cocoon':'Multiplatform',
+        'Death Stranding Director\'s Cut':'PlayStation · PC',
+        'Dragon\'s Dogma 2':'Multiplatform',
+        'Cyberpunk 2077':'Multiplatform',
+        'Returnal':'PlayStation · PC',
+        'Destiny 2: The Final Shape':'Multiplatform',
+        'Marvel\'s Spider-Man: Miles Morales':'PlayStation · PC',
+        'Star Wars Jedi: Fallen Order':'Multiplatform',
+        'Yakuza: Like a Dragon':'Multiplatform',
+        'Control Ultimate Edition':'Multiplatform',
+        'The Forgotten City':'Multiplatform',
+        'Astro\'s Playroom':'PlayStation',
+        'Unpacking':'Multiplatform',
+        'Spiritfarer':'Multiplatform',
+        'Chicory: A Colorful Tale':'PlayStation · PC',
+        'Horizon Zero Dawn':'PlayStation · PC',
+        'Kena: Bridge of Spirits':'PlayStation · PC',
+        'Ghostrunner':'Multiplatform',
+        'Cult of the Lamb':'Multiplatform',
+        'Stray':'PlayStation · PC',
+        'Lost Judgment':'Multiplatform',
+        'Judgment':'Multiplatform',
+        'Marvel\'s Midnight Suns':'Multiplatform',
+        'A Plague Tale: Requiem':'Multiplatform',
+        'Hogwarts Legacy':'Multiplatform',
+        'Resident Evil Village':'Multiplatform',
+        'Silent Hill 2':'PlayStation · PC',
+        'Dragon Age: The Veilguard':'Multiplatform',
+        'Warhammer 40K: Space Marine 2':'Multiplatform',
+        'Black Myth: Wukong':'PlayStation · PC',
+        'Helldivers 2':'PlayStation · PC',
+        'Stellar Blade':'PlayStation',
+        'Ghostrunner 2':'Multiplatform',
+        'Lies of P':'Multiplatform',
+        'Mortal Kombat 1':'Multiplatform',
+        'Sackboy: A Big Adventure':'PlayStation',
+        'Little Nightmares II':'Multiplatform',
+        'Sifu':'Multiplatform',
+        'Ghostwire: Tokyo':'PlayStation · PC',
+        'Solar Ash':'PlayStation · PC',
+        'The Quarry':'Multiplatform',
+        'Twelve Minutes':'Multiplatform',
+        'Wo Long: Fallen Dynasty':'Multiplatform',
+        'Tchia':'PlayStation · PC',
+        'Need for Speed Unbound':'Multiplatform',
+        'PowerWash Simulator':'Multiplatform',
+        'Rise of the Ronin':'PlayStation',
+        'Atomic Heart':'Multiplatform',
+        'Evil West':'Multiplatform',
+        'Uncharted: Legacy of Thieves':'PlayStation · PC',
+        'Like a Dragon: Ishin!':'Multiplatform',
+        'Until Dawn':'PlayStation · PC',
+        'Bugsnax':'PlayStation · PC',
+        'Forspoken':'PlayStation · PC',
+        'The Callisto Protocol':'Multiplatform',
+        'Gotham Knights':'Multiplatform'
+      };
+      GAMES.forEach(function(g){ g.pl = p[g.t] || 'Multiplatform'; });
+    })();
+
+    /* ── A–Z filter state (mirrors Countries) ── */
+    var activeLetter = '';
+
+    /* ── init — mirrors Countries initSearch exactly ── */
+    function initSearch(){
+
+      /* populate genre select from data */
+      var genres = GAMES.reduce(function(acc,g){ if(acc.indexOf(g.g)<0) acc.push(g.g); return acc; },[]).sort();
+      var genreEl = document.getElementById('gsearch-genre');
+      if(genreEl){
+        genres.forEach(function(g){
+          var opt = document.createElement('option');
+          opt.value = g; opt.textContent = g;
+          genreEl.appendChild(opt);
+        });
+      }
+
+      /* A–Z bar — identical to Countries alphabet bar */
+      var alphaBar = document.getElementById('games-alpha');
+      if(alphaBar){
+        var charsRow = document.createElement('span');
+        charsRow.className = 'places-alpha__chars';
+        alphaBar.appendChild(charsRow);
+
+        var letterBtns = [];
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(function(l){
+          var btn = document.createElement('button');
+          btn.className = 'places-alpha__btn';
+          btn.textContent = l;
+          btn.dataset.letter = l;
+          btn.addEventListener('click', function(){
+            var wasActive = btn.classList.contains('places-alpha__btn--active');
+            letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
+            if(wasActive){
+              activeLetter = '';
+              resetBtn.classList.remove('is-visible');
+            } else {
+              btn.classList.add('places-alpha__btn--active');
+              activeLetter = l;
+              resetBtn.classList.add('is-visible');
+            }
+            renderCards();
+          });
+          letterBtns.push(btn);
+          charsRow.appendChild(btn);
+        });
+
+        var sublabel = document.createElement('span');
+        sublabel.className = 'places-alpha__sublabel';
+        sublabel.textContent = 'Game titles · click a letter to filter';
+        alphaBar.appendChild(sublabel);
+
+        var resetBtn = document.createElement('button');
+        resetBtn.className = 'places-alpha__reset';
+        resetBtn.textContent = 'Clear ×';
+        resetBtn.addEventListener('click', function(){
+          letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
+          resetBtn.classList.remove('is-visible');
+          activeLetter = '';
+          renderCards();
+        });
+        sublabel.appendChild(resetBtn);
+      }
+
+      /* wire filter selects */
+      ['gsearch-genre','gsearch-rating','gsearch-mode','gsearch-length','gsearch-platform','gsearch-sort'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.addEventListener('change', renderCards);
+      });
+
+      renderCards();
+    }
+
+    function scoreClass(s){
+      if(s>=90) return 'gscore-s';
+      if(s>=80) return 'gscore-a';
+      if(s>=70) return 'gscore-b';
+      return 'gscore-c';
+    }
+
+    function getFiltered(){
+      var genre  = (document.getElementById('gsearch-genre')||{}).value||'';
+      var rating = parseInt((document.getElementById('gsearch-rating')||{}).value||'0')||0;
+      var mode   = (document.getElementById('gsearch-mode')||{}).value||'';
+      var len    = (document.getElementById('gsearch-length')||{}).value||'';
+      var plat   = (document.getElementById('gsearch-platform')||{}).value||'';
+      var sort   = (document.getElementById('gsearch-sort')||{}).value||'score';
+      var list = GAMES.filter(function(g){
+        if(activeLetter && g.t[0].toUpperCase() !== activeLetter) return false;
+        if(genre  && g.g !== genre)  return false;
+        if(rating && g.s < rating)   return false;
+        if(mode   && g.m !== mode)   return false;
+        if(len    && g.len !== len)  return false;
+        if(plat === 'PlayStation' && g.pl !== 'PlayStation') return false;
+        if(plat === 'PC' && g.pl === 'PlayStation') return false;
+        if(plat === 'Multi' && g.pl !== 'Multiplatform') return false;
+        return true;
+      });
+      list.sort(function(a,b){
+        if(sort==='score') return b.s - a.s;
+        if(sort==='year')  return b.y - a.y;
+        return a.t.localeCompare(b.t);
+      });
+      return list;
+    }
+
+    /* renderCards — flat list of detail cards */
+    function renderCards(){
+      var list = getFiltered();
+      var wrap = document.getElementById('games-card-list');
+      var cnt  = document.getElementById('gsearch-count');
+      if(cnt) cnt.textContent = list.length + ' game' + (list.length!==1?'s':'');
+      if(!wrap) return;
+      if(!list.length){
+        wrap.innerHTML = '<p class="games-no-results">No games match — try adjusting your filters.</p>';
+        return;
+      }
+      wrap.innerHTML = list.map(function(g){
+        return '<div class="games-card">'+
+          '<div class="coffee-detail__name">'+g.t+'</div>'+
+          '<div class="coffee-tag-row">'+
+            '<span class="tag tag--alt">'+g.g+'</span>'+
+            '<span class="tag">'+g.d+'</span>'+
+            '<span class="tag">'+g.y+'</span>'+
+            '<span class="tag">'+g.pl+'</span>'+
+          '</div>'+
+          '<p class="coffee-detail__desc">'+g.desc+'</p>'+
+          '<div class="coffee-detail__notes-label">Details</div>'+
+          '<div class="coffee-detail__notes">'+
+            '<span class="tag">'+g.m+'</span>'+
+            '<span class="tag">'+g.len+'</span>'+
+            '<span class="tag">'+g.s+' / 100</span>'+
+          '</div>'+
+        '</div>';
+      }).join('');
+    }
+
+    /* ── shader — same Canvas 2D blobs as Countries/Languages ── */
+    (function(){
+      var cv = document.getElementById('games-shader');
+      if(!cv) return;
+      var ctx2 = cv.getContext('2d');
+      var t2 = 0;
+      var blobs = [
+        { bx:0.20, by:0.28, br:0.58, c:[170,148,210] },
+        { bx:0.76, by:0.56, br:0.50, c:[210,180,148] },
+        { bx:0.50, by:0.82, br:0.44, c:[148,190,210] }
+      ];
+      function resizeGS(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
+      function drawGS(){
+        if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawGS); return; }
+        t2 += 0.005;
+        ctx2.clearRect(0,0,cv.width,cv.height);
+        blobs.forEach(function(b,i){
+          var x = (b.bx + Math.sin(t2*0.60+i*1.8)*0.14)*cv.width;
+          var y = (b.by + Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
+          var r = b.br * Math.min(cv.width,cv.height);
+          var g2 = ctx2.createRadialGradient(x,y,0,x,y,r);
+          g2.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
+          g2.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
+          ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
+          ctx2.fillStyle = g2; ctx2.fill();
+        });
+        requestAnimationFrame(drawGS);
+      }
+      window.addEventListener('resize', resizeGS);
+      resizeGS();
+      drawGS();
+    })();
+
+  })();
+  </script>
+
 </body>
 </html>
 

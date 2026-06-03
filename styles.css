@@ -1360,6 +1360,43 @@ h2.about__title{
   padding: 0 24px 100px;
 }
 
+/* ===== Games Overlay ===== */
+.games-overlay{
+  background: #F6F7F9;
+  position: relative;
+}
+
+/* scrollable list of game cards */
+.games-card-list{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 60px;
+  padding-top: 4px;
+}
+
+/* each card = same warm card as the rest of the site */
+.games-card{
+  background: rgba(255,254,251,.86);
+  border: 0.2px solid rgba(100,65,30,.16);
+  border-radius: 14px;
+  padding: 22px 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: border-color .15s ease;
+}
+.games-card:hover{
+  border-color: rgba(100,65,30,.30);
+}
+
+/* empty / no-results state */
+.games-no-results{
+  font-size: 11px;
+  color: rgba(0,0,0,.40);
+  padding: 20px 0;
+  font-style: italic;
+}
+
 /* ===== Places Overlay ===== */
 .places-overlay{
   background: #F6F7F9; /* same cool-grey as language page */

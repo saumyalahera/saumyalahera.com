@@ -1213,6 +1213,32 @@
         <br/>
 
         <!-- Capital Test -->
+        <!-- ══ Continent Constellation ══ -->
+        <div class="coffee-sub-section">
+          <p class="kicker">Explore the World</p>
+          <h3 class="coffee-sub-title">Continents at a Glance</h3>
+
+          <!-- full-width interactive waveform canvas — transparent, shader shows through -->
+          <div class="places-dot-wrap">
+            <canvas id="continent-canvas" class="places-dot-canvas"></canvas>
+          </div>
+          <p class="places-dot-hint">Click a waveform to solo that continent</p>
+
+          <!-- continent pill buttons -->
+          <div class="roast-pills" id="continent-pills" style="margin-top:18px;">
+            <button class="roast-pill roast-pill--active" data-cont="af">Africa</button>
+            <button class="roast-pill" data-cont="as">Asia</button>
+            <button class="roast-pill" data-cont="eu">Europe</button>
+            <button class="roast-pill" data-cont="am">Americas</button>
+            <button class="roast-pill" data-cont="oc">Oceania</button>
+          </div>
+
+          <!-- info card — frosted glass, shader glows through -->
+          <div class="places-dot-detail" id="continent-detail"></div>
+        </div>
+
+        <br/>
+
         <div class="coffee-sub-section">
           <p class="kicker">Test Yourself</p>
           <h3 class="coffee-sub-title">Capital Cities</h3>
@@ -3576,6 +3602,246 @@
         buildPT(); showPTState('pt-game'); renderPTQ();
       });
 
+    })();
+
+    /* ══ Continent Waveforms ══ */
+    (function(){
+      var cv=document.getElementById('continent-canvas'); if(!cv) return;
+      var ctx=cv.getContext('2d'), dpr=window.devicePixelRatio||1;
+      var ov=document.getElementById('places-overlay');
+      var W=0, H=0, selected='af', initialized=false;
+
+      var INFO={
+        af:{name:'Africa',   count:54, pop:'1.4 billion',area:'30.4M km²',largest:'Algeria',       language:'Arabic · Swahili · French',     gdp:'$3.1 trillion', desc:'The only continent crossed by both the equator and a prime meridian. The Sahara — Earth\'s largest hot desert — covers roughly the same area as the continental United States.'},
+        as:{name:'Asia',     count:49, pop:'4.7 billion',area:'44.6M km²',largest:'Russia (Asian)',language:'Mandarin · Hindi · Arabic',      gdp:'$38.2 trillion',desc:'Home to 60% of all humanity. Contains the highest point on Earth (Everest, 8,849 m), the lowest dry land (Dead Sea, −430 m), and 4 of the world\'s 5 most populous countries.'},
+        eu:{name:'Europe',   count:44, pop:'748 million',area:'10.5M km²',largest:'Russia (Eur.)', language:'Russian · German · French',      gdp:'$23.6 trillion',desc:'The most densely countrified continent on Earth. Vatican City — at 0.44 km² — is the smallest country in the world, and sits inside Rome, one of Europe\'s oldest cities.'},
+        am:{name:'Americas', count:35, pop:'1.0 billion',area:'42.5M km²',largest:'Canada',        language:'Spanish · English · Portuguese', gdp:'$28.4 trillion',desc:'Stretching from the Arctic to near Antarctica. The Amazon Basin holds 10% of all species on Earth and produces roughly 20% of the world\'s oxygen through its 390 billion trees.'},
+        oc:{name:'Oceania',  count:14, pop:'44 million', area:'8.5M km²', largest:'Australia',     language:'English · Tok Pisin',           gdp:'$1.8 trillion', desc:'The smallest and least populated continental region. Australia is the only country that is also an entire continent — and it has more wild camels than any other nation on Earth.'}
+      };
+
+      /* Each continent: unique waveform character — colours match the roast-pill--active UI */
+      var WAVE_FILL  = [140, 90, 40];   /* matches pill active background */
+      var WAVE_STROKE= [93,  51, 21];   /* matches pill active border     */
+
+      var CONTS=[
+        {k:'af', label:'Africa',   freq:1.30, speed:0.0065, h:[1, 0.46, 0.18]},
+        {k:'as', label:'Asia',     freq:2.20, speed:0.0105, h:[1, 0.62, 0.29, 0.11]},
+        {k:'eu', label:'Europe',   freq:1.85, speed:0.0090, h:[1, 0.38]},
+        {k:'am', label:'Americas', freq:1.55, speed:0.0080, h:[1, 0.53, 0.21]},
+        {k:'oc', label:'Oceania',  freq:3.10, speed:0.0140, h:[1, 0.28]}
+      ];
+
+      function rc(rgb,a){ return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a+')'; }
+
+      /* per-harmonic phase offsets, randomised so waves differ on open */
+      var phases={};
+      CONTS.forEach(function(c){
+        phases[c.k]=c.h.map(function(){ return Math.random()*Math.PI*2; });
+      });
+
+      /* animated y-centre + amplitude for each continent */
+      var cur={};
+      CONTS.forEach(function(c){ cur[c.k]={y:0,amp:0}; });
+
+      /* ── layout targets ── */
+      function getTargets(){
+        var selIdx=CONTS.findIndex(function(c){ return c.k===selected; });
+        var targets={}, above=[], below=[];
+        CONTS.forEach(function(c,i){
+          if(i<selIdx) above.push(c.k);
+          else if(i>selIdx) below.push(c.k);
+        });
+        targets[selected]={y:H*0.50, amp:H*0.265};
+        var topS=H*0.07, topE=H*0.36;
+        above.forEach(function(k,i){
+          var t=above.length===1?0.5:i/(above.length-1);
+          targets[k]={y:topS+(topE-topS)*t, amp:H*0.020};
+        });
+        var botS=H*0.64, botE=H*0.93;
+        below.forEach(function(k,i){
+          var t=below.length===1?0.5:i/(below.length-1);
+          targets[k]={y:botS+(botE-botS)*t, amp:H*0.020};
+        });
+        return targets;
+      }
+
+      /* ── waveform maths ── */
+      function waveY(c, nx, amp){
+        var ph=phases[c.k], sum=c.h.reduce(function(s,v){return s+v;},0), y=0;
+        c.h.forEach(function(h,j){ y+=h*Math.sin(2*Math.PI*c.freq*(j+1)*nx+ph[j]); });
+        return (y/sum)*amp;
+      }
+
+      /* ── draw one waveform ── */
+      function drawWave(c, yC, amp, isSel){
+        var n=Math.ceil(W);
+
+        if(isSel){
+          /* --- ribbon fill between +wave and -wave --- */
+          ctx.beginPath();
+          for(var x=0;x<=n;x++){
+            var dy=waveY(c,x/n,amp);
+            x===0?ctx.moveTo(x,yC+dy):ctx.lineTo(x,yC+dy);
+          }
+          for(var x=n;x>=0;x--){
+            var dy=waveY(c,x/n,amp);
+            ctx.lineTo(x,yC-dy);
+          }
+          ctx.closePath();
+          var grd=ctx.createLinearGradient(0,yC-amp,0,yC+amp);
+          grd.addColorStop(0,   rc(WAVE_FILL,0.00));
+          grd.addColorStop(0.28,rc(WAVE_FILL,0.08));
+          grd.addColorStop(0.50,rc(WAVE_FILL,0.14));
+          grd.addColorStop(0.72,rc(WAVE_FILL,0.08));
+          grd.addColorStop(1,   rc(WAVE_FILL,0.00));
+          ctx.fillStyle=grd; ctx.fill();
+
+          /* --- top stroke with glow --- */
+          ctx.beginPath();
+          for(var x=0;x<=n;x++){
+            var dy=waveY(c,x/n,amp);
+            x===0?ctx.moveTo(x,yC+dy):ctx.lineTo(x,yC+dy);
+          }
+          ctx.save();
+          ctx.shadowBlur=10; ctx.shadowColor=rc(WAVE_STROKE,0.14);
+          ctx.strokeStyle=rc(WAVE_STROKE,0.38); ctx.lineWidth=1.5; ctx.stroke();
+          ctx.restore();
+
+          /* --- mirrored bottom stroke, softer --- */
+          ctx.beginPath();
+          for(var x=0;x<=n;x++){
+            var dy=waveY(c,x/n,amp);
+            x===0?ctx.moveTo(x,yC-dy):ctx.lineTo(x,yC-dy);
+          }
+          ctx.strokeStyle=rc(WAVE_STROKE,0.14); ctx.lineWidth=0.8; ctx.stroke();
+
+        } else {
+          /* --- ghost line --- */
+          ctx.beginPath();
+          for(var x=0;x<=n;x++){
+            var dy=waveY(c,x/n,amp);
+            x===0?ctx.moveTo(x,yC+dy):ctx.lineTo(x,yC+dy);
+          }
+          ctx.strokeStyle=rc(WAVE_STROKE,0.18); ctx.lineWidth=0.65; ctx.stroke();
+        }
+      }
+
+      /* ── draw label for one continent ── */
+      function drawLabel(c, yC, amp, isSel){
+        var info=INFO[c.k];
+        ctx.save();
+        if(isSel){
+          var labelY=Math.max(16, yC-amp-10);
+          ctx.font='700 8px Avenir,"Avenir Next",Arial,sans-serif';
+          ctx.fillStyle=rc(WAVE_STROKE,0.88);
+          ctx.textBaseline='bottom';
+          ctx.fillText(c.label.toUpperCase(), 2, labelY);
+          ctx.font='500 7px Avenir,"Avenir Next",Arial,sans-serif';
+          ctx.fillStyle=rc(WAVE_STROKE,0.45);
+          ctx.textBaseline='top';
+          ctx.fillText(info.count+' COUNTRIES', 2, labelY+2);
+        } else {
+          ctx.font='600 7px Avenir,"Avenir Next",Arial,sans-serif';
+          ctx.fillStyle=rc(WAVE_STROKE,0.30);
+          ctx.textBaseline='middle';
+          ctx.fillText(c.label.toUpperCase(), 2, yC);
+        }
+        ctx.restore();
+      }
+
+      /* ── animation loop ── */
+      function frame(){
+        if(!ov.classList.contains('is-open')){ requestAnimationFrame(frame); return; }
+        if(!initialized){ requestAnimationFrame(frame); return; }
+
+        ctx.clearRect(0,0,W,H);
+
+        /* advance phases */
+        CONTS.forEach(function(c){
+          phases[c.k]=phases[c.k].map(function(p,j){ return p+c.speed*(j*0.65+1)*0.55; });
+        });
+
+        /* ease toward targets */
+        var targets=getTargets();
+        CONTS.forEach(function(c){
+          var tgt=targets[c.k];
+          cur[c.k].y  +=(tgt.y  -cur[c.k].y  )*0.07;
+          cur[c.k].amp+=(tgt.amp-cur[c.k].amp)*0.07;
+        });
+
+        /* unselected behind */
+        CONTS.forEach(function(c){ if(c.k!==selected) drawWave(c,cur[c.k].y,cur[c.k].amp,false); });
+        CONTS.forEach(function(c){ if(c.k!==selected) drawLabel(c,cur[c.k].y,cur[c.k].amp,false); });
+        /* selected on top */
+        CONTS.forEach(function(c){ if(c.k===selected){ drawWave(c,cur[c.k].y,cur[c.k].amp,true); drawLabel(c,cur[c.k].y,cur[c.k].amp,true); } });
+
+        requestAnimationFrame(frame);
+      }
+
+      /* ── resize / init ── */
+      function resize(){
+        var r=cv.getBoundingClientRect(); W=r.width; H=r.height;
+        cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+        ctx.setTransform(dpr,0,0,dpr,0,0);
+        var targets=getTargets();
+        CONTS.forEach(function(c){ cur[c.k]={y:targets[c.k].y,amp:targets[c.k].amp}; });
+        initialized=true;
+      }
+
+      /* ── click: find nearest wave by y ── */
+      cv.addEventListener('click',function(e){
+        var r=cv.getBoundingClientRect(), my=e.clientY-r.top;
+        var best=null, bestD=Infinity;
+        CONTS.forEach(function(c){
+          var d=Math.abs(my-cur[c.k].y);
+          if(d<bestD){ bestD=d; best=c.k; }
+        });
+        if(best&&best!==selected){
+          selected=best;
+          document.querySelectorAll('#continent-pills .roast-pill').forEach(function(b){
+            b.classList.toggle('roast-pill--active',b.dataset.cont===selected);
+          });
+          renderDetail(selected);
+        }
+      });
+
+      /* ── pill buttons stay in sync ── */
+      document.querySelectorAll('#continent-pills .roast-pill').forEach(function(btn){
+        btn.addEventListener('click',function(){
+          document.querySelectorAll('#continent-pills .roast-pill').forEach(function(b){ b.classList.remove('roast-pill--active'); });
+          btn.classList.add('roast-pill--active');
+          selected=btn.dataset.cont;
+          renderDetail(selected);
+        });
+      });
+
+      function renderDetail(k){
+        var d=INFO[k], el=document.getElementById('continent-detail'); if(!el||!d) return;
+        el.style.transition='opacity .18s ease'; el.style.opacity='0';
+        setTimeout(function(){
+          el.innerHTML=
+            '<p class="kicker" style="margin-bottom:6px;">Continent</p>'+
+            '<p class="places-info-name">'+d.name+'</p>'+
+            '<p class="places-info-stats">'+d.count+' countries &nbsp;·&nbsp; '+d.pop+' people &nbsp;·&nbsp; '+d.area+'</p>'+
+            '<p class="places-info-desc">'+d.desc+'</p>'+
+            '<div class="places-info-grid">'+
+              '<div><p class="places-info-item-label">Largest Country</p><p class="places-info-item-val">'+d.largest+'</p></div>'+
+              '<div><p class="places-info-item-label">Major Languages</p><p class="places-info-item-val">'+d.language+'</p></div>'+
+              '<div><p class="places-info-item-label">Combined GDP</p><p class="places-info-item-val">'+d.gdp+'</p></div>'+
+              '<div><p class="places-info-item-label">Countries</p><p class="places-info-item-val">'+d.count+' sovereign nations</p></div>'+
+            '</div>';
+          el.style.opacity='1';
+        },130);
+      }
+
+      new MutationObserver(function(ms){
+        ms.forEach(function(m){
+          if(m.attributeName==='class'&&ov.classList.contains('is-open')){ resize(); renderDetail(selected); }
+        });
+      }).observe(ov,{attributes:true});
+
+      window.addEventListener('resize', resize);
+      resize(); renderDetail('af'); frame();
     })();
 
   </script>

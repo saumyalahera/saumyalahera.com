@@ -1524,6 +1524,95 @@ h2.about__title{
   font-style: italic;
 }
 
+/* ── Continent Dot Constellation ── */
+.places-dot-wrap{
+  position: relative;
+}
+.places-dot-canvas{
+  width: 100%;
+  height: 380px;
+  display: block;
+  background: transparent;
+  cursor: pointer;
+}
+.places-dot-tooltip{
+  position: absolute;
+  pointer-events: none;
+  padding: 5px 11px;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.55);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .10s ease;
+  transform: translate(-50%, -150%);
+}
+.places-dot-tooltip.is-visible{ opacity: 1; }
+.places-dot-hint{
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.22);
+  margin-top: 8px;
+  text-align: center;
+}
+/* info floats directly on shader — zero background */
+.places-dot-detail{
+  margin-top: 40px;
+  padding: 0;
+  background: none;
+  border: none;
+  transition: opacity .18s ease;
+}
+.places-info-name{
+  font-family: 'DengachoSignature', serif;
+  font-size: clamp(2rem,4.5vw,3rem);
+  font-weight: 700;
+  color: rgba(0,0,0,.82);
+  line-height: 1;
+  margin: 0 0 10px;
+  letter-spacing: 0.01em;
+}
+.places-info-stats{
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.35);
+  margin: 0 0 20px;
+}
+.places-info-desc{
+  font-size: 15px;
+  line-height: 1.82;
+  color: rgba(0,0,0,.66);
+  margin: 0 0 28px;
+  max-width: 64ch;
+}
+.places-info-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+  gap: 20px 40px;
+  border-top: 0.8px solid rgba(0,0,0,.08);
+  padding-top: 24px;
+}
+.places-info-item-label{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.28);
+  margin-bottom: 4px;
+}
+.places-info-item-val{
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0,0,0,.72);
+  line-height: 1.4;
+}
+
 /* make the country list a bit taller to show more items */
 .places-explorer.coffee-explorer{
   min-height: 420px;
@@ -2530,6 +2619,7 @@ h2.about__title{
   background: rgba(140,90,40,.12);
   border-color: rgba(93,51,21,.28);
 }
+
 
 /* --- Detail text --- */
 .roast-info__detail{ display: flex; flex-direction: column; gap: 10px; }

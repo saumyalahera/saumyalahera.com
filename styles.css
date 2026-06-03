@@ -2825,3 +2825,21 @@ h2.about__title{
   color: rgba(0,0,0,.28);
 }
 .tea-ox-pills{ display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ── Language Family Tree ── */
+.lang-tree-canvas{
+  width: 100%;
+  height: 520px;
+  display: block;
+  background: transparent;
+  cursor: pointer;
+  max-width: 860px;
+  margin: 0 auto;
+}
+.lang-tree-detail{
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 40px;
+  min-height: 60px;
+  transition: opacity .18s ease;
+}

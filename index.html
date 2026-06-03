@@ -4575,13 +4575,15 @@
         var resetBtn = document.createElement('button');
         resetBtn.className = 'places-alpha__reset';
         resetBtn.textContent = 'Clear ×';
-        resetBtn.addEventListener('click', function(){
+        resetBtn.style.cssText = 'margin-left:8px;';
+        resetBtn.onclick = function(){
           letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
           resetBtn.classList.remove('is-visible');
           activeLetter = '';
           renderCards();
-        });
-        sublabel.appendChild(resetBtn);
+          return false;
+        };
+        alphaBar.appendChild(resetBtn);
       }
 
       /* wire filter selects */

@@ -2346,8 +2346,8 @@
 
       window.switchRoast=function(idx){
         currentRoast=idx;
-        document.querySelectorAll('.roast-pill').forEach(function(p,i){
-          p.classList.toggle('roast-pill--active',i===idx);
+        document.querySelectorAll('.roast-pill[data-idx]').forEach(function(p){
+          p.classList.toggle('roast-pill--active', parseInt(p.dataset.idx)===idx);
         });
         var r=ROASTS[idx];
         var el=function(id){return document.getElementById(id);};
@@ -2359,8 +2359,8 @@
         drawBean(r.rgb);
       };
 
-      document.querySelectorAll('.roast-pill').forEach(function(p,i){
-        p.addEventListener('click',function(){ switchRoast(i); });
+      document.querySelectorAll('.roast-pill[data-idx]').forEach(function(p){
+        p.addEventListener('click',function(){ switchRoast(parseInt(p.dataset.idx)); });
       });
 
       switchRoast(0);

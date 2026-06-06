@@ -2829,7 +2829,7 @@ h2.about__title{
 /* ── Language Family Tree ── */
 .lang-tree-canvas{
   width: 100%;
-  height: 520px;
+  height: 460px;
   display: block;
   background: transparent;
   cursor: pointer;

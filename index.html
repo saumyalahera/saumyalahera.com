@@ -3390,37 +3390,150 @@
         if(e.key==='Escape'&&overlay.classList.contains('is-open')) closePlaces();
       });
 
-      /* ── places shader — Canvas 2D drifting blobs (same as language page) ── */
+      /* ── places shader — WebGL sky + animated cloud noise ── */
       (function(){
         var cv = document.getElementById('places-shader');
         if(!cv) return;
-        var ctx2 = cv.getContext('2d');
-        var t2 = 0;
-        var blobs = [
-          { bx:0.20, by:0.28, br:0.58, c:[148,180,210] },
-          { bx:0.75, by:0.58, br:0.50, c:[168,210,180] },
-          { bx:0.50, by:0.80, br:0.44, c:[210,185,200] }
-        ];
-        function resizePl(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
-        function drawPl(){
-          if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawPl); return; }
-          t2 += 0.005;
-          ctx2.clearRect(0,0,cv.width,cv.height);
-          blobs.forEach(function(b,i){
-            var x=(b.bx+Math.sin(t2*0.6+i*1.8)*0.14)*cv.width;
-            var y=(b.by+Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
-            var r=b.br*Math.min(cv.width,cv.height);
-            var g=ctx2.createRadialGradient(x,y,0,x,y,r);
-            g.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
-            g.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
-            ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
-            ctx2.fillStyle=g; ctx2.fill();
-          });
-          requestAnimationFrame(drawPl);
+        var gl = cv.getContext('webgl') || cv.getContext('experimental-webgl');
+        if(!gl){ cv.style.display='none'; return; }
+
+        var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+        var FS = [
+          'precision highp float;',
+          'uniform float u_t;',
+          'uniform vec2  u_r;',
+          'uniform vec2  u_m;',  /* mouse position */
+
+          /* value noise */
+          'float h(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+19.19);return fract(p.x*p.y);}',
+          'float n(vec2 p){',
+          '  vec2 i=floor(p),f=fract(p);',
+          '  f=f*f*(3.0-2.0*f);',
+          '  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);',
+          '}',
+
+          /* fBm — 4 octaves → larger, softer shapes like clouds (not fine liquid swirls) */
+          'float fbm(vec2 p){',
+          '  float v=0.0,a=0.5;',
+          '  mat2 m=mat2(1.6,1.2,-1.2,1.6);',
+          '  for(int i=0;i<4;i++){v+=a*n(p);p=m*p;a*=0.5;}',
+          '  return v;',
+          '}',
+
+          'void main(){',
+          '  vec2 uv=gl_FragCoord.xy/u_r;',
+          '  float ar=u_r.x/u_r.y;',
+          '  vec2 p=vec2(uv.x*ar,uv.y);',
+          '  float t=u_t*0.038;',  /* visible but gentle movement */
+
+          /* mouse wind — moves clouds near cursor */
+          '  vec2 mp=vec2(u_m.x/u_r.x*ar,(u_r.y-u_m.y)/u_r.y);',
+          '  float md=length(p-mp);',
+          '  float wind=smoothstep(0.55,0.0,md);',
+
+          /* domain warping — same two-layer technique as coffee shader */
+          '  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)+t*0.8));',
+          '  vec2 r=vec2(',
+          '    fbm(p+3.2*q+vec2(1.7,9.2)+0.14*t),',
+          '    fbm(p+3.2*q+vec2(8.3,2.8)+0.11*t)',
+          '  );',
+          /* wind nudges the warp near cursor */
+          '  r+=wind*0.14*vec2(sin(t*4.0+md*9.0),cos(t*3.0+md*7.0));',
+          '  float f=fbm(p+3.8*r);',
+          '  float ff=f*0.26+0.012*length(q);',
+
+          /* sky / cloud palette — light airy blue */
+          '  vec3 sky   =vec3(0.855,0.910,0.960);',  /* light sky blue */
+          '  vec3 cloud =vec3(0.978,0.988,0.998);',  /* bright cloud white */
+          '  vec3 haze  =vec3(0.820,0.880,0.942);',  /* haze between clouds */
+          '  vec3 wisp  =vec3(0.950,0.968,0.985);',  /* thin cloud wisp */
+          '  vec3 deep  =vec3(0.760,0.840,0.920);',  /* deeper sky, rarest */
+
+          '  vec3 col=sky;',
+          '  col=mix(col,wisp, smoothstep(0.10,0.20,ff));',
+          '  col=mix(col,cloud,smoothstep(0.18,0.32,ff));',
+          '  col=mix(col,wisp, smoothstep(0.30,0.40,ff));',
+          '  col=mix(col,haze, smoothstep(0.36,0.46,ff));',
+          '  col=mix(col,deep, smoothstep(0.42,0.54,ff));',
+
+          /* wind brightens near cursor like sunlight through cloud */
+          '  col+=wind*0.018*vec3(1.0,1.0,1.0);',
+
+          /* soft vignette */
+          '  float vig=1.0-0.08*dot(uv*2.0-1.0,uv*2.0-1.0);',
+          '  gl_FragColor=vec4(col*vig,1.0);',
+          '}'
+        ].join('\n');
+
+        function mkShader(type,src){
+          var s=gl.createShader(type);
+          gl.shaderSource(s,src); gl.compileShader(s);
+          if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(s)); return null; }
+          return s;
         }
-        window.addEventListener('resize', resizePl);
-        resizePl();
-        drawPl();
+        var vs=mkShader(gl.VERTEX_SHADER,VS);
+        var fs=mkShader(gl.FRAGMENT_SHADER,FS);
+        if(!vs||!fs) return;
+        var prog=gl.createProgram();
+        gl.attachShader(prog,vs); gl.attachShader(prog,fs);
+        gl.linkProgram(prog);
+        if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ console.warn('Link error'); return; }
+        gl.useProgram(prog);
+
+        var buf=gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+        gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+        var al=gl.getAttribLocation(prog,'a');
+        gl.enableVertexAttribArray(al);
+        gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+
+        var uT=gl.getUniformLocation(prog,'u_t');
+        var uR=gl.getUniformLocation(prog,'u_r');
+        var uM=gl.getUniformLocation(prog,'u_m');
+
+        var mouse={x:0,y:0};
+        var t0=null, active=false;
+
+        function resize(){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          cv.width=Math.round(cv.clientWidth*dpr);
+          cv.height=Math.round(cv.clientHeight*dpr);
+          gl.viewport(0,0,cv.width,cv.height);
+          mouse.x=cv.width*0.5; mouse.y=cv.height*0.5;
+        }
+
+        function draw(ts){
+          if(!active){ requestAnimationFrame(draw); return; }
+          if(!t0) t0=ts;
+          gl.uniform1f(uT,(ts-t0)*0.001);   /* seconds since overlay opened — same as coffee */
+          gl.uniform2f(uR,cv.width,cv.height);
+          gl.uniform2f(uM,mouse.x,mouse.y);
+          gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+          requestAnimationFrame(draw);
+        }
+
+        /* mouse/touch move → stir clouds */
+        overlay.addEventListener('mousemove',function(e){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          mouse.x=e.clientX*dpr; mouse.y=e.clientY*dpr;
+        });
+        overlay.addEventListener('touchmove',function(e){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          mouse.x=e.touches[0].clientX*dpr; mouse.y=e.touches[0].clientY*dpr;
+        },{passive:true});
+
+        /* start/stop with overlay */
+        new MutationObserver(function(ms){
+          ms.forEach(function(m){
+            if(m.attributeName==='class'){
+              active=overlay.classList.contains('is-open');
+              if(active){ t0=null; resize(); }
+            }
+          });
+        }).observe(overlay,{attributes:true});
+
+        window.addEventListener('resize',function(){ if(active) resize(); });
+        resize(); requestAnimationFrame(draw);
       })();
 
       /* ── country data ── */
@@ -3895,8 +4008,8 @@
       var W=0, H=0, initialized=false;
       var activeTrack=null, activeEvent=null;
 
-      /* colours match roast-pill--active */
-      var WAVE_FILL=[140,90,40], WAVE_STROKE=[93,51,21];
+      /* sky blue palette matching places overlay theme */
+      var WAVE_FILL=[100,155,215], WAVE_STROKE=[35,78,148];
       function rc(rgb,a){ return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a+')'; }
 
       /* ── Continent overview ── */
@@ -3968,22 +4081,26 @@
       /* per-continent timeline year range */
       var RANGES={af:[1840,2016],as:[1942,2007],eu:[1808,2020],am:[1770,2000],oc:[1782,1998]};
 
+      var WAVE_FILL=[0,0,0];   /* black bars */
+      var WAVE_STROKE=[0,0,0]; /* black text + lines */
+
       var CONTS=[{k:'af',label:'Africa'},{k:'as',label:'Asia'},{k:'eu',label:'Europe'},{k:'am',label:'Americas'},{k:'oc',label:'Oceania'}];
 
       /* global unified timeline so events align vertically across all tracks */
       var G_START=1770, G_END=2020, G_SPAN=250;
       var TOP=32; /* top offset so tallest bar labels are never clipped */
 
-      /* per-track animated opacity */
-      var tAlpha={};
+      /* per-track animated opacity + grow-in progress */
+      var tAlpha={}, growP=0;
       CONTS.forEach(function(c){ tAlpha[c.k]=0.55; });
+      function easeOut(t){ return 1-Math.pow(1-t,3); }
 
-      function lW(){ return W<480?70:92; }        /* label column width */
-      function tH(){ return (H-TOP)/5; }           /* track height (usable area below TOP) */
-      function bW(){ return W<480?2.5:3.5; }      /* bar width */
-      function maxBH(){ return tH()*0.64; }        /* max bar height */
+      function lW(){ return W<480?72:96; }
+      function tH(){ return (H-TOP)/5; }
+      function bW(){ return W<480?1.2:1.6; }
+      function maxBH(){ return tH()*0.66; }
       function evX(year){ return lW()+(year-G_START)/G_SPAN*(W-lW()); }
-      function trackTop(ti){ return TOP+ti*tH(); } /* absolute y of track top */
+      function trackTop(ti){ return TOP+ti*tH(); }
 
       /* ── draw all 5 tracks ── */
       function drawScene(){
@@ -3991,98 +4108,129 @@
         if(!initialized||W===0||H===0) return;
         var mob=W<480;
         var th=tH(), lw=lW(), bw=bW(), mbh=maxBH();
+        var grow=easeOut(growP);
 
-        /* ── global year axis at top ── */
+        /* ── shared vertical year grid (drawn first, behind everything) ── */
+        [1800,1850,1900,1950,2000].forEach(function(yr){
+          var tx=evX(yr);
+          ctx.beginPath(); ctx.moveTo(tx,TOP); ctx.lineTo(tx,H);
+          ctx.strokeStyle='rgba(0,0,0,0.04)'; ctx.lineWidth=0.5; ctx.stroke();
+        });
+
+        /* ── global range labels at very top ── */
         ctx.save();
         ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-        ctx.fillStyle=rc(WAVE_STROKE,0.18); ctx.textBaseline='top';
-        ctx.textAlign='left';  ctx.fillText(G_START, lw+2, 2);
-        ctx.textAlign='right'; ctx.fillText(G_END,   W-2,  2);
+        ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.textBaseline='top';
+        ctx.textAlign='left';  ctx.fillText(G_START, lw+4, 3);
+        ctx.textAlign='right'; ctx.fillText(G_END,   W-2,  3);
         ctx.restore();
 
         CONTS.forEach(function(c,ti){
           var yTop=trackTop(ti);
-          var yBot=yTop+th*0.80;  /* baseline */
+          var yBot=yTop+th*0.80;
           var isAT=(activeTrack===c.k);
 
           /* lerp track opacity */
-          var tgt=activeTrack===null?0.55:(isAT?1.0:0.18);
-          tAlpha[c.k]+=(tgt-tAlpha[c.k])*0.08;
+          var tgt=activeTrack===null?0.60:(isAT?1.0:0.15);
+          tAlpha[c.k]+=(tgt-tAlpha[c.k])*0.07;
           var a=tAlpha[c.k];
 
           /* track separator */
           if(ti>0){
             ctx.beginPath(); ctx.moveTo(0,yTop); ctx.lineTo(W,yTop);
-            ctx.strokeStyle=rc(WAVE_STROKE,0.08); ctx.lineWidth=0.5; ctx.stroke();
+            ctx.strokeStyle='rgba(0,0,0,0.06)'; ctx.lineWidth=0.5; ctx.stroke();
           }
 
-          /* label column */
+          /* active track background highlight */
+          if(isAT){
+            ctx.fillStyle='rgba(190,220,248,0.22)';
+            ctx.fillRect(0,yTop,W,th);
+          }
+
+          /* continent label */
+          var nameSz=isAT?(mob?11:13):(mob?9:10);
           ctx.save();
-          ctx.font=(isAT?'700':'500')+' '+(mob?9:10)+'px Avenir,"Avenir Next",Arial,sans-serif';
-          ctx.fillStyle=rc(WAVE_STROKE,a*(isAT?1:0.75));
+          ctx.font=(isAT?'700':'500')+' '+nameSz+'px Avenir,"Avenir Next",Arial,sans-serif';
+          ctx.fillStyle='rgba(0,0,0,'+(isAT?0.88:a*0.55)+')';
           ctx.textAlign='left'; ctx.textBaseline='middle';
-          ctx.fillText(c.label.toUpperCase(), 5, yTop+th*0.42);
-          ctx.font='400 '+(mob?7:7.5)+'px Avenir,"Avenir Next",Arial,sans-serif';
-          ctx.fillStyle=rc(WAVE_STROKE,a*0.48);
-          ctx.fillText(EVENTS[c.k].length+' events', 5, yTop+th*0.62);
+          ctx.fillText(c.label.toUpperCase(), 5, yTop+th*0.38);
+
+          /* event count below label */
+          ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
+          ctx.fillStyle='rgba(0,0,0,'+(isAT?0.35:a*0.28)+')';
+          ctx.fillText(EVENTS[c.k].length+(mob?'':'  events'), 5, yTop+th*0.60);
           ctx.restore();
 
-          /* thin divider between label and bars */
-          ctx.beginPath(); ctx.moveTo(lw-4,yTop+5); ctx.lineTo(lw-4,yTop+th-5);
-          ctx.strokeStyle=rc(WAVE_STROKE,a*0.14); ctx.lineWidth=0.5; ctx.stroke();
+          /* label divider */
+          ctx.beginPath(); ctx.moveTo(lw-5,yTop+8); ctx.lineTo(lw-5,yTop+th-8);
+          ctx.strokeStyle='rgba(0,0,0,'+(a*0.10)+')'; ctx.lineWidth=0.5; ctx.stroke();
 
           /* baseline */
           ctx.beginPath(); ctx.moveTo(lw,yBot); ctx.lineTo(W,yBot);
-          ctx.strokeStyle=rc(WAVE_STROKE,a*0.22); ctx.lineWidth=0.7; ctx.stroke();
+          ctx.strokeStyle='rgba(0,0,0,'+(isAT?0.28:a*0.14)+')';
+          ctx.lineWidth=isAT?0.8:0.5; ctx.stroke();
 
-          /* century tick marks on active track */
-          if(isAT){
-            [1800,1850,1900,1950,2000].forEach(function(yr){
-              var tx=evX(yr);
-              ctx.beginPath(); ctx.moveTo(tx,yBot); ctx.lineTo(tx,yBot+4);
-              ctx.strokeStyle=rc(WAVE_STROKE,0.22); ctx.lineWidth=0.5; ctx.stroke();
+          /* decade ticks + labels on ALL tracks (faint) */
+          [1800,1850,1900,1950,2000].forEach(function(yr){
+            var tx=evX(yr);
+            ctx.beginPath(); ctx.moveTo(tx,yBot); ctx.lineTo(tx,yBot+3);
+            ctx.strokeStyle='rgba(0,0,0,'+(isAT?0.22:0.08)+')';
+            ctx.lineWidth=0.5; ctx.stroke();
+            if(isAT){
               ctx.save();
               ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-              ctx.fillStyle=rc(WAVE_STROKE,0.26);
+              ctx.fillStyle='rgba(0,0,0,0.28)';
               ctx.textAlign='center'; ctx.textBaseline='top';
-              ctx.fillText(yr,tx,yBot+5); ctx.restore();
-            });
-          }
+              ctx.fillText(yr,tx,yBot+4); ctx.restore();
+            }
+          });
 
           /* bars */
           EVENTS[c.k].forEach(function(ev,i){
             var ex=evX(ev.year);
             if(ex<lw||ex>W) return;
-            var barH=ev.imp*mbh;
+            var fullH=ev.imp*mbh;
+            var barH=fullH*grow;            /* animated grow */
             var peakY=yBot-barH;
             var isAE=(isAT&&activeEvent===i);
 
-            /* bar fill */
-            ctx.fillStyle=rc(WAVE_STROKE, isAE ? a : a*(isAT?0.52:0.70));
+            /* gradient bar */
+            var grad=ctx.createLinearGradient(0,peakY,0,yBot);
+            var topA=isAE?0.92:(isAT?0.62:a*0.72);
+            var botA=topA*0.45;
+            grad.addColorStop(0,'rgba(0,0,0,'+topA+')');
+            grad.addColorStop(1,'rgba(0,0,0,'+botA+')');
+            ctx.fillStyle=grad;
             ctx.fillRect(ex-bw/2, peakY, bw, barH);
 
             if(isAE){
-              /* bright cap at top of active bar */
-              ctx.fillStyle=rc(WAVE_STROKE,1);
-              ctx.fillRect(ex-bw/2-1, peakY-2, bw+2, 3);
+              /* wider glow bar behind */
+              var glowGrad=ctx.createLinearGradient(0,peakY,0,yBot);
+              glowGrad.addColorStop(0,'rgba(0,0,0,0.08)');
+              glowGrad.addColorStop(1,'rgba(0,0,0,0)');
+              ctx.fillStyle=glowGrad;
+              ctx.fillRect(ex-bw*3, peakY, bw*6, barH);
 
-              /* year — large, just above bar */
-              var yrY=Math.max(yTop+4, peakY-8);
+              /* peak cap */
+              ctx.fillStyle='rgba(0,0,0,0.95)';
+              ctx.fillRect(ex-bw-0.5, peakY-1.5, bw*2+1, 2);
+
+              /* year */
+              var yrY=Math.max(yTop+16, peakY-10);
               ctx.save();
-              ctx.font='700 '+(mob?13:15)+'px Avenir,"Avenir Next",Arial,sans-serif';
-              ctx.fillStyle=rc(WAVE_STROKE,0.92);
+              ctx.font='700 '+(mob?13:16)+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle='rgba(0,0,0,0.88)';
               ctx.textAlign='center'; ctx.textBaseline='bottom';
-              ctx.fillText(ev.year, ex, yrY); ctx.restore();
+              ctx.fillText(ev.year, ex, yrY);
 
-              /* event label above year */
-              var lblY=yrY-(mob?15:18);
-              if(lblY>yTop+2){
-                ctx.save();
-                ctx.font='500 '+(mob?8:9.5)+'px Avenir,"Avenir Next",Arial,sans-serif';
-                ctx.fillStyle=rc(WAVE_STROKE,0.58);
-                ctx.textAlign='center'; ctx.textBaseline='bottom';
-                ctx.fillText(ev.label, ex, lblY); ctx.restore();
+              /* event label */
+              var lblY=yrY-(mob?15:19);
+              if(lblY>yTop+4){
+                ctx.font='500 '+(mob?8:9)+'px Avenir,"Avenir Next",Arial,sans-serif';
+                ctx.fillStyle='rgba(0,0,0,0.48)';
+                ctx.fillText(ev.label, ex, lblY);
               }
+              ctx.restore();
             }
           });
         });
@@ -4092,6 +4240,7 @@
       function frame(){
         if(!ov.classList.contains('is-open')){ requestAnimationFrame(frame); return; }
         if(!initialized){ requestAnimationFrame(frame); return; }
+        growP=Math.min(1,growP+0.018);   /* ~55 frames → ~0.9s ease-out grow */
         drawScene();
         requestAnimationFrame(frame);
       }
@@ -4196,7 +4345,7 @@
       new MutationObserver(function(ms){
         ms.forEach(function(m){
           if(m.attributeName==='class'&&ov.classList.contains('is-open')){
-            resize(); renderDetail(activeTrack||'af');
+            growP=0; resize(); renderDetail(activeTrack||'af');
           }
         });
       }).observe(ov,{attributes:true});

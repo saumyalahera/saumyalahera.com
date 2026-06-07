@@ -1399,8 +1399,167 @@ h2.about__title{
 
 /* ===== Places Overlay ===== */
 .places-overlay{
-  background: #F6F7F9; /* same cool-grey as language page */
-  position: relative; /* for shader canvas */
+  background: #c5dff2;
+  position: relative;
+}
+
+/* ── Places blue theme ── */
+#continent-pills .roast-pill--active{
+  background: rgba(219,233,243,.55);
+  border-color: rgba(46,88,148,.28);
+  color: rgba(30,68,138,.85);
+}
+#continent-pills .roast-pill:hover:not(.roast-pill--active){
+  color: rgba(46,88,148,.55);
+  border-color: rgba(46,88,148,.20);
+}
+
+.places-overlay .coffee-list__item--active{
+  border-left-color: rgba(46,88,148,.55);
+  color: rgba(30,68,138,.80);
+  background: rgba(100,150,210,.10);
+}
+.places-overlay .coffee-list__item:hover{
+  color: rgba(46,88,148,.70);
+  background: rgba(100,150,210,.06);
+}
+.places-overlay .tag--alt{
+  color: rgba(30,68,138,.80) !important;
+  background: rgba(219,233,243,.55) !important;
+  border-color: rgba(46,88,148,.22) !important;
+}
+.places-overlay .tag--alt::before,
+.places-overlay .tag--alt::after{
+  background: transparent !important;
+}
+.places-overlay .callout{
+  border-left-color: rgba(46,88,148,.35);
+  background: rgba(219,233,243,.30);
+  color: rgba(30,68,138,.85);
+}
+.places-dot-hint{
+  color: rgba(46,88,148,.55);
+}
+
+/* ── Country explorer + cards: sky theme ── */
+.places-overlay .coffee-explorer{
+  border-color: rgba(0,0,0,.12);
+  background: rgba(240,248,255,.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.places-overlay .coffee-explorer__sidebar{
+  border-right-color: rgba(0,0,0,.08);
+}
+/* Country list items — black text */
+.places-overlay .coffee-list__num{
+  color: rgba(0,0,0,.35);
+}
+.places-overlay .coffee-list__name{
+  color: rgba(0,0,0,.72);
+}
+.places-overlay .coffee-list__item:hover{
+  color: rgba(0,0,0,.88);
+  background: rgba(0,0,0,.04);
+}
+.places-overlay .coffee-list__item--active{
+  border-left-color: rgba(60,120,200,.65);
+  color: rgba(20,70,160,.88);
+  background: rgba(180,215,245,.45);
+}
+.places-overlay .coffee-explorer__detail{
+  background: transparent;
+}
+/* Country detail — black text */
+.places-overlay .coffee-detail__name{
+  color: rgba(0,0,0,.88);
+}
+.places-overlay .coffee-detail__desc{
+  color: rgba(0,0,0,.68);
+}
+.places-overlay .coffee-detail__spec{
+  color: rgba(0,0,0,.38);
+}
+/* Tags inside places overlay — higher specificity beats .coffee-overlay .tag--alt !important */
+.coffee-overlay.places-overlay .tag,
+.coffee-overlay.places-overlay .tag--alt,
+.coffee-overlay.places-overlay span.tag,
+.coffee-overlay.places-overlay span.tag--alt,
+.coffee-overlay.places-overlay div.tag--alt{
+  color: rgba(0,0,0,.82) !important;
+  background: rgba(190,220,248,.40) !important;
+  border-color: rgba(60,120,200,.22) !important;
+}
+.coffee-overlay.places-overlay .tag::before,
+.coffee-overlay.places-overlay .tag::after,
+.coffee-overlay.places-overlay .tag--alt::before,
+.coffee-overlay.places-overlay .tag--alt::after,
+.coffee-overlay.places-overlay span.tag--alt::before,
+.coffee-overlay.places-overlay span.tag--alt::after{
+  background: transparent !important;
+}
+/* Meta links */
+.coffee-overlay.places-overlay .meta--link2{
+  background: rgba(190,220,248,.40) !important;
+  color: rgba(0,0,0,.82) !important;
+  border-color: rgba(60,120,200,.22) !important;
+}
+/* Row cards */
+.places-overlay .row{
+  background: rgba(240,248,255,.55);
+  border-color: rgba(0,0,0,.12);
+}
+.places-overlay .row h3{
+  color: rgba(0,0,0,.88);
+}
+/* Country detail info — black */
+.places-overlay .places-info-name{
+  color: rgba(0,0,0,.88);
+}
+.places-overlay .places-info-stats{
+  color: rgba(0,0,0,.45);
+}
+.places-overlay .places-info-desc{
+  color: rgba(0,0,0,.70);
+}
+.places-overlay .places-info-item-label{
+  color: rgba(0,0,0,.32);
+}
+.places-overlay .places-info-item-val{
+  color: rgba(0,0,0,.78);
+}
+/* Selects / filters — black */
+.places-overlay .places-select{
+  color: rgba(0,0,0,.48);
+  border-bottom-color: rgba(0,0,0,.16);
+}
+.places-overlay .places-select:hover{
+  border-bottom-color: rgba(0,0,0,.35);
+  color: rgba(0,0,0,.72);
+}
+/* Alpha bar — black */
+.places-overlay .places-alpha__btn{
+  color: rgba(0,0,0,.20);
+}
+.places-overlay .places-alpha__btn:hover{
+  color: rgba(0,0,0,.52);
+}
+.places-overlay .places-alpha__btn--active{
+  color: rgba(20,70,160,.85);
+  font-weight: 600;
+}
+.places-overlay .places-count{
+  color: rgba(0,0,0,.30);
+}
+/* kicker text */
+.places-overlay .kicker{
+  color: rgba(0,0,0,.45);
+}
+/* headings */
+.places-overlay h2.about__title,
+.places-overlay .coffee-sub-title,
+.places-overlay .section__head h2{
+  color: rgba(0,0,0,.88);
 }
 
 /* ─── Places Filter Bar ─── */

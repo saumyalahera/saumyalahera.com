@@ -1221,7 +1221,7 @@
           <div class="places-dot-wrap">
             <canvas id="continent-canvas" class="places-dot-canvas"></canvas>
           </div>
-          <p class="places-dot-hint" style="margin-top:6px;">Click a bar to explore that event · click a continent name to see the overview</p>
+          <p class="places-dot-hint" style="margin-top:6px;">Hover to spread bars apart · click a bar to reveal its story and connected events across continents</p>
 
           <!-- continent pill buttons -->
           <div class="roast-pills" id="continent-pills" style="margin-top:14px;">
@@ -4024,71 +4024,113 @@
       /* ── Historical events per continent ── */
       var EVENTS={
         af:[
-          {year:1847,label:'Liberia',        desc:'First African republic — founded by freed American slaves.',              imp:0.55},
-          {year:1910,label:'South Africa',   desc:'Union of South Africa formed under British dominion.',                   imp:0.58},
-          {year:1957,label:'Ghana Indep.',   desc:'First sub-Saharan nation to gain independence from colonial rule.',      imp:0.85},
-          {year:1960,label:'Year of Africa', desc:'17 countries gained independence in a single year — the most ever.',     imp:1.00},
-          {year:1963,label:'OAU Founded',    desc:'Organisation of African Unity established in Addis Ababa.',              imp:0.72},
-          {year:1975,label:'Angola & Mozambique',desc:'Independence from Portugal ends the last major African colonial empire.',imp:0.68},
-          {year:1990,label:'Namibia',        desc:'Last African territory gains independence — final end of colonialism.',   imp:0.70},
-          {year:1994,label:'End Apartheid',  desc:'South Africa holds its first fully democratic election.',                imp:0.92},
-          {year:2002,label:'African Union',  desc:'African Union replaces the OAU with a broader continental mandate.',     imp:0.65},
-          {year:2011,label:'South Sudan',    desc:'World\'s newest nation created after a hard-won independence referendum.',imp:0.80},
+          {year:1847,label:'Liberia',        imp:0.55, desc:'Liberia declared independence in 1847, becoming the first African republic and one of the first Black-led republics in the world. It was founded by formerly enslaved African Americans repatriated from the United States, supported by the American Colonization Society. The country\'s name comes from the Latin word for freedom, and its capital Monrovia is named after US President James Monroe.'},
+          {year:1910,label:'South Africa',   imp:0.58, desc:'The Union of South Africa was established on 31 May 1910, merging the former British colonies of the Cape, Natal, Transvaal, and Orange River Colony into a single self-governing dominion. It came after the devastating Anglo-Boer War (1899–1902), which left the region scarred but economically integrated around gold and diamond wealth. The union formalised white minority rule — a system that would define South African politics for the next 84 years.'},
+          {year:1957,label:'Ghana Indep.',   imp:0.85, desc:'On 6 March 1957, Ghana became the first sub-Saharan African country to gain independence from European colonial rule, under the leadership of Kwame Nkrumah. The moment electrified the continent — Nkrumah declared that the independence of Ghana was "meaningless unless it is linked up with the total liberation of Africa." Ghana\'s independence directly inspired independence movements across the continent and set off the African decolonisation wave of the 1960s.'},
+          {year:1960,label:'Year of Africa', imp:1.00, desc:'1960 stands as the single most transformative year in African history — 17 countries gained independence, more than any other year before or since. Most were French and British colonies: Senegal, Mali, Nigeria, Congo, Ivory Coast, Cameroon, Somalia, and many more. The United Nations gained enough new African members that year to fundamentally shift the balance of power in the General Assembly, ending Western dominance of that body.'},
+          {year:1963,label:'OAU Founded',    imp:0.72, desc:'The Organisation of African Unity was founded in Addis Ababa on 25 May 1963, with 32 independent African states as founding members. Its two central principles were non-interference in member states\' internal affairs and the inviolability of colonial-era borders — a controversial stance that prioritised stability over correcting arbitrary boundaries. The OAU championed the end of apartheid in South Africa and coordinated the continent\'s diplomatic voice for nearly four decades.'},
+          {year:1975,label:'Angola & Mozambique',imp:0.68, desc:'When Portugal\'s authoritarian Estado Novo regime collapsed in the Carnation Revolution of April 1974, it immediately began dismantling its overseas empire. Angola and Mozambique — two of Portugal\'s largest and oldest colonies — gained independence in 1975, ending over 400 years of Portuguese rule. Angola\'s independence was immediately followed by a devastating civil war fuelled by Cold War proxy intervention that would last 27 years, killing an estimated 500,000 people.'},
+          {year:1990,label:'Namibia',        imp:0.70, desc:'Namibia gained independence from South Africa on 21 March 1990, becoming the last African territory to achieve decolonisation after a 24-year armed struggle by SWAPO. South Africa had illegally occupied Namibia since the League of Nations stripped it of the mandate in 1966. Independence was brokered partly through UN Resolution 435 and the withdrawal of Cuban and South African forces from the region — a complex Cold War endgame that ended decades of brutal occupation.'},
+          {year:1994,label:'End Apartheid',  imp:0.92, desc:'On 27 April 1994, South Africa held its first fully democratic election — open to all races — and Nelson Mandela became the country\'s first Black president. Apartheid, the system of institutionalised racial segregation that had governed the country since 1948, was formally dismantled. The election was the culmination of decades of internal resistance, international sanctions, and the 27-year imprisonment of Mandela, who had emerged from prison in 1990 to lead negotiations.'},
+          {year:2002,label:'African Union',  imp:0.65, desc:'The African Union formally replaced the Organisation of African Unity on 9 July 2002, launched in Durban, South Africa. The AU was modelled more closely on the European Union, with new institutions including an executive commission, a parliament, and a court of justice. Unlike the OAU\'s strict non-interference doctrine, the AU established the principle of non-indifference — allowing collective intervention in cases of genocide, war crimes, and unconstitutional changes of government.'},
+          {year:2011,label:'South Sudan',    imp:0.80, desc:'South Sudan became the world\'s newest country on 9 July 2011, after 98.8% of its population voted for independence from Sudan in a January referendum. The result ended Africa\'s longest-running civil war, which had cost approximately 2.5 million lives over two decades. South Sudan\'s independence was immediately recognised by the international community, and it joined the UN as its 193rd member state — but within two years, a catastrophic civil war erupted between rival factions.'},
         ],
         as:[
-          {year:1947,label:'India & Pakistan',desc:'Partition and independence permanently reshape South Asia.',            imp:0.95},
-          {year:1948,label:'Israel & Korea', desc:'State of Israel declared; Korean peninsula divided at the 38th parallel.',imp:0.85},
-          {year:1949,label:'PRC Founded',    desc:'People\'s Republic of China established under Mao Zedong.',              imp:1.00},
-          {year:1965,label:'Singapore',      desc:'City-state becomes independent after separation from Malaysia.',         imp:0.62},
-          {year:1971,label:'Bangladesh',     desc:'Liberation War creates a new nation from East Pakistan.',               imp:0.78},
-          {year:1975,label:'Vietnam United', desc:'North and South Vietnam reunified after 20 years of devastating war.',  imp:0.74},
-          {year:1991,label:'Central Asia',   desc:'Soviet collapse frees Kazakhstan, Uzbekistan and 3 other nations.',     imp:0.90},
-          {year:1997,label:'HK Handover',    desc:'Hong Kong returned to China after 156 years of British rule.',          imp:0.70},
-          {year:2002,label:'Timor-Leste',    desc:'21st century\'s first new nation after UN-supervised independence.',    imp:0.75},
+          {year:1947,label:'India & Pakistan',imp:0.95, desc:'The Partition of British India on 14–15 August 1947 created two independent nations — the secular Republic of India and the Islamic Republic of Pakistan — but triggered one of history\'s largest and most violent population transfers. An estimated 10–20 million people were displaced along religious lines, and up to 2 million died in the accompanying communal violence. The arbitrary Radcliffe Line, drawn in just five weeks, left unresolved disputes — most critically over Kashmir — that continue to shape South Asian geopolitics today.'},
+          {year:1948,label:'Israel & Korea', imp:0.85, desc:'1948 saw two seismic partitions that created conflicts still unresolved today. Israel declared independence on 14 May 1948, immediately triggering the Arab-Israeli War and the displacement of 700,000 Palestinians in the Nakba. On the Korean peninsula, the Republic of Korea and the Democratic People\'s Republic of Korea were formally established along the 38th parallel — a Cold War division that led to the Korean War (1950–53) and a state of armistice that technically persists today.'},
+          {year:1949,label:'PRC Founded',    imp:1.00, desc:'On 1 October 1949, Mao Zedong proclaimed the People\'s Republic of China from Tiananmen Gate in Beijing, ending the Chinese Civil War in a communist victory over the Nationalist Kuomintang. The Nationalists retreated to Taiwan, creating the cross-strait political standoff that continues today. The establishment of the PRC brought a quarter of humanity under communist rule and fundamentally altered the global balance of power during the Cold War, reshaping alliances across Asia for generations.'},
+          {year:1965,label:'Singapore',      imp:0.62, desc:'Singapore was expelled from the Malaysian Federation on 9 August 1965 — an event its founding Prime Minister Lee Kuan Yew described in tears as a moment of "anguish," since independence was not what he had sought. The city-state had no natural resources, no army, and a population of under 2 million. Under Lee\'s authoritarian leadership, Singapore transformed within three decades into one of the world\'s wealthiest nations with GDP per capita rivalling Switzerland — one of the most remarkable economic stories in history.'},
+          {year:1971,label:'Bangladesh',     imp:0.78, desc:'Bangladesh emerged as an independent nation on 16 December 1971, after a brutal nine-month Liberation War against Pakistan. The Pakistani military\'s crackdown on Bengali nationalism, known as Operation Searchlight, resulted in one of the 20th century\'s worst atrocities, with estimates of up to 3 million killed. India\'s intervention proved decisive — the Indian Army defeated Pakistani forces in just 13 days, leading to the largest military surrender since World War II, with 93,000 Pakistani soldiers taken prisoner.'},
+          {year:1975,label:'Vietnam United', imp:0.74, desc:'On 30 April 1975, North Vietnamese tanks rolled into Saigon and the last US personnel were evacuated by helicopter from the US Embassy rooftop — an image that became the defining symbol of America\'s defeat. The fall of Saigon ended the Vietnam War and the following year the country was formally reunified as the Socialist Republic of Vietnam. The war had lasted 20 years, cost 3.5 million lives, and left Vietnam devastated by Agent Orange, land mines, and unexploded ordnance.'},
+          {year:1991,label:'Central Asia',   imp:0.90, desc:'The collapse of the Soviet Union in December 1991 brought independence to five Central Asian republics — Kazakhstan, Uzbekistan, Tajikistan, Kyrgyzstan, and Turkmenistan — simultaneously. None had a pre-Soviet tradition of independent statehood in the modern sense, and all faced the enormous challenge of nation-building from scratch. Kazakhstan, the ninth-largest country on Earth, suddenly controlled a nuclear arsenal it had not chosen and spent the following years carefully returning those weapons to Russia in exchange for economic aid.'},
+          {year:1997,label:'HK Handover',    imp:0.70, desc:'At midnight on 1 July 1997, the United Kingdom transferred sovereignty of Hong Kong to the People\'s Republic of China, ending 156 years of British colonial rule. The handover was governed by the "one country, two systems" framework, guaranteed by the 1984 Sino-British Joint Declaration, under which Hong Kong would maintain its capitalist economy and legal system for 50 years until 2047. The framework began unravelling publicly in 2019 with massive pro-democracy protests and the imposition of the National Security Law.'},
+          {year:2002,label:'Timor-Leste',    imp:0.75, desc:'Timor-Leste (East Timor) officially became independent on 20 May 2002, making it the 21st century\'s first new sovereign state. Its path to independence was extraordinarily violent — after 24 years of brutal Indonesian occupation that killed an estimated 100,000–180,000 people, a 1999 UN-supervised referendum resulted in 78.5% voting for independence. Indonesia\'s military and pro-Indonesian militias then launched a scorched-earth campaign destroying 70% of the country\'s infrastructure before an Australian-led peacekeeping force intervened.'},
         ],
         eu:[
-          {year:1815,label:'Congress of Vienna',desc:'Redrew Europe\'s map after the Napoleonic Wars.',                   imp:0.78},
-          {year:1871,label:'German Unification',desc:'German Empire proclaimed at Versailles; balance of power shifts.',  imp:0.84},
-          {year:1918,label:'WWI Ends',       desc:'Austro-Hungarian & Ottoman empires collapse; a dozen new nations born.',imp:1.00},
-          {year:1945,label:'WWII Ends',      desc:'Europe rebuilt from its most catastrophic and devastating conflict.',   imp:1.00},
-          {year:1957,label:'Treaty of Rome', desc:'European Economic Community founded — the seed of today\'s EU.',       imp:0.84},
-          {year:1989,label:'Wall Falls',     desc:'Berlin Wall falls; Iron Curtain collapses and Germany reunites.',       imp:0.95},
-          {year:1993,label:'EU Founded',     desc:'Maastricht Treaty creates the European Union.',                        imp:0.80},
-          {year:2004,label:'EU Enlargement', desc:'10 Eastern European nations join the EU in history\'s largest expansion.',imp:0.74},
-          {year:2016,label:'Brexit',         desc:'UK votes to leave the European Union after 43 years of membership.',   imp:0.70},
+          {year:1815,label:'Congress of Vienna',imp:0.78, desc:'The Congress of Vienna (September 1814 – June 1815) was a landmark diplomatic conference that redrew the map of Europe after the Napoleonic Wars, restoring conservative monarchies and establishing a new balance of power among the great powers of Austria, Prussia, Russia, Britain, and France. Chaired by Austrian statesman Klemens von Metternich, it created a framework — the Concert of Europe — that prevented a general European war for nearly 100 years. The settlement also created new political entities including the German Confederation and the Kingdom of the Netherlands.'},
+          {year:1871,label:'German Unification',imp:0.84, desc:'On 18 January 1871, the German Empire was proclaimed in the Hall of Mirrors at the Palace of Versailles — deliberately chosen to humiliate France after its defeat in the Franco-Prussian War. Prussia\'s Chancellor Otto von Bismarck had engineered unification through three strategic wars: against Denmark (1864), Austria (1866), and France (1870). The creation of a united Germany — with 41 million people and the most powerful army in Europe — fundamentally altered the balance of power and made the tensions that would explode in 1914 almost inevitable.'},
+          {year:1918,label:'WWI Ends',       imp:1.00, desc:'The Armistice of 11 November 1918 ended the First World War — a conflict that killed 17–20 million people and permanently destroyed four great empires: the Ottoman, Austro-Hungarian, Russian, and German. The subsequent Paris Peace Conferences, particularly the Treaty of Versailles, created the map of modern Europe, established the League of Nations, and imposed crushing reparations on Germany. The humiliation and economic devastation of defeat planted the seeds for the rise of Adolf Hitler and the catastrophe of a second world war just 21 years later.'},
+          {year:1945,label:'WWII Ends',      imp:1.00, desc:'The Second World War ended in Europe on 8 May 1945 (V-E Day) with Germany\'s unconditional surrender, following 12 years of Nazi rule that had produced the Holocaust — the systematic murder of 6 million Jews and millions of others. The war killed an estimated 70–85 million people in total, roughly 3% of the world\'s population. From its ashes, Europe rebuilt with unprecedented ambition — the Marshall Plan, the United Nations, and ultimately the European Union — determined to build institutions that would make another such catastrophe impossible.'},
+          {year:1957,label:'Treaty of Rome', imp:0.84, desc:'The Treaty of Rome was signed on 25 March 1957, establishing the European Economic Community (EEC) among six founding nations: France, West Germany, Italy, Belgium, the Netherlands, and Luxembourg. It created a common market, removed internal trade barriers, and established free movement of goods, services, capital, and people — the foundational "four freedoms" that still define the EU today. The treaty was the direct descendant of the 1951 European Coal and Steel Community, itself conceived to make another Franco-German war materially impossible by intertwining their key industries.'},
+          {year:1989,label:'Wall Falls',     imp:0.95, desc:'On the night of 9 November 1989, the East German government announced that citizens could freely cross the Berlin Wall — and thousands immediately swarmed the checkpoints and began tearing it down with their bare hands. The Wall had stood for 28 years as the defining symbol of the Cold War, dividing a city, a country, and a continent. Its fall triggered the rapid collapse of communist regimes across Eastern Europe in the "Autumn of Nations," and within a year Germany was reunified — an outcome that almost no one had expected would happen so swiftly and peacefully.'},
+          {year:1993,label:'EU Founded',     imp:0.80, desc:'The Maastricht Treaty came into force on 1 November 1993, formally establishing the European Union and transforming what had been primarily an economic arrangement into a political union with shared citizenship. It laid the groundwork for Economic and Monetary Union and the single currency — the euro — launched in 1999. Maastricht also created the three-pillar structure covering economic affairs, foreign policy, and justice and home affairs, marking Europe\'s most ambitious step toward political integration since the EEC\'s founding.'},
+          {year:2004,label:'EU Enlargement', imp:0.74, desc:'On 1 May 2004, ten countries joined the European Union simultaneously in the largest single expansion in its history: Poland, Hungary, Czech Republic, Slovakia, Slovenia, Estonia, Latvia, Lithuania, Cyprus, and Malta. The enlargement brought 75 million new citizens into the EU and reunited Western and Eastern Europe after 50 years of Cold War division. Poland\'s accession was particularly significant — it became the EU\'s sixth-largest member and transformed overnight into a major player in European politics.'},
+          {year:2016,label:'Brexit',         imp:0.70, desc:'On 23 June 2016, 51.9% of British voters chose to leave the European Union in a referendum that shocked the world — the first time any member state had chosen to exit. The result triggered years of tumultuous negotiations, three UK Prime Ministers, two general elections, and a constitutional crisis before the UK formally left on 31 January 2020. Brexit fundamentally changed Britain\'s relationship with its nearest neighbours, ended free movement for millions of EU and UK citizens, and raised fresh questions about Scottish independence and the future of the Good Friday Agreement in Northern Ireland.'},
         ],
         am:[
-          {year:1776,label:'USA Founded',    desc:'Declaration of Independence — the first modern democratic republic.',  imp:0.95},
-          {year:1791,label:'Haiti',          desc:'First successful slave revolution; Western hemisphere\'s second republic.',imp:0.85},
-          {year:1819,label:'Gran Colombia',  desc:'Simón Bolívar liberates northern South America from Spanish rule.',    imp:0.80},
-          {year:1867,label:'Canada',         desc:'British North America Act creates the Canadian Confederation.',        imp:0.74},
-          {year:1898,label:'Spanish-American War',desc:'Spain loses Cuba and Puerto Rico; US emerges as a world power.',  imp:0.68},
-          {year:1959,label:'Cuban Revolution',desc:'Castro overthrows Batista; Cold War\'s most dangerous flashpoint.',   imp:0.80},
-          {year:1969,label:'Moon Landing',   desc:'Apollo 11 — the defining human achievement of the 20th century.',     imp:1.00},
-          {year:1994,label:'NAFTA',          desc:'Free trade agreement integrates the economies of USA, Canada & Mexico.',imp:0.62},
+          {year:1776,label:'USA Founded',    imp:0.95, desc:'On 4 July 1776, the thirteen American colonies adopted the Declaration of Independence, severing ties with Britain and establishing the United States of America — the first nation founded explicitly on Enlightenment principles of natural rights, popular sovereignty, and self-government. The American Revolution inspired republican movements across the world, from France (1789) to Latin America. The US Constitution of 1787, with its system of checks and balances and Bill of Rights, became a template for democratic governance that dozens of nations would adapt over the following two centuries.'},
+          {year:1791,label:'Haiti',          imp:0.85, desc:'The Haitian Revolution (1791–1804) was the only successful slave revolt in history, producing the first Black republic in the world and the first Caribbean nation to gain independence. Born in the French colony of Saint-Domingue — the most profitable colony in the world at the time — the revolution was led by Toussaint Louverture and Jean-Jacques Dessalines against French, Spanish, and British forces simultaneously. When Haiti declared independence on 1 January 1804, France demanded crippling reparations — equivalent to $21 billion today — that Haiti did not finish paying until 1947.'},
+          {year:1819,label:'Gran Colombia',  imp:0.80, desc:'Simón Bolívar\'s victory at the Battle of Boyacá on 7 August 1819 secured Colombian independence from Spain and led to the creation of Gran Colombia — a vast republic encompassing present-day Colombia, Venezuela, Ecuador, and Panama. Bolívar dreamed of a united South America that could rival the United States in power and influence. Gran Colombia dissolved by 1831 due to regional rivalries, but Bolívar had already liberated much of the continent from Spanish rule, earning him the title El Libertador across six modern nations.'},
+          {year:1867,label:'Canada',         imp:0.74, desc:'The British North America Act came into force on 1 July 1867, uniting the Province of Canada, New Brunswick, and Nova Scotia into the Dominion of Canada — a self-governing federation within the British Empire. The act was partly motivated by fear of American annexation following the Union\'s victory in the Civil War, and by the economic logic of creating a transcontinental nation connected by railway. Canada Day, celebrated on 1 July, marks this founding — though full legislative independence from Britain did not come until the Statute of Westminster in 1931.'},
+          {year:1898,label:'Spanish-American War',imp:0.68, desc:'The Spanish-American War lasted just ten weeks in 1898 but had enormous consequences: Spain ceded Cuba, Puerto Rico, Guam, and the Philippines to the United States, effectively ending the Spanish Empire after 400 years. It marked America\'s emergence as a global imperial power, projecting force simultaneously into the Caribbean and the Pacific. The war began largely over Cuban independence but quickly became something larger — a defining moment in which the United States acquired overseas territories and asserted dominance across two oceans.'},
+          {year:1959,label:'Cuban Revolution',imp:0.80, desc:'On 1 January 1959, Fidel Castro\'s guerrilla forces entered Havana and Fulgencio Batista fled to the Dominican Republic, ending seven years of revolution. Cuba\'s communist transformation alarmed the United States, leading to the disastrous Bay of Pigs invasion (1961) and the Cuban Missile Crisis (1962) — the closest the Cold War came to nuclear war, when Soviet missiles in Cuba and American naval blockades brought the superpowers to the brink for 13 days in October 1962.'},
+          {year:1969,label:'Moon Landing',   imp:1.00, desc:'On 20 July 1969, Apollo 11 astronauts Neil Armstrong and Buzz Aldrin became the first humans to walk on the Moon, fulfilling President Kennedy\'s 1961 pledge to land a man on the Moon before the decade\'s end. Armstrong\'s words — "That\'s one small step for man, one giant leap for mankind" — were broadcast live to an estimated 600 million people. The Apollo programme cost $25 billion (roughly $200 billion today) and remains the greatest feat of engineering and human courage in the history of exploration.'},
+          {year:1994,label:'NAFTA',          imp:0.62, desc:'The North American Free Trade Agreement came into force on 1 January 1994, creating the world\'s largest free trade zone covering the United States, Canada, and Mexico. It eliminated most tariffs between the three countries over 15 years and dramatically increased cross-border trade — from $290 billion in 1993 to over $1.1 trillion by 2016. NAFTA\'s legacy is contested: it reshaped manufacturing, displaced millions of Mexican farmers, shifted US jobs to lower-wage regions, and fuelled political backlash that ultimately led to its renegotiation as the USMCA in 2020.'},
         ],
         oc:[
-          {year:1788,label:'First Fleet',    desc:'British colonisation of Australia begins at Botany Bay.',              imp:0.78},
-          {year:1840,label:'Waitangi Treaty',desc:'New Zealand founded via treaty between the Crown and Māori chiefs.',   imp:0.88},
-          {year:1901,label:'Federation',     desc:'Six Australian colonies unite into the Commonwealth of Australia.',    imp:0.95},
-          {year:1962,label:'Western Samoa',  desc:'First Pacific Island nation to gain independence from colonial rule.', imp:0.75},
-          {year:1975,label:'PNG',            desc:'Papua New Guinea gains independence — largest Pacific nation.',        imp:0.82},
-          {year:1978,label:'Pacific Wave',   desc:'Dominica, Kiribati and Tuvalu gain independence in quick succession.', imp:0.66},
-          {year:1994,label:'Palau',          desc:'Last UN Trust Territory becomes the world\'s newest sovereign state.', imp:0.75},
+          {year:1788,label:'First Fleet',    imp:0.78, desc:'On 26 January 1788, the British First Fleet — eleven ships carrying 1,030 people including 732 convicts — arrived at Sydney Cove and established the first European settlement in Australia. The date, now celebrated as Australia Day, marks the beginning of a colonial project that would transform the continent within a century. For Aboriginal Australians, who had lived on the continent for at least 65,000 years, it was the start of dispossession, introduced disease, and violence that devastated populations by an estimated 80–90% in many regions.'},
+          {year:1840,label:'Waitangi Treaty',imp:0.88, desc:'The Treaty of Waitangi was signed on 6 February 1840 between representatives of the British Crown and over 500 Māori rangatira (chiefs) of New Zealand, making it the country\'s founding constitutional document. The English and Māori versions of the treaty differed significantly on the question of sovereignty — the Māori text suggested they would retain their chieftainship while ceding governance, while the English text transferred full sovereignty to Britain. These differences remain contested to this day, and Waitangi Day is still a day of both celebration and protest.'},
+          {year:1901,label:'Federation',     imp:0.95, desc:'On 1 January 1901, the six self-governing British colonies of New South Wales, Victoria, Queensland, South Australia, Western Australia, and Tasmania federated to form the Commonwealth of Australia. The Federation was the product of a decade of conventions and referendums — a remarkable democratic process for its era. Australia adopted its own constitution combining elements of the US presidential model (a senate representing states equally) and the British Westminster system, creating a hybrid still in use today.'},
+          {year:1962,label:'Western Samoa',  imp:0.75, desc:'Western Samoa (now simply Samoa) gained independence from New Zealand on 1 January 1962, becoming the first Pacific Island nation to achieve full independence in the 20th century. New Zealand had administered the islands under a League of Nations mandate since capturing them from Germany in 1914. Independence was preceded by a 1961 plebiscite in which Samoans overwhelmingly voted for self-governance, making Samoa a pioneer in a Pacific decolonisation wave that would eventually bring independence to 14 island nations over the following three decades.'},
+          {year:1975,label:'PNG',            imp:0.82, desc:'Papua New Guinea gained independence from Australia on 16 September 1975, becoming the largest and most populous Pacific Island nation with over 800 distinct languages — the most linguistic diversity of any country on Earth. Australian administration had begun in 1906, but PNG\'s extraordinarily diverse terrain of highlands, rainforest, and islands meant that many communities had little contact with the outside world until well into the 20th century. Independence came with significant challenges: an immediate secessionist revolt in Bougainville and one of the most challenging governance tasks in the Pacific.'},
+          {year:1978,label:'Pacific Wave',   imp:0.66, desc:'The late 1970s brought a rapid wave of independence across the Pacific: Dominica (1978), Kiribati (1979), and Tuvalu (1978) all gained independence in quick succession, joining a growing community of small island states. These newly independent nations faced extraordinary challenges — Tuvalu, with just 10,000 people and the second-smallest land area of any sovereign state, became the first nation in modern history whose long-term existence is genuinely threatened by rising sea levels.'},
+          {year:1994,label:'Palau',          imp:0.75, desc:'Palau became fully independent on 1 October 1994, ending its status as the last United Nations Trust Territory in the world — a status it had held since 1947. The Compact of Free Association with the United States was delayed for a decade by Palau\'s nuclear-free constitution, which conflicted with American desires to potentially store nuclear weapons there. Independence gave this archipelago of 340 islands — home to 20,000 people and some of the world\'s most pristine coral reefs — full sovereignty while maintaining close ties with the US for defence.'},
         ],
       };
 
       /* per-continent timeline year range */
       var RANGES={af:[1840,2016],as:[1942,2007],eu:[1808,2020],am:[1770,2000],oc:[1782,1998]};
 
+      /* cross-continent event relationships */
       var WAVE_FILL=[0,0,0];   /* black bars */
       var WAVE_STROKE=[0,0,0]; /* black text + lines */
 
       var CONTS=[{k:'af',label:'Africa'},{k:'as',label:'Asia'},{k:'eu',label:'Europe'},{k:'am',label:'Americas'},{k:'oc',label:'Oceania'}];
 
+      var RELATIONS=[
+        ['af:1960','eu:1945'],  /* Year of Africa — WWII exhausted colonial powers */
+        ['af:1990','eu:1989'],  /* Namibia — Cold War end made SA occupation untenable */
+        ['af:1994','eu:1993'],  /* End Apartheid — EU Founded, same democratic wave */
+        ['af:2002','eu:1993'],  /* African Union modelled directly on EU */
+        ['as:1991','eu:1989'],  /* Central Asia freed by same Soviet collapse */
+        ['as:1949','eu:1945'],  /* PRC filled post-WWII power vacuum */
+        ['am:1776','eu:1815'],  /* US independence shaped the Concert of Europe */
+        ['am:1994','eu:1993'],  /* NAFTA and EU — same era of trade integration */
+        ['am:1969','as:1949'],  /* Moon Landing — Cold War race born of US-Soviet rivalry */
+        ['am:1959','as:1975'],  /* Cuban Rev and Vietnam — twin Cold War proxy conflicts */
+        ['af:1957','as:1947'],  /* Ghana inspired by India/Pakistan decolonisation */
+        ['oc:1994','as:2002'],  /* Palau & Timor-Leste — last UN Trust Territories */
+        ['af:1963','as:1947'],  /* OAU — Pan-African solidarity with Asian independence */
+        ['as:1948','eu:1945'],  /* Israel & Korea partitions — direct WWII aftermath */
+      ];
+
+      var EVENT_MAP={};
+      CONTS.forEach(function(c,ti){
+        EVENTS[c.k].forEach(function(ev,i){
+          EVENT_MAP[c.k+':'+ev.year]={c:c.k,ti:ti,i:i,ev:ev};
+        });
+      });
+
+      function updateConnectedKeys(selK,selIdx){
+        connectedKeys={};
+        if(selK===null||selIdx===null) return;
+        var selKey=selK+':'+EVENTS[selK][selIdx].year;
+        RELATIONS.forEach(function(pair){
+          var other=null;
+          if(pair[0]===selKey) other=pair[1];
+          else if(pair[1]===selKey) other=pair[0];
+          if(other&&EVENT_MAP[other]) connectedKeys[other]=true;
+        });
+      }
+
       /* global unified timeline so events align vertically across all tracks */
       var G_START=1770, G_END=2020, G_SPAN=250;
       var TOP=32; /* top offset so tallest bar labels are never clipped */
+
+      /* pan + connection state */
+      var panOffset=0, panTarget=0;
+      var isDragging=false, dragStartX=0, dragStartPan=0, didDrag=false;
+      var connectedKeys={};
 
       /* per-track animated opacity + grow-in progress */
       var tAlpha={}, growP=0;
@@ -4099,7 +4141,17 @@
       function tH(){ return (H-TOP)/5; }
       function bW(){ return W<480?1.2:1.6; }
       function maxBH(){ return tH()*0.66; }
-      function evX(year){ return lW()+(year-G_START)/G_SPAN*(W-lW()); }
+      /* per-continent x — each track stretches its own range across the full width */
+      function evX(year, k){
+        var r=k?RANGES[k]:[G_START,G_END];
+        var span=r[1]-r[0];
+        var nat=lW()+(year-r[0])/span*(W-lW())+panOffset;
+        /* fisheye lens fixed at viewport centre */
+        var cx=(lW()+W)/2;
+        var sig=(W-lW())*0.22, A=(W-lW())*0.12;
+        var d=nat-cx;
+        return nat+A*Math.sign(d)*Math.exp(-d*d/(2*sig*sig));
+      }
       function trackTop(ti){ return TOP+ti*tH(); }
 
       /* ── draw all 5 tracks ── */
@@ -4110,28 +4162,14 @@
         var th=tH(), lw=lW(), bw=bW(), mbh=maxBH();
         var grow=easeOut(growP);
 
-        /* ── shared vertical year grid (drawn first, behind everything) ── */
-        [1800,1850,1900,1950,2000].forEach(function(yr){
-          var tx=evX(yr);
-          ctx.beginPath(); ctx.moveTo(tx,TOP); ctx.lineTo(tx,H);
-          ctx.strokeStyle='rgba(0,0,0,0.04)'; ctx.lineWidth=0.5; ctx.stroke();
-        });
-
-        /* ── global range labels at very top ── */
-        ctx.save();
-        ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-        ctx.fillStyle='rgba(0,0,0,0.18)'; ctx.textBaseline='top';
-        ctx.textAlign='left';  ctx.fillText(G_START, lw+4, 3);
-        ctx.textAlign='right'; ctx.fillText(G_END,   W-2,  3);
-        ctx.restore();
-
         CONTS.forEach(function(c,ti){
           var yTop=trackTop(ti);
           var yBot=yTop+th*0.80;
           var isAT=(activeTrack===c.k);
+          var hasConn=EVENTS[c.k].some(function(ev){return !!connectedKeys[c.k+':'+ev.year];});
 
-          /* lerp track opacity */
-          var tgt=activeTrack===null?0.60:(isAT?1.0:0.15);
+          /* lerp track opacity — keep connected tracks readable */
+          var tgt=activeTrack===null?0.60:(isAT?1.0:(hasConn?0.75:0.15));
           tAlpha[c.k]+=(tgt-tAlpha[c.k])*0.07;
           var a=tAlpha[c.k];
 
@@ -4170,59 +4208,86 @@
           ctx.strokeStyle='rgba(0,0,0,'+(isAT?0.28:a*0.14)+')';
           ctx.lineWidth=isAT?0.8:0.5; ctx.stroke();
 
-          /* decade ticks + labels on ALL tracks (faint) */
-          [1800,1850,1900,1950,2000].forEach(function(yr){
-            var tx=evX(yr);
+          /* per-continent range end-labels + quarter ticks */
+          var cr=RANGES[c.k], cspan=cr[1]-cr[0];
+          [0,0.25,0.5,0.75,1].forEach(function(frac){
+            var yr=Math.round(cr[0]+frac*cspan);
+            var tx=evX(yr,c.k);
             ctx.beginPath(); ctx.moveTo(tx,yBot); ctx.lineTo(tx,yBot+3);
-            ctx.strokeStyle='rgba(0,0,0,'+(isAT?0.22:0.08)+')';
+            ctx.strokeStyle='rgba(0,0,0,'+(isAT?0.20:0.06)+')';
             ctx.lineWidth=0.5; ctx.stroke();
             if(isAT){
               ctx.save();
               ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-              ctx.fillStyle='rgba(0,0,0,0.28)';
-              ctx.textAlign='center'; ctx.textBaseline='top';
-              ctx.fillText(yr,tx,yBot+4); ctx.restore();
+              ctx.fillStyle='rgba(0,0,0,0.26)';
+              ctx.textAlign= frac===0?'left':(frac===1?'right':'center');
+              ctx.textBaseline='top';
+              ctx.fillText(yr, tx+(frac===0?2:(frac===1?-2:0)), yBot+4);
+              ctx.restore();
             }
           });
 
           /* bars */
           EVENTS[c.k].forEach(function(ev,i){
-            var ex=evX(ev.year);
-            if(ex<lw||ex>W) return;
+            var ex=evX(ev.year,c.k);
+            if(ex<lw-2||ex>W+2) return;
             var fullH=ev.imp*mbh;
-            var barH=fullH*grow;            /* animated grow */
+            var barH=fullH*grow;
             var peakY=yBot-barH;
             var isAE=(isAT&&activeEvent===i);
+            var evKey=c.k+':'+ev.year;
+            var isConn=!!connectedKeys[evKey];
 
             /* gradient bar */
             var grad=ctx.createLinearGradient(0,peakY,0,yBot);
-            var topA=isAE?0.92:(isAT?0.62:a*0.72);
+            var topA=isAE?0.92:(isConn?0.0:(isAT?0.62:a*0.72));
             var botA=topA*0.45;
             grad.addColorStop(0,'rgba(0,0,0,'+topA+')');
             grad.addColorStop(1,'rgba(0,0,0,'+botA+')');
             ctx.fillStyle=grad;
             ctx.fillRect(ex-bw/2, peakY, bw, barH);
 
-            if(isAE){
+            if(isConn){
+              /* connected bar — blue tint, slightly wider */
+              var cGrad=ctx.createLinearGradient(0,peakY,0,yBot);
+              cGrad.addColorStop(0,'rgba(40,110,255,0.80)');
+              cGrad.addColorStop(1,'rgba(40,110,255,0.22)');
+              ctx.fillStyle=cGrad;
+              ctx.fillRect(ex-bw*1.5,peakY,bw*3,barH);
+              /* glow */
+              var cglow=ctx.createLinearGradient(0,peakY,0,yBot);
+              cglow.addColorStop(0,'rgba(40,110,255,0.12)');
+              cglow.addColorStop(1,'rgba(40,110,255,0)');
+              ctx.fillStyle=cglow;
+              ctx.fillRect(ex-bw*5,peakY,bw*10,barH);
+              /* year above bar */
+              ctx.save();
+              ctx.font='600 '+(mob?8:9)+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle='rgba(40,110,255,0.90)';
+              ctx.textAlign='center'; ctx.textBaseline='bottom';
+              ctx.fillText(ev.year,ex,Math.max(yTop+14,peakY-4));
+              /* label */
+              ctx.font='500 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle='rgba(40,110,255,0.55)';
+              ctx.fillText(ev.label,ex,Math.max(yTop+5,peakY-14));
+              ctx.restore();
+            } else if(isAE){
               /* wider glow bar behind */
               var glowGrad=ctx.createLinearGradient(0,peakY,0,yBot);
               glowGrad.addColorStop(0,'rgba(0,0,0,0.08)');
               glowGrad.addColorStop(1,'rgba(0,0,0,0)');
               ctx.fillStyle=glowGrad;
               ctx.fillRect(ex-bw*3, peakY, bw*6, barH);
-
               /* peak cap */
               ctx.fillStyle='rgba(0,0,0,0.95)';
               ctx.fillRect(ex-bw-0.5, peakY-1.5, bw*2+1, 2);
-
-              /* year */
+              /* year — large */
               var yrY=Math.max(yTop+16, peakY-10);
               ctx.save();
               ctx.font='700 '+(mob?13:16)+'px Avenir,"Avenir Next",Arial,sans-serif';
               ctx.fillStyle='rgba(0,0,0,0.88)';
               ctx.textAlign='center'; ctx.textBaseline='bottom';
               ctx.fillText(ev.year, ex, yrY);
-
               /* event label */
               var lblY=yrY-(mob?15:19);
               if(lblY>yTop+4){
@@ -4231,16 +4296,61 @@
                 ctx.fillText(ev.label, ex, lblY);
               }
               ctx.restore();
+            } else if(isAT){
+              /* small year label below baseline for all bars in active track */
+              ctx.save();
+              ctx.font='400 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle='rgba(0,0,0,0.38)';
+              ctx.textAlign='center'; ctx.textBaseline='top';
+              ctx.fillText(ev.year, ex, yBot+5);
+              ctx.restore();
             }
           });
         });
+
+        /* ── connection lines between selected event and related bars ── */
+        if(activeTrack&&activeEvent!==null){
+          var selK=activeTrack, selIdx=activeEvent;
+          var selKey=selK+':'+EVENTS[selK][selIdx].year;
+          var selTi=CONTS.findIndex(function(c){return c.k===selK;});
+          var ev1=EVENTS[selK][selIdx];
+          var x1=evX(ev1.year,selK);
+          var yBot1=trackTop(selTi)+th*0.80;
+          var y1=yBot1-ev1.imp*mbh*grow;
+
+          RELATIONS.forEach(function(pair){
+            var otherKey=null;
+            if(pair[0]===selKey) otherKey=pair[1];
+            else if(pair[1]===selKey) otherKey=pair[0];
+            if(!otherKey) return;
+            var om=EVENT_MAP[otherKey]; if(!om) return;
+            var ev2=om.ev;
+            var x2=evX(ev2.year,om.c);
+            var yBot2=trackTop(om.ti)+th*0.80;
+            var y2=yBot2-ev2.imp*mbh*grow;
+            var cpX=(x1+x2)/2, cpY=Math.min(y1,y2)-18;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x1,y1); ctx.quadraticCurveTo(cpX,cpY,x2,y2);
+            ctx.strokeStyle='rgba(40,110,255,0.28)';
+            ctx.lineWidth=1.2; ctx.setLineDash([3,5]); ctx.stroke();
+            ctx.setLineDash([]);
+            /* endpoint dots */
+            ctx.beginPath(); ctx.arc(x1,y1,2.5,0,Math.PI*2);
+            ctx.fillStyle='rgba(40,110,255,0.55)'; ctx.fill();
+            ctx.beginPath(); ctx.arc(x2,y2,2.5,0,Math.PI*2);
+            ctx.fillStyle='rgba(40,110,255,0.55)'; ctx.fill();
+            ctx.restore();
+          });
+        }
       }
 
       /* ── animation loop ── */
       function frame(){
         if(!ov.classList.contains('is-open')){ requestAnimationFrame(frame); return; }
         if(!initialized){ requestAnimationFrame(frame); return; }
-        growP=Math.min(1,growP+0.018);   /* ~55 frames → ~0.9s ease-out grow */
+        growP=Math.min(1,growP+0.018);
+        if(!isDragging) panOffset+=(panTarget-panOffset)*0.12;
         drawScene();
         requestAnimationFrame(frame);
       }
@@ -4285,40 +4395,91 @@
         var ev=EVENTS[k][idx],d=INFO[k];
         var el=document.getElementById('continent-detail'); if(!el) return;
         el.style.transition='opacity .18s ease'; el.style.opacity='0';
+
+        /* collect related events */
+        var selKey=k+':'+ev.year;
+        var relKeys=[];
+        RELATIONS.forEach(function(pair){
+          if(pair[0]===selKey) relKeys.push(pair[1]);
+          else if(pair[1]===selKey) relKeys.push(pair[0]);
+        });
+
         setTimeout(function(){
+          var relHtml='';
+          if(relKeys.length>0){
+            relHtml='<div style="margin-top:18px;"><p class="kicker" style="margin-bottom:8px;">Connected Events</p><div class="roast-pills">';
+            relKeys.forEach(function(rk){
+              var rm=EVENT_MAP[rk]; if(!rm) return;
+              var rLabel=CONTS.find(function(c){return c.k===rm.c;}).label;
+              relHtml+='<button class="roast-pill" data-rel="'+rk+'">'+rm.ev.label+' · '+rLabel+' '+rm.ev.year+'</button>';
+            });
+            relHtml+='</div></div>';
+          }
           el.innerHTML=
             '<p class="kicker" style="margin-bottom:6px;">'+d.name+'&nbsp;·&nbsp;'+ev.year+'</p>'+
             '<p class="places-info-name">'+ev.label+'</p>'+
             '<p class="places-info-desc" style="margin-top:8px;">'+ev.desc+'</p>'+
-            '<div style="margin-top:16px;"><span class="tag tag--alt" style="cursor:pointer;" id="ev-back">← Back to continent</span></div>';
+            relHtml+
+            '<div style="margin-top:16px;"><button class="roast-pill" id="ev-back">← Back</button></div>';
           el.style.opacity='1';
           var back=document.getElementById('ev-back');
-          if(back) back.addEventListener('click',function(){ activeEvent=null; renderDetail(activeTrack||'af'); });
+          if(back) back.addEventListener('click',function(){
+            activeEvent=null; updateConnectedKeys(null,null); renderDetail(activeTrack||'af');
+          });
+          el.querySelectorAll('[data-rel]').forEach(function(tag){
+            tag.addEventListener('click',function(){
+              var rm=EVENT_MAP[tag.dataset.rel]; if(!rm) return;
+              activeTrack=rm.c; activeEvent=rm.i;
+              updateConnectedKeys(rm.c,rm.i);
+              syncPills(rm.c); renderEventDetail(rm.c,rm.i);
+            });
+          });
         },130);
       }
 
+      /* ── drag to pan ── */
+      cv.addEventListener('pointerdown',function(e){
+        isDragging=true; didDrag=false;
+        dragStartX=e.clientX; dragStartPan=panOffset;
+        cv.setPointerCapture(e.pointerId);
+        cv.style.cursor='grabbing';
+      });
+      cv.addEventListener('pointermove',function(e){
+        if(!isDragging) return;
+        var dx=e.clientX-dragStartX;
+        if(Math.abs(dx)>4) didDrag=true;
+        var maxPan=(W-lW())*0.85, minPan=-(W-lW())*0.85;
+        panOffset=Math.max(minPan,Math.min(maxPan,dragStartPan+dx));
+        panTarget=panOffset;
+      });
+      cv.addEventListener('pointerup',function(e){
+        isDragging=false;
+        cv.style.cursor='grab';
+        cv.releasePointerCapture(e.pointerId);
+      });
+      cv.style.cursor='grab';
+
       /* ── click handler ── */
       cv.addEventListener('click',function(e){
+        if(didDrag){ didDrag=false; return; }
         var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
         var th=tH(), lw=lW(), mbh=maxBH();
         var ti=Math.min(4,Math.max(0,Math.floor((my-TOP)/th)));
         var c=CONTS[ti];
 
-        /* clicking the label column → continent overview */
         if(mx<lw){
           activeTrack=c.k; activeEvent=null;
+          updateConnectedKeys(null,null);
           syncPills(c.k); renderDetail(c.k); return;
         }
 
-        /* clicking bar area → find nearest bar in this track */
         var yBot=trackTop(ti)+th*0.80;
         var thresh=W<480?20:15;
         var bestEv=null, bestD=Infinity;
         EVENTS[c.k].forEach(function(ev,i){
-          var ex=evX(ev.year);
+          var ex=evX(ev.year,c.k);
           var barH=ev.imp*mbh;
           var peakY=yBot-barH;
-          /* hit test: within horizontal threshold AND within bar height */
           if(Math.abs(mx-ex)<thresh && my<=yBot+6 && my>=peakY-10){
             var d=Math.abs(mx-ex);
             if(d<bestD){ bestD=d; bestEv=i; }
@@ -4327,9 +4488,11 @@
 
         if(bestEv!==null){
           activeTrack=c.k; activeEvent=bestEv;
+          updateConnectedKeys(c.k,bestEv);
           syncPills(c.k); renderEventDetail(c.k,bestEv);
         } else {
           activeTrack=c.k; activeEvent=null;
+          updateConnectedKeys(null,null);
           syncPills(c.k); renderDetail(c.k);
         }
       });
@@ -4338,6 +4501,7 @@
       document.querySelectorAll('#continent-pills .roast-pill').forEach(function(btn){
         btn.addEventListener('click',function(){
           activeTrack=btn.dataset.cont; activeEvent=null;
+          updateConnectedKeys(null,null);
           syncPills(btn.dataset.cont); renderDetail(btn.dataset.cont);
         });
       });
@@ -4345,7 +4509,7 @@
       new MutationObserver(function(ms){
         ms.forEach(function(m){
           if(m.attributeName==='class'&&ov.classList.contains('is-open')){
-            growP=0; resize(); renderDetail(activeTrack||'af');
+            growP=0; panOffset=0; panTarget=0; resize(); renderDetail(activeTrack||'af');
           }
         });
       }).observe(ov,{attributes:true});

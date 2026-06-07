@@ -4149,7 +4149,7 @@
         var nat=lW()+(year-r[0])/span*(W-lW())+(k?panOffsets[k]:0);
         /* fisheye lens fixed at viewport centre */
         var cx=(lW()+W)/2;
-        var sig=(W-lW())*0.22, A=(W-lW())*0.12;
+        var sig=(W-lW())*0.22, A=(W-lW())*0.07;
         var d=nat-cx;
         return nat+A*Math.sign(d)*Math.exp(-d*d/(2*sig*sig));
       }

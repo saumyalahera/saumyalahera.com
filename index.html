@@ -4127,9 +4127,10 @@
       var G_START=1770, G_END=2020, G_SPAN=250;
       var TOP=32; /* top offset so tallest bar labels are never clipped */
 
-      /* pan + connection state */
-      var panOffset=0, panTarget=0;
-      var isDragging=false, dragStartX=0, dragStartPan=0, didDrag=false;
+      /* per-continent pan state */
+      var panOffsets={}, panTargets={};
+      CONTS.forEach(function(c){ panOffsets[c.k]=0; panTargets[c.k]=0; });
+      var isDragging=false, dragTrack=null, dragStartX=0, dragStartPan=0, didDrag=false;
       var connectedKeys={};
 
       /* per-track animated opacity + grow-in progress */
@@ -4145,7 +4146,7 @@
       function evX(year, k){
         var r=k?RANGES[k]:[G_START,G_END];
         var span=r[1]-r[0];
-        var nat=lW()+(year-r[0])/span*(W-lW())+panOffset;
+        var nat=lW()+(year-r[0])/span*(W-lW())+(k?panOffsets[k]:0);
         /* fisheye lens fixed at viewport centre */
         var cx=(lW()+W)/2;
         var sig=(W-lW())*0.22, A=(W-lW())*0.12;
@@ -4350,7 +4351,9 @@
         if(!ov.classList.contains('is-open')){ requestAnimationFrame(frame); return; }
         if(!initialized){ requestAnimationFrame(frame); return; }
         growP=Math.min(1,growP+0.018);
-        if(!isDragging) panOffset+=(panTarget-panOffset)*0.12;
+        if(!isDragging) CONTS.forEach(function(c){
+          panOffsets[c.k]+=(panTargets[c.k]-panOffsets[c.k])*0.12;
+        });
         drawScene();
         requestAnimationFrame(frame);
       }
@@ -4437,23 +4440,26 @@
         },130);
       }
 
-      /* ── drag to pan ── */
+      /* ── drag to pan (per-continent) ── */
       cv.addEventListener('pointerdown',function(e){
+        var r=cv.getBoundingClientRect(), my=e.clientY-r.top;
+        var ti=Math.min(4,Math.max(0,Math.floor((my-TOP)/tH())));
+        dragTrack=CONTS[ti].k;
         isDragging=true; didDrag=false;
-        dragStartX=e.clientX; dragStartPan=panOffset;
+        dragStartX=e.clientX; dragStartPan=panOffsets[dragTrack];
         cv.setPointerCapture(e.pointerId);
         cv.style.cursor='grabbing';
       });
       cv.addEventListener('pointermove',function(e){
-        if(!isDragging) return;
+        if(!isDragging||!dragTrack) return;
         var dx=e.clientX-dragStartX;
         if(Math.abs(dx)>4) didDrag=true;
         var maxPan=(W-lW())*0.85, minPan=-(W-lW())*0.85;
-        panOffset=Math.max(minPan,Math.min(maxPan,dragStartPan+dx));
-        panTarget=panOffset;
+        panOffsets[dragTrack]=Math.max(minPan,Math.min(maxPan,dragStartPan+dx));
+        panTargets[dragTrack]=panOffsets[dragTrack];
       });
       cv.addEventListener('pointerup',function(e){
-        isDragging=false;
+        isDragging=false; dragTrack=null;
         cv.style.cursor='grab';
         cv.releasePointerCapture(e.pointerId);
       });
@@ -4509,7 +4515,9 @@
       new MutationObserver(function(ms){
         ms.forEach(function(m){
           if(m.attributeName==='class'&&ov.classList.contains('is-open')){
-            growP=0; panOffset=0; panTarget=0; resize(); renderDetail(activeTrack||'af');
+            growP=0;
+            CONTS.forEach(function(c){ panOffsets[c.k]=0; panTargets[c.k]=0; });
+            resize(); renderDetail(activeTrack||'af');
           }
         });
       }).observe(ov,{attributes:true});

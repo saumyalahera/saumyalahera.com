@@ -1539,14 +1539,14 @@ h2.about__title{
 }
 /* Alpha bar — black */
 .places-overlay .places-alpha__btn{
-  color: rgba(0,0,0,.20);
+  color: rgba(0,0,0,.45);
 }
 .places-overlay .places-alpha__btn:hover{
-  color: rgba(0,0,0,.52);
+  color: rgba(0,0,0,.85);
 }
 .places-overlay .places-alpha__btn--active{
-  color: rgba(20,70,160,.85);
-  font-weight: 600;
+  color: rgba(0,0,0,.90);
+  font-weight: 700;
 }
 .places-overlay .places-count{
   color: rgba(0,0,0,.30);
@@ -1583,21 +1583,24 @@ h2.about__title{
 .places-alpha__btn{
   background: none;
   border: none;
-  padding: 0 2px;
-  font-size: 19px;
-  font-weight: 400;
-  letter-spacing: 0.30em;
-  color: rgba(0,0,0,.18);
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: rgba(0,0,0,.45);
   cursor: pointer;
   font-family: inherit;
   transition: color .15s ease;
 }
+@media (max-width:480px){
+  .places-alpha__btn{ padding: 0 5px; font-size: 10px; }
+}
 .places-alpha__btn:hover{
-  color: rgba(0,0,0,.52);
+  color: rgba(0,0,0,.85);
 }
 .places-alpha__btn--active{
-  color: rgba(60,80,130,.75);
-  font-weight: 600;
+  color: rgba(0,0,0,.90);
+  font-weight: 700;
 }
 
 .places-alpha__sublabel{

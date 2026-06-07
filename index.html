@@ -1204,10 +1204,8 @@
             </div>
           </div>
 
-          <div class="coffee-explorer places-explorer" id="places-explorer">
-            <div class="coffee-explorer__sidebar" id="places-sidebar"></div>
-            <div class="coffee-explorer__detail" id="places-detail" aria-live="polite"></div>
-          </div>
+          <div id="places-cards" class="places-cards-grid" aria-live="polite"></div>
+          <div id="places-cards-actions" class="places-cards-actions"></div>
         </div>
 
         <br/>
@@ -3799,62 +3797,72 @@
         });
       }
 
-      /* ── render country detail ── */
-      function renderPlace(idx){
-        var p = PLACES[idx];
-        if(!p) return;
-        document.getElementById('places-detail').innerHTML =
-          '<div class="coffee-detail__name">'+p.name+'</div>'
-          +'<div class="coffee-tag-row">'
-            +'<span class="tag">'+p.continent+'</span>'
-            +'<span class="tag tag--alt">'+p.language+'</span>'
-            +'<span class="tag">'+getEconomy(p.k)+'</span>'
-          +'</div>'
-          +'<p class="coffee-detail__desc">'+p.desc+'</p>'
-          +'<div class="coffee-detail__notes-label">Key Facts</div>'
-          +'<div class="coffee-detail__notes">'
-            +'<span class="tag">Capital: '+p.capital+'</span>'
-            +'<span class="tag">Currency: '+p.currency+'</span>'
-            +'<span class="tag">Population: '+p.pop+'</span>'
-          +'</div>'
-          +'<div class="coffee-detail__spec">'+p.fact+'</div>';
-      }
+      /* ── card renderer ── */
+      var showCount = 10;
+      var PAGE = 10;
 
-      /* ── build / re-build sidebar ── */
-      function renderSidebar(){
+      function renderCards(){
         var filtered = getFilteredPlaces();
-        var sidebar = document.getElementById('places-sidebar');
-        sidebar.innerHTML = '';
-
+        var grid    = document.getElementById('places-cards');
+        var actions = document.getElementById('places-cards-actions');
         var countEl = document.getElementById('places-count');
+
         if(countEl) countEl.textContent = filtered.length + (filtered.length===1?' country':' countries');
 
+        grid.innerHTML = '';
+        actions.innerHTML = '';
+
         if(filtered.length === 0){
-          sidebar.innerHTML = '<p class="places-no-results">No countries match these filters.</p>';
-          document.getElementById('places-detail').innerHTML =
-            '<p class="places-no-results" style="padding:24px;opacity:.45;">Adjust the filters to see countries.</p>';
+          grid.innerHTML = '<p class="places-no-results">No countries match these filters.</p>';
           return;
         }
 
-        filtered.forEach(function(p, i){
-          var btn = document.createElement('button');
-          btn.className = 'coffee-list__item' + (i===0?' coffee-list__item--active':'');
-          btn.dataset.k = p.k;
-          btn.innerHTML = '<span class="coffee-list__num">'+String(i+1).padStart(2,'0')+'</span>'
-                         +'<span class="coffee-list__name">'+p.name+'</span>';
-          btn.addEventListener('click', function(){
-            document.querySelectorAll('#places-sidebar .coffee-list__item')
-              .forEach(function(b){ b.classList.remove('coffee-list__item--active'); });
-            btn.classList.add('coffee-list__item--active');
-            var globalIdx = PLACES.findIndex(function(q){ return q.k===p.k; });
-            renderPlace(globalIdx);
-          });
-          sidebar.appendChild(btn);
+        var visible = filtered.slice(0, showCount);
+        visible.forEach(function(p){
+          var card = document.createElement('div');
+          card.className = 'place-card';
+          card.innerHTML =
+            '<div class="coffee-detail__name">'+p.name+'</div>'
+            +'<div class="coffee-tag-row">'
+              +'<span class="tag">'+p.continent+'</span>'
+              +'<span class="tag tag--alt">'+p.language+'</span>'
+              +'<span class="tag">'+getEconomy(p.k)+'</span>'
+            +'</div>'
+            +'<p class="coffee-detail__desc">'+p.desc+'</p>'
+            +'<div class="coffee-detail__notes-label">Key Facts</div>'
+            +'<div class="coffee-detail__notes">'
+              +'<span class="place-fact-tag">Capital: '+p.capital+'</span>'
+              +'<span class="place-fact-tag">Currency: '+p.currency+'</span>'
+              +'<span class="place-fact-tag">Population: '+p.pop+'</span>'
+            +'</div>'
+            +'<div class="coffee-detail__spec">'+p.fact+'</div>';
+          grid.appendChild(card);
         });
 
-        var firstIdx = PLACES.findIndex(function(q){ return q.k===filtered[0].k; });
-        renderPlace(firstIdx);
+        /* show more / show less */
+        if(showCount > PAGE){
+          var lessBtn = document.createElement('button');
+          lessBtn.className = 'roast-pill place-card__toggle';
+          lessBtn.textContent = 'Show less';
+          lessBtn.addEventListener('click', function(){
+            showCount = Math.max(PAGE, showCount - PAGE);
+            renderCards();
+          });
+          actions.appendChild(lessBtn);
+        }
+        if(showCount < filtered.length){
+          var moreBtn = document.createElement('button');
+          moreBtn.className = 'roast-pill place-card__toggle';
+          moreBtn.textContent = 'Show '+ Math.min(PAGE, filtered.length - showCount) +' more';
+          moreBtn.addEventListener('click', function(){
+            showCount += PAGE;
+            renderCards();
+          });
+          actions.appendChild(moreBtn);
+        }
       }
+
+      function renderSidebar(){ showCount = PAGE; renderCards(); }
 
       /* ── alphabet bar ── */
       (function(){

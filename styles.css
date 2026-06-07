@@ -1442,6 +1442,96 @@ h2.about__title{
 }
 
 /* ── Country explorer + cards: sky theme ── */
+/* ── Country cards ── */
+.places-cards-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 4px;
+}
+@media(max-width:600px){
+  .places-cards-grid{
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+.place-card{
+  background: rgba(255,255,255,0.72);
+  border: 0.5px solid rgba(0,0,0,0.10);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: box-shadow .18s ease, transform .18s ease;
+  min-width: 0; /* prevent grid blowout */
+}
+@media(max-width:600px){
+  .place-card{
+    padding: 13px 14px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+}
+.place-card:hover{
+  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+/* scale down pills inside cards */
+.place-card .tag{
+  font-size: 7.5px;
+  padding: 8px 9px;
+  letter-spacing: 0.18em;
+}
+.place-card .coffee-detail__notes-label{
+  font-size: 8px;
+}
+.place-fact-tag{
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.72);
+  border: 0.5px solid rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 999px;
+  padding: 8px 9px;
+  font-size: 7.5px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.65);
+  white-space: nowrap;
+  font-family: inherit;
+  line-height: 1;
+}
+.place-card .coffee-detail__spec{
+  font-size: 7px;
+  color: rgba(0,0,0,0.75);
+}
+/* tighter name on mobile */
+@media(max-width:600px){
+  .place-card .coffee-detail__name{ font-size: 16px; }
+  .place-card .coffee-detail__desc{ font-size: 12px; }
+  .place-card .tag{ font-size: 7px; padding: 8px 8px; }
+}
+/* wrap pills so they don't overflow */
+.place-card .coffee-tag-row,
+.place-card .coffee-detail__notes{
+  flex-wrap: wrap;
+}
+.places-cards-actions{
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+.place-card__toggle{
+  min-width: 100px;
+}
+
 .places-overlay .coffee-explorer{
   border-color: rgba(0,0,0,.12);
   background: rgba(240,248,255,.82);

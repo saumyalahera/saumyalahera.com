@@ -1313,7 +1313,7 @@
       <div class="lang-stage" id="lang-stage" aria-live="polite"></div>
 
       <!-- language family tree -->
-      <div class="lang-intro" style="padding-top:48px;padding-bottom:0;">
+      <div class="lang-intro" style="padding-top:48px;padding-bottom:0;text-align:left;">
         <p class="lang-intro__kicker">Origins</p>
         <h2 class="lang-intro__title">Family Tree</h2>
         <p class="lang-intro__sub">Five languages. Five roots. Click any node to explore.</p>
@@ -2771,37 +2771,140 @@
         if(e.key === 'Escape' && overlay.classList.contains('is-open')) closeLang();
       });
 
-      /* ── shader: 3 slowly drifting radial blobs ── */
+      /* ── shader: WebGL fBm green + white clouds (mirrors countries shader) ── */
       (function(){
         var cv = document.getElementById('lang-shader');
         if(!cv) return;
-        var ctx2 = cv.getContext('2d');
-        var t2 = 0;
-        var blobs = [
-          { bx:0.18, by:0.25, br:0.55, c:[148,180,210] },
-          { bx:0.78, by:0.55, br:0.48, c:[168,210,180] },
-          { bx:0.48, by:0.82, br:0.42, c:[210,185,200] }
-        ];
-        function resizeCv(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
-        function drawShader(){
-          if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawShader); return; }
-          t2 += 0.005;
-          ctx2.clearRect(0,0,cv.width,cv.height);
-          blobs.forEach(function(b,i){
-            var x=(b.bx+Math.sin(t2*0.6+i*1.8)*0.14)*cv.width;
-            var y=(b.by+Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
-            var r=b.br*Math.min(cv.width,cv.height);
-            var g=ctx2.createRadialGradient(x,y,0,x,y,r);
-            g.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
-            g.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
-            ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
-            ctx2.fillStyle=g; ctx2.fill();
-          });
-          requestAnimationFrame(drawShader);
+        var gl = cv.getContext('webgl') || cv.getContext('experimental-webgl');
+        if(!gl){ cv.style.display='none'; return; }
+
+        var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+        var FS = [
+          'precision highp float;',
+          'uniform float u_t;',
+          'uniform vec2  u_r;',
+          'uniform vec2  u_m;',  /* mouse */
+
+          'float h(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+19.19);return fract(p.x*p.y);}',
+          'float n(vec2 p){',
+          '  vec2 i=floor(p),f=fract(p);',
+          '  f=f*f*(3.0-2.0*f);',
+          '  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);',
+          '}',
+          'float fbm(vec2 p){',
+          '  float v=0.0,a=0.5;',
+          '  mat2 m=mat2(1.6,1.2,-1.2,1.6);',
+          '  for(int i=0;i<4;i++){v+=a*n(p);p=m*p;a*=0.5;}',
+          '  return v;',
+          '}',
+
+          'void main(){',
+          '  vec2 uv=gl_FragCoord.xy/u_r;',
+          '  float ar=u_r.x/u_r.y;',
+          '  vec2 p=vec2(uv.x*ar,uv.y);',
+          '  float t=u_t*0.038;',
+
+          /* mouse wind — same as countries shader */
+          '  vec2 mp=vec2(u_m.x/u_r.x*ar,(u_r.y-u_m.y)/u_r.y);',
+          '  float md=length(p-mp);',
+          '  float wind=smoothstep(0.55,0.0,md);',
+
+          '  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)+t*0.8));',
+          '  vec2 r=vec2(',
+          '    fbm(p+3.2*q+vec2(1.7,9.2)+0.14*t),',
+          '    fbm(p+3.2*q+vec2(8.3,2.8)+0.11*t)',
+          '  );',
+          '  r+=wind*0.14*vec2(sin(t*4.0+md*9.0),cos(t*3.0+md*7.0));',
+          '  float f=fbm(p+3.8*r);',
+          '  float ff=f*0.26+0.012*length(q);',
+
+          /* darker grey + white palette */
+          '  vec3 base  =vec3(0.868,0.868,0.874);',  /* medium grey  */
+          '  vec3 white =vec3(0.960,0.960,0.964);',  /* cloud white  */
+          '  vec3 soft  =vec3(0.836,0.836,0.844);',  /* grey haze    */
+          '  vec3 wisp  =vec3(0.920,0.920,0.925);',  /* wisp         */
+          '  vec3 deep  =vec3(0.800,0.800,0.810);',  /* deeper grey  */
+
+          '  vec3 col=base;',
+          '  col=mix(col,wisp, smoothstep(0.10,0.20,ff));',
+          '  col=mix(col,white,smoothstep(0.18,0.32,ff));',
+          '  col=mix(col,wisp, smoothstep(0.30,0.40,ff));',
+          '  col=mix(col,soft, smoothstep(0.36,0.46,ff));',
+          '  col=mix(col,deep, smoothstep(0.42,0.54,ff));',
+
+          /* mouse brightens like sunlight */
+          '  col+=wind*0.018*vec3(1.0,1.0,1.0);',
+
+          '  float vig=1.0-0.08*dot(uv*2.0-1.0,uv*2.0-1.0);',
+          '  gl_FragColor=vec4(col*vig,1.0);',
+          '}'
+        ].join('\n');
+
+        function mkShader(type,src){
+          var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+          if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(s)); return null; }
+          return s;
         }
-        window.addEventListener('resize', resizeCv);
-        resizeCv();
-        drawShader();
+        var vs=mkShader(gl.VERTEX_SHADER,VS), fs=mkShader(gl.FRAGMENT_SHADER,FS);
+        if(!vs||!fs) return;
+        var prog=gl.createProgram();
+        gl.attachShader(prog,vs); gl.attachShader(prog,fs);
+        gl.linkProgram(prog);
+        if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ console.warn('Link error'); return; }
+        gl.useProgram(prog);
+
+        var buf=gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+        gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+        var al=gl.getAttribLocation(prog,'a');
+        gl.enableVertexAttribArray(al);
+        gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+
+        var uT=gl.getUniformLocation(prog,'u_t');
+        var uR=gl.getUniformLocation(prog,'u_r');
+        var uM=gl.getUniformLocation(prog,'u_m');
+
+        var mouse={x:0,y:0};
+        var t0=null, active=false;
+
+        function resize(){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          cv.width=Math.round(cv.clientWidth*dpr);
+          cv.height=Math.round(cv.clientHeight*dpr);
+          gl.viewport(0,0,cv.width,cv.height);
+          mouse.x=cv.width*0.5; mouse.y=cv.height*0.5;
+        }
+
+        function draw(ts){
+          if(!active){ requestAnimationFrame(draw); return; }
+          if(!t0) t0=ts;
+          gl.uniform1f(uT,(ts-t0)*0.001);  /* seconds — same as countries shader */
+          gl.uniform2f(uR,cv.width,cv.height);
+          gl.uniform2f(uM,mouse.x,mouse.y);
+          gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+          requestAnimationFrame(draw);
+        }
+
+        overlay.addEventListener('mousemove',function(e){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          mouse.x=e.clientX*dpr; mouse.y=e.clientY*dpr;
+        });
+        overlay.addEventListener('touchmove',function(e){
+          var dpr=Math.min(window.devicePixelRatio||1,2);
+          mouse.x=e.touches[0].clientX*dpr; mouse.y=e.touches[0].clientY*dpr;
+        },{passive:true});
+
+        new MutationObserver(function(ms){
+          ms.forEach(function(m){
+            if(m.attributeName==='class'){
+              active=overlay.classList.contains('is-open');
+              if(active){ t0=null; resize(); }
+            }
+          });
+        }).observe(overlay,{attributes:true});
+
+        window.addEventListener('resize',function(){ if(active) resize(); });
+        resize(); requestAnimationFrame(draw);
       })();
 
       /* ── language data ── */
@@ -3132,7 +3235,7 @@
 
     })();
 
-    /* ══ Language Subway Map ══ */
+    /* ══ Language River Tree ══ */
     (function(){
       var cv=document.getElementById('lang-tree-canvas'); if(!cv) return;
       var ctx=cv.getContext('2d'), dpr=window.devicePixelRatio||1;
@@ -3142,141 +3245,240 @@
 
       function rc(rgb,a){ return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+a+')'; }
 
-      /* ── 5 subway lines ── */
-      var C=[93,51,21]; /* single warm brown for all lines */
+      /* ── per-language metadata ── */
+      var LANG_META={
+        irish: {
+          speakers:'1.8M', countries:'Ireland, UK', script:'Latin alphabet', stars:'★★★★',
+          desc:'Irish is one of the oldest written languages in Europe, with a continuous literary tradition stretching back over 1,400 years — older than French, Spanish, or English. It belongs to the Goidelic branch of Celtic and is the first official language of Ireland, as well as an official language of the European Union. Despite centuries of suppression under British rule, Irish survived through oral tradition and remote-speaking communities called Gaeltachtaí along the western coast. Today around 1.8 million people speak it with some fluency, and a passionate revival movement has brought it back into schools, media, and everyday urban life. Its grammar is unlike most European languages — verbs come first, mutations change the start of words depending on context, and there is no word for "yes" or "no."'
+        },
+        spanish: {
+          speakers:'485M', countries:'21 countries · 4 continents', script:'Latin alphabet', stars:'★★',
+          desc:'Spanish is the world\'s second most spoken native language, with around 485 million native speakers across 21 countries on four continents — from Mexico City to Buenos Aires, Madrid to Equatorial Guinea. It descends from the Vulgar Latin brought to the Iberian Peninsula by Roman soldiers in the 3rd century BCE, and spread globally through 15th and 16th century Spanish colonisation. The language is remarkably uniform across such a vast geography: a speaker from Madrid can converse naturally with one from Lima, despite centuries of separation. Spanish is the fastest-growing language in the United States, where it is spoken by over 42 million people. Its alphabet was the first in the world to officially include a character born from the language itself — the ñ.'
+        },
+        english: {
+          speakers:'1.5B', countries:'67 countries', script:'Latin alphabet', stars:'★★',
+          desc:'English is the world\'s primary lingua franca — the shared language of science, aviation, diplomacy, and the internet. With around 1.5 billion total speakers, roughly one in five people on Earth can hold a conversation in it. English began as the dialect of a few Germanic tribes who crossed the North Sea into Britain around 450 CE, was transformed by the Viking invasions of the 9th century, and then radically reshaped by the Norman Conquest of 1066, which flooded it with French and Latin vocabulary. The result is a language of extraordinary richness — with the largest vocabulary of any language, estimated at over a million words. Its global dominance is largely a product of British colonialism and American cultural and economic power in the 20th century.'
+        },
+        russian: {
+          speakers:'258M', countries:'Russia · 12+ CIS states', script:'Cyrillic (33 letters)', stars:'★★★★',
+          desc:'Russian is the most widely spoken Slavic language and one of the six official languages of the United Nations, used as a lingua franca across the former Soviet Union. With 258 million speakers, it stretches from Kaliningrad on the Baltic to Vladivostok on the Pacific — a single language spanning eleven time zones. Russian uses the Cyrillic alphabet, devised by Saints Cyril and Methodius in the 9th century to bring literacy to the Slavic peoples. Its grammar is intricate: six grammatical cases, three genders, and a complex aspect system for verbs that distinguishes between completed and ongoing actions. Russian literature is among the richest in the world — Tolstoy, Dostoevsky, Chekhov, and Pushkin wrote in a language of extraordinary emotional precision and depth.'
+        },
+        turkish: {
+          speakers:'88M', countries:'Turkey, Cyprus', script:'Latin (reformed 1928)', stars:'★★★',
+          desc:'Turkish is the most widely spoken member of the Turkic language family, with 88 million native speakers primarily in Turkey and Cyprus. It originated in the Altai-Sayan region of Central Asia and was carried westward by nomadic Turkic peoples across the steppes, eventually forming the linguistic backbone of the Seljuk and Ottoman empires. Turkish is an agglutinative language — meaning it builds meaning by stacking suffixes onto a root word, sometimes producing single words that would require an entire English sentence to express. Its most dramatic modern chapter came in 1928, when Atatürk replaced the Arabic script overnight with a Latin alphabet as part of his sweeping modernisation of Turkey. Within months, the entire nation was learning to read and write in a new script — one of the most rapid and complete linguistic reforms in history.'
+        },
+      };
+
+      /* ── per-language colors — grey/charcoal family ── */
+      var COLORS={
+        irish:   [80,  80,  88],   /* medium grey   */
+        spanish: [50,  50,  58],   /* dark charcoal */
+        english: [110, 110, 118],  /* mid grey      */
+        russian: [65,  65,  72],   /* deep grey     */
+        turkish: [95,  95,  102],  /* soft grey     */
+      };
+
+      /* ── speaker count for line width — hairline aesthetic ── */
+      var SPEAKERS={ irish:1.8, spanish:485, english:1500, russian:258, turkish:88 };
+      var maxLog=Math.log10(1500);
+      function lineW(lang,active){
+        /* active: 0.6–1.2px; inactive: always 0.35px */
+        var base=0.6+Math.log10(SPEAKERS[lang])/maxLog*0.6;
+        return active?base:0.35;
+      }
+
+      /* ── river lines data ── */
+      /* y = final resting y (fraction of H). stops converge at PIE trunk on x=0.07 */
+      var PIE_Y=0.46; /* trunk centre for Indo-European lines */
+      var PTK_Y=0.86; /* trunk centre for Proto-Turkic */
 
       var LINES=[
-        {lang:'irish',   color:C, y:0.13, stops:[
-          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia.'},
-          {x:0.33,label:'Celtic',             sub:'c. 800 BCE', desc:'Once spoken across much of Europe. Today surviving in Ireland, Scotland, Wales and Brittany after Roman and Germanic expansion.'},
-          {x:0.60,label:'Goidelic',           sub:'c. 300 CE',  desc:'The Goidelic branch of Celtic — comprising Irish, Scottish Gaelic and Manx. The oldest surviving Celtic branch with a rich manuscript tradition.'},
-          {x:0.85,label:'Irish',              sub:'c. 600 CE',  isLeaf:true,langKey:'irish',   desc:'One of the oldest written languages in Europe with a 1,400-year literary tradition. Official language of Ireland and the EU.'},
+        {lang:'irish',   color:COLORS.irish,   y:0.14, stops:[
+          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia. Linguists pieced it together by comparing daughter languages — it was never written down.'},
+          {x:0.33,label:'Celtic',             sub:'c. 800 BCE', desc:'Once dominant across a vast arc of Europe from Anatolia to the British Isles. Steadily displaced by Latin and later Germanic expansion, Celtic languages today survive in Ireland, Scotland, Wales and Brittany.'},
+          {x:0.60,label:'Goidelic',           sub:'c. 300 CE',  desc:'The Goidelic branch of Celtic comprising Irish, Scottish Gaelic and Manx. Distinguished from Brittonic Celtic by the "Q-Celtic" sound shift. It carries the oldest vernacular literature in Northern Europe.'},
+          {x:0.85,label:'Irish',              sub:'c. 600 CE',  isLeaf:true,langKey:'irish',   desc:'One of the oldest written languages in Europe with a 1,400-year literary tradition. Official language of Ireland and of the EU. Despite only 1.8 million native speakers, its cultural weight is enormous.'},
         ]},
-        {lang:'spanish', color:C, y:0.30, stops:[
-          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia.'},
-          {x:0.33,label:'Italic / Latin',     sub:'c. 700 BCE', desc:'The branch that gave rise to Latin — and through it, all Romance languages. Latin spread across Europe via the Roman Empire.'},
-          {x:0.60,label:'Romance',            sub:'c. 200 CE',  desc:'Languages descended from Vulgar Latin spoken across the Roman Empire — Spanish, French, Portuguese, Italian and Romanian.'},
-          {x:0.85,label:'Spanish',            sub:'c. 1200 CE', isLeaf:true,langKey:'spanish', desc:'The world\'s 2nd most spoken native language. Official in 21 countries across 4 continents.'},
+        {lang:'spanish', color:COLORS.spanish, y:0.30, stops:[
+          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia. Linguists pieced it together by comparing daughter languages — it was never written down.'},
+          {x:0.33,label:'Italic / Latin',     sub:'c. 700 BCE', desc:'The Italic branch gave rise to Latin, which the Roman legions carried across Europe. When Rome fell, Latin did not die — it fragmented into a mosaic of spoken dialects that became the Romance languages.'},
+          {x:0.60,label:'Romance',            sub:'c. 200 CE',  desc:'Languages descended from the Vulgar Latin of Roman soldiers and merchants: Spanish, French, Portuguese, Italian, Romanian. Collectively spoken by over 900 million people today.'},
+          {x:0.85,label:'Spanish',            sub:'c. 1200 CE', isLeaf:true,langKey:'spanish', desc:'The world\'s second most spoken native language. Official in 21 countries across four continents. Its global spread traces directly to 15th-century Iberian exploration and colonisation.'},
         ]},
-        {lang:'english', color:C, y:0.50, stops:[
-          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia.'},
-          {x:0.33,label:'Germanic',           sub:'c. 500 BCE', desc:'Spread through Northern Europe, producing English, German, Dutch and all Scandinavian languages.'},
-          {x:0.60,label:'West Germanic',      sub:'c. 400 CE',  desc:'The branch that produced English, German, Dutch, Yiddish and Afrikaans — the most globally widespread Germanic branch.'},
-          {x:0.85,label:'English',            sub:'c. 450 CE',  isLeaf:true,langKey:'english', desc:'The world\'s primary lingua franca with 1.5 billion total speakers. Official or co-official in 67 countries.'},
+        {lang:'english', color:COLORS.english, y:0.46, stops:[
+          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia. Linguists pieced it together by comparing daughter languages — it was never written down.'},
+          {x:0.33,label:'Germanic',           sub:'c. 500 BCE', desc:'Spread through Northern Europe producing English, German, Dutch and all Scandinavian languages. Germanic tribes pushed into the former Roman provinces after the 4th century, dramatically reshaping European linguistic geography.'},
+          {x:0.60,label:'West Germanic',      sub:'c. 400 CE',  desc:'The branch that produced English, German, Dutch, Yiddish and Afrikaans. West Germanic speakers — the Angles, Saxons and Jutes — began arriving in Britain around 450 CE, displacing the native Brittonic Celtic languages.'},
+          {x:0.85,label:'English',            sub:'c. 450 CE',  isLeaf:true,langKey:'english', desc:'The world\'s primary lingua franca. With 1.5 billion total speakers and official status in 67 countries, English is the language of aviation, science, and the internet — a position cemented by British colonialism and American economic dominance.'},
         ]},
-        {lang:'russian', color:C, y:0.66, stops:[
-          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia.'},
-          {x:0.33,label:'Slavic',             sub:'c. 500 BCE', desc:'Spread from a homeland near the Carpathians across Eastern Europe and Russia — the largest language family in Europe by geographic area.'},
-          {x:0.60,label:'East Slavic',        sub:'c. 900 CE',  desc:'The branch comprising Russian, Ukrainian and Belarusian — the most widely spoken Slavic sub-group.'},
-          {x:0.85,label:'Russian',            sub:'c. 1000 CE', isLeaf:true,langKey:'russian', desc:'The most widely spoken Slavic language and one of the 6 official UN languages.'},
+        {lang:'russian', color:COLORS.russian, y:0.63, stops:[
+          {x:0.07,label:'Proto-Indo-European',sub:'c. 4500 BCE',pie:true,  desc:'The reconstructed ancestor of most European and South Asian languages, spoken on the Pontic steppe of Central Eurasia. Linguists pieced it together by comparing daughter languages — it was never written down.'},
+          {x:0.33,label:'Slavic',             sub:'c. 500 BCE', desc:'Slavic expanded from a homeland near the Carpathians across the vast plains of Eastern Europe and Russia — the geographically largest language family in Europe. It split into East, West and South branches.'},
+          {x:0.60,label:'East Slavic',        sub:'c. 900 CE',  desc:'The branch comprising Russian, Ukrainian and Belarusian. Old Church Slavonic — written in the Cyrillic alphabet devised by Saints Cyril and Methodius — gave all East Slavic languages their literary foundation.'},
+          {x:0.85,label:'Russian',            sub:'c. 1000 CE', isLeaf:true,langKey:'russian', desc:'The most widely spoken Slavic language and one of six official UN languages. Russian was the language of science and space exploration throughout the Soviet era and still carries enormous geopolitical weight across Eurasia.'},
         ]},
-        {lang:'turkish', color:C, y:0.92, stops:[
-          {x:0.07,label:'Proto-Turkic',       sub:'c. 2500 BCE',           desc:'Ancestral language of all Turkic peoples, originating in the Altai-Sayan region of Central Asia.'},
-          {x:0.33,label:'Turkic',             sub:'c. 600 CE',  desc:'A family spoken across Central Asia, Siberia and Anatolia. Turkish is its most widely spoken member with 88 million native speakers.'},
-          {x:0.60,label:'Oghuz',             sub:'c. 900 CE',  desc:'The Oghuz branch of Turkic, ancestral to Turkish, Azerbaijani and Turkmen. Named after the Oghuz Turks of Central Asia.'},
-          {x:0.85,label:'Turkish',           sub:'c. 1100 CE', isLeaf:true,langKey:'turkish', desc:'Official language of Turkey and Cyprus. In 1928 Atatürk replaced Arabic script with the Latin alphabet overnight.'},
+        {lang:'turkish', color:COLORS.turkish, y:0.86, stops:[
+          {x:0.07,label:'Proto-Turkic',       sub:'c. 2500 BCE',           desc:'Ancestral language of all Turkic peoples, originating in the Altai-Sayan region of Central Asia. As the Turkic tribes spread west and south, Proto-Turkic splintered into the 35+ Turkic languages spoken today from Siberia to the Mediterranean.'},
+          {x:0.33,label:'Turkic',             sub:'c. 600 CE',  desc:'A language family spoken across a vast belt from Central Asia through Siberia into Anatolia. The Orkhon inscriptions of 720 CE are the oldest known Turkic texts, carved in stone in Mongolia.'},
+          {x:0.60,label:'Oghuz',             sub:'c. 900 CE',  desc:'The Oghuz branch of Turkic, ancestral to Turkish, Azerbaijani and Turkmen. The Oghuz Turks migrated west from the Central Asian steppes, eventually establishing the Seljuk and Ottoman empires.'},
+          {x:0.85,label:'Turkish',           sub:'c. 1100 CE', isLeaf:true,langKey:'turkish', desc:'Official language of Turkey and Cyprus with 88 million native speakers. Its most dramatic modern moment: in 1928 Atatürk replaced the Arabic script with a Latin alphabet — the entire nation was literate in a new writing system within months.'},
         ]},
       ];
 
       /* animated alpha per line */
       var lAlpha={};
-      LINES.forEach(function(l){ lAlpha[l.lang]=0.35; });
+      LINES.forEach(function(l){ lAlpha[l.lang]=l.lang==='spanish'?1.0:0.15; });
 
-      /* ── Tree data ── */
+      /* ── helper: get stop position ── */
+      function stopPos(line,si){
+        var stop=line.stops[si];
+        var sx=stop.x*W;
+        var sy;
+        if(si===0){
+          sy=(line.lang==='turkish'?PTK_Y:PIE_Y)*H;
+        } else {
+          sy=line.y*H;
+        }
+        return {x:sx,y:sy};
+      }
+
+      /* ── bezier segment — hairline ── */
+      function drawRiver(x1,y1,x2,y2,color,alpha,lw){
+        var mid=(x1+x2)/2;
+        ctx.beginPath();
+        ctx.moveTo(x1,y1);
+        ctx.bezierCurveTo(mid,y1, mid,y2, x2,y2);
+        ctx.strokeStyle=rc(color,alpha);
+        ctx.lineWidth=lw;
+        ctx.lineJoin='round'; ctx.lineCap='round';
+        ctx.stroke();
+      }
+
       /* ── draw ── */
       function draw(){
         ctx.clearRect(0,0,W,H);
         if(!initialized||W===0||H===0) return;
-        var mob=W<520;
+        var mob=W<600;
 
         /* lerp line alphas */
         LINES.forEach(function(l){
-          var tgt=activeLang===l.lang?1.0:0.20;
-          lAlpha[l.lang]+=(tgt-lAlpha[l.lang])*0.08;
+          var tgt=activeLang===l.lang?1.0:0.18;
+          lAlpha[l.lang]+=(tgt-lAlpha[l.lang])*0.06;
         });
 
-        /* PIE vertical connector (Irish→Russian, all share x=0.07) */
+        /* PIE trunk — subtle vertical connector */
         var pieX=LINES[0].stops[0].x*W;
-        var pieY1=LINES[0].y*H, pieY4=LINES[3].y*H;
-        ctx.beginPath(); ctx.moveTo(pieX,pieY1); ctx.lineTo(pieX,pieY4);
-        ctx.strokeStyle='rgba(0,0,0,0.06)'; ctx.lineWidth=0.8; ctx.stroke();
+        var trunkY1=LINES[0].y*H, trunkY4=LINES[3].y*H;
+        ctx.beginPath();
+        ctx.moveTo(pieX, trunkY1*0.35+PIE_Y*H*0.65);
+        ctx.lineTo(pieX, trunkY4*0.35+PIE_Y*H*0.65);
+        ctx.strokeStyle='rgba(0,0,0,0.07)'; ctx.lineWidth=0.5; ctx.stroke();
 
-        /* PIE label — above the connector, centered on it */
+        /* PIE label — left-aligned on mobile to avoid clipping */
         ctx.save();
-        ctx.font='500 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-        ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-        ctx.fillText(mob?'PIE':'PROTO-INDO-EUROPEAN', pieX, pieY1-10);
+        ctx.font='600 '+(mob?6:7)+'px Avenir,"Avenir Next",Arial,sans-serif';
+        ctx.fillStyle='rgba(0,0,0,0.25)';
+        ctx.textBaseline='bottom';
+        if(mob){ ctx.textAlign='left';  ctx.fillText('PIE', pieX+4, PIE_Y*H-10); }
+        else   { ctx.textAlign='center'; ctx.fillText('PROTO-INDO-EUROPEAN', pieX, PIE_Y*H-14); }
         ctx.restore();
 
-        /* Proto-Turkic label — above the Turkish first stop */
-        var ptkX=LINES[4].stops[0].x*W, ptkY=LINES[4].y*H;
+        /* Proto-Turkic label */
+        var ptkX=LINES[4].stops[0].x*W;
         ctx.save();
-        ctx.font='500 '+(mob?7:8)+'px Avenir,"Avenir Next",Arial,sans-serif';
-        ctx.fillStyle='rgba(0,0,0,0.22)'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-        ctx.fillText(mob?'P-TURKIC':'PROTO-TURKIC', ptkX, ptkY-10);
+        ctx.font='600 '+(mob?6:7)+'px Avenir,"Avenir Next",Arial,sans-serif';
+        ctx.fillStyle='rgba(0,0,0,0.25)';
+        ctx.textBaseline='bottom';
+        if(mob){ ctx.textAlign='left';  ctx.fillText('P-TRK', ptkX+4, PTK_Y*H-10); }
+        else   { ctx.textAlign='center'; ctx.fillText('PROTO-TURKIC', ptkX, PTK_Y*H-14); }
         ctx.restore();
 
-        /* draw each line */
+        /* draw each river line */
         LINES.forEach(function(line,li){
           var a=lAlpha[line.lang];
           var isAL=activeLang===line.lang;
-          var y=line.y*H;
-          var lw=isAL?0.8:0.5;
+          var col=line.color;
 
-          /* horizontal segments between stops */
+          /* segments */
           for(var si=0;si<line.stops.length-1;si++){
-            var s1=line.stops[si], s2=line.stops[si+1];
-            ctx.beginPath(); ctx.moveTo(s1.x*W,y); ctx.lineTo(s2.x*W,y);
-            ctx.strokeStyle=rc(line.color,a*0.28); ctx.lineWidth=lw; ctx.stroke();
+            var p1=stopPos(line,si);
+            var p2=stopPos(line,si+1);
+            drawRiver(p1.x,p1.y,p2.x,p2.y,col,isAL?a:(a*0.4),lineW(line.lang,isAL));
           }
 
-          /* stops */
+          /* dots + labels */
           line.stops.forEach(function(stop,si){
-            var sx=stop.x*W;
+            var p=stopPos(line,si);
             var isLeaf=!!stop.isLeaf;
             var isAS=activeStop&&activeStop.li===li&&activeStop.si===si;
-            var dotR=isLeaf?(mob?8:9):(mob?5:6);
 
-            /* glow ring on active stop */
-            if(isAS){
-              ctx.beginPath(); ctx.arc(sx,y,dotR+7,0,Math.PI*2);
-              ctx.strokeStyle=rc(line.color,0.12); ctx.lineWidth=1; ctx.stroke();
+            /* ── dot style: ring for intermediate, small filled for leaf ── */
+            if(isLeaf){
+              /* outer thin ring */
+              var ringR=mob?4:5;
+              ctx.beginPath(); ctx.arc(p.x,p.y,ringR,0,Math.PI*2);
+              ctx.strokeStyle=rc(col,isAL?0.75:(a*0.35));
+              ctx.lineWidth=isAL?1.0:0.5;
+              ctx.stroke();
+              /* inner filled dot */
+              var fillR=mob?2:2.5;
+              ctx.beginPath(); ctx.arc(p.x,p.y,fillR,0,Math.PI*2);
+              ctx.fillStyle=rc(col,isAL?0.70:(a*0.30));
+              ctx.fill();
+            } else {
+              /* intermediate: just a tiny stroke circle */
+              var r=mob?1.8:2.2;
+              ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
+              ctx.strokeStyle=rc(col,isAL?0.45:(a*0.30));
+              ctx.lineWidth=0.6;
+              ctx.stroke();
             }
 
-            /* dot */
-            ctx.beginPath(); ctx.arc(sx,y,dotR,0,Math.PI*2);
-            ctx.fillStyle=rc(line.color,isAS?0.70:a*0.25); ctx.fill();
-
-            /* white hollow centre for intermediate stops */
-            if(!isLeaf){
-              ctx.beginPath(); ctx.arc(sx,y,dotR*0.42,0,Math.PI*2);
-              ctx.fillStyle='rgba(255,255,255,0.82)'; ctx.fill();
-            }
-
-            /* first stop label already covered by PIE/Proto-Turkic connector label */
+            /* ── labels ── */
+            /* skip first stop (trunk label covers it) */
             if(si===0) return;
 
-            /* label — alternating above/below per row */
+            /* on mobile: only draw labels for the active line,
+               plus the leaf language name for all lines */
+            if(mob&&!isAL&&!isLeaf) return;
+
             var above=(li%2===0);
-            var mainSz=isLeaf?(mob?13:15):(mob?9:10);
-            var subSz=mob?7:8;
-            var mainW=isLeaf?'700':(isAL?'600':'400');
-            var labelA=isAS?1.0:(isLeaf?Math.max(a,0.55):a*0.80);
-            var baseY=above?(y-dotR-6):(y+dotR+6);
+            var gap=(isLeaf?(mob?4:5):(mob?1.8:2.2))+4;
+            var baseY=above?(p.y-gap):(p.y+gap);
             var baseline=above?'bottom':'top';
 
-            ctx.save();
-            ctx.font=mainW+' '+mainSz+'px Avenir,"Avenir Next",Arial,sans-serif';
-            ctx.fillStyle=rc(line.color,labelA);
-            ctx.textAlign='center'; ctx.textBaseline=baseline;
-            ctx.fillText(stop.label,sx,baseY);
-
-            /* date sub-label */
-            ctx.font='400 '+subSz+'px Avenir,"Avenir Next",Arial,sans-serif';
-            ctx.fillStyle=rc(line.color,labelA*0.55);
-            var dateOff=mainSz+3;
-            ctx.fillText(stop.sub,sx,above?baseY-dateOff:baseY+dateOff);
-            ctx.restore();
+            if(isLeaf){
+              /* language name */
+              var nameSz=mob?(isAL?14:10):(isAL?16:13);
+              var nameW=isAL?'700':'400';
+              var nameA=isAL?0.82:(a*0.55);
+              ctx.save();
+              ctx.font=nameW+' '+nameSz+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle=rc(col,nameA);
+              ctx.textAlign='center'; ctx.textBaseline=baseline;
+              ctx.fillText(stop.label,p.x,baseY);
+              /* date — only on desktop or active mobile */
+              if(!mob||isAL){
+                ctx.font='400 '+(mob?6:7)+'px Avenir,"Avenir Next",Arial,sans-serif';
+                ctx.fillStyle=rc(col,nameA*0.50);
+                var dOff=nameSz+2;
+                ctx.fillText(stop.sub,p.x,above?baseY-dOff:baseY+dOff);
+              }
+              ctx.restore();
+            } else {
+              /* intermediate label — desktop only (or active line on mobile) */
+              var iSz=mob?7:9;
+              var iA=isAS?1.0:a*0.70;
+              ctx.save();
+              ctx.font=(isAL?'600':'400')+' '+iSz+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle=rc(col,iA);
+              ctx.textAlign='center'; ctx.textBaseline=baseline;
+              ctx.fillText(stop.label,p.x,baseY);
+              ctx.font='400 '+(mob?5:7)+'px Avenir,"Avenir Next",Arial,sans-serif';
+              ctx.fillStyle=rc(col,iA*0.50);
+              ctx.fillText(stop.sub,p.x,above?baseY-(iSz+2):baseY+(iSz+2));
+              ctx.restore();
+            }
           });
         });
       }
@@ -3295,30 +3497,43 @@
         initialized=true;
       }
 
-      /* ── detail panel ── */
+      /* ── rich detail panel ── */
       function renderStopDetail(stop,line){
         var el=document.getElementById('lang-tree-detail'); if(!el) return;
-        el.style.opacity='0'; el.style.transition='opacity .18s ease';
+        var col=line.color;
+        var colStr=col.join(',');
+        el.style.opacity='0';
         setTimeout(function(){
-          el.innerHTML=
-            '<p class="kicker" style="margin-bottom:6px;">'+(stop.isLeaf?'Language':'Language Family')+'&nbsp;·&nbsp;'+stop.sub+'</p>'+
-            '<p class="places-info-name" style="font-size:clamp(1.5rem,3vw,2.2rem);">'+stop.label+'</p>'+
-            '<p class="places-info-desc">'+stop.desc+'</p>'+
-            (stop.isLeaf?'<p style="margin-top:10px;font-size:8px;font-weight:650;letter-spacing:0.22em;text-transform:uppercase;color:rgba('+line.color.join(',')+',0.45);">↑ Scroll up to see phrases</p>':'');
+          var meta=LANG_META[stop.langKey];
+          var html='<p class="kicker" style="margin-bottom:6px;">'+(stop.isLeaf?'Language':'Language Family')+'&nbsp;&middot;&nbsp;'+stop.sub+'</p>'+
+            '<p class="places-info-name" style="font-size:clamp(1.4rem,3vw,2rem);margin-bottom:12px;">'+stop.label+'</p>';
+
+          if(stop.isLeaf&&meta){
+            html+='<div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;">';
+            html+='<span class="lang-meta-chip"><b>'+meta.speakers+'</b>&ensp;speakers</span>';
+            html+='<span class="lang-meta-chip"><b>'+meta.countries+'</b></span>';
+            html+='<span class="lang-meta-chip"><b>'+meta.script+'</b></span>';
+            html+='<span class="lang-meta-chip">Difficulty&ensp;<b>'+meta.stars+'</b></span>';
+            html+='</div>';
+            html+='<p class="places-info-desc">'+meta.desc+'</p>';
+          } else {
+            html+='<p class="places-info-desc">'+stop.desc+'</p>';
+          }
+
+          el.innerHTML=html;
           el.style.opacity='1';
         },130);
       }
 
-      /* ── click ── */
+      /* ── click handler ── */
       cv.addEventListener('click',function(e){
         var r=cv.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
         var best=null, bestD=Infinity, bestLine=null;
-        var thresh=W<520?26:20;
+        var thresh=W<520?28:22;
         LINES.forEach(function(line,li){
-          var y=line.y*H;
           line.stops.forEach(function(stop,si){
-            var sx=stop.x*W;
-            var d=Math.sqrt(Math.pow(mx-sx,2)+Math.pow(my-y,2));
+            var p=stopPos(line,si);
+            var d=Math.sqrt(Math.pow(mx-p.x,2)+Math.pow(my-p.y,2));
             if(d<thresh&&d<bestD){ bestD=d; best={stop:stop,si:si,li:li}; bestLine=line; }
           });
         });

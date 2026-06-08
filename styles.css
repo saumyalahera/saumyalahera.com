@@ -1329,7 +1329,7 @@ h2.about__title{
 
 /* overlay — reuses .coffee-overlay for slide-in animation, own background */
 .lang-overlay{
-  background: #F6F7F9;
+  background: #DDDDE0 !important;
   position: relative; /* for shader canvas */
 }
 
@@ -1966,13 +1966,13 @@ h2.about__title{
   transition: all .18s ease;
 }
 .lang-tab:hover:not(.lang-tab--active){
-  border-color: rgba(93,51,21,.22);
-  color: rgba(93,51,21,.55);
+  border-color: rgba(0,0,0,.22);
+  color: rgba(0,0,0,.55);
 }
 .lang-tab--active{
-  background: rgba(140,90,40,.12);
-  border-color: rgba(93,51,21,.28);
-  color: rgba(107,58,24,.85);
+  background: rgba(0,0,0,.06);
+  border-color: rgba(0,0,0,.28);
+  color: rgba(0,0,0,.80);
 }
 
 /* ── stage: hero + phrases + script ── */
@@ -2059,7 +2059,7 @@ h2.about__title{
 }
 .lang-script-strip__chars{
   font-size: 17px;
-  color: rgba(0,0,0,.18);
+  color: rgba(0,0,0,.72);
   letter-spacing: 0.18em;
   line-height: 1.9;
   word-break: break-all;
@@ -2069,7 +2069,7 @@ h2.about__title{
   font-weight: 650;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(0,0,0,.18);
+  color: rgba(0,0,0,.35);
   margin-top: 10px;
 }
 
@@ -3081,17 +3081,53 @@ h2.about__title{
 /* ── Language Family Tree ── */
 .lang-tree-canvas{
   width: 100%;
-  height: 460px;
+  height: 520px;
   display: block;
   background: transparent;
   cursor: pointer;
   max-width: 860px;
   margin: 0 auto;
 }
+@media(max-width:600px){ .lang-tree-canvas{ height: 440px; } }
 .lang-tree-detail{
   max-width: 860px;
   margin: 0 auto;
   padding: 0 24px 40px;
   min-height: 60px;
   transition: opacity .18s ease;
+}
+
+/* lang-meta chips — light green theme */
+.lang-meta-chip{
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none;
+  border: 1px solid rgba(0,0,0,0.13);
+  border-radius: 100px;
+  padding: 7px 14px;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase;
+  color: rgba(0,0,0,0.82);
+  white-space: nowrap; font-family: inherit; line-height: 1;
+}
+.lang-meta-chip b{
+  font-weight: 600; color: rgba(0,0,0,0.82);
+  text-transform: none; letter-spacing: 0;
+}
+.lang-sample{
+  margin-top: 20px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.60);
+  border: 0.5px solid rgba(0,0,0,0.08);
+}
+.lang-sample__phrase{
+  font-size: clamp(18px,3vw,26px);
+  font-weight: 300;
+  color: rgba(0,0,0,0.72);
+  margin: 0 0 6px;
+  letter-spacing: 0.01em;
+}
+.lang-sample__meaning{
+  font-size: 9px; font-weight: 650; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(0,0,0,0.28);
+  margin: 0;
 }

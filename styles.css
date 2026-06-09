@@ -108,13 +108,11 @@
 /*Exp and Edu*/
 .pillrow__title{
   margin: 0 0 10px;
-  /*font-size: 1.35rem;*/
-  /*font-family: "TimesNewRomanPSMT", "Times New Roman", Times, serif;*/
-  font-size:26px;
-  /*letter-spacing: 0.8em;*/
-  letter-spacing: 0.02em;
-  /*opacity: 0.95;*/
+  font-size: 14px;
+  letter-spacing: 0.20em;
   font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.82);
   /*text-shadow: 0 0 0 currentColor;
   -webkit-text-stroke: 0.17px currentColor;*/
 }
@@ -604,11 +602,16 @@
     font-synthesis: weight;*/
 }
 
-.section__head h2{
-  margin:0 0 10px;
-  font-size:26px;
-  letter-spacing: 0.02em;
+.section__head h2:not(.about__title){
+  margin:0 0 14px;
+  font-size:14px;
+  letter-spacing: 0.20em;
   font-weight: 700;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.82);
+}
+.section__head h2.about__title{
+  margin:0 0 10px;
 }
 /*Section ends*/
 /*link starts*/
@@ -917,7 +920,7 @@ main{position:relative; z-index:1}
 .section{
   max-width:1120px;
   margin:0 auto;
-  padding:54px 22px;
+  padding:48px 22px;
 }
 .section--alt{
   background:rgba(0,0,0,.02);

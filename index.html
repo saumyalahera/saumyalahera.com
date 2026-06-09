@@ -305,7 +305,7 @@
           </div>
         </div>
       </div>
-      <br>
+      <div style="margin-top:80px;"></div>
       <div class="section__head">
         <h2>Talks & Showcases</h2>
         <p class="muted">A small set of moments where I shared work publicly.</p>
@@ -322,7 +322,7 @@
           </a>
         </div>
       </div>
-      <br>
+      <div style="margin-top:80px;"></div>
       <div class="section__head">
         <h2>Volunteering</h2>
         <p class="muted">Teaching & Mentorship (Programming + Math)</p>
@@ -349,7 +349,6 @@
           </a>
         </div>
       </div>
-      <br>
 <!--      <div class="section__head">-->
 <!--        <h2>Language Learning</h2>-->
 <!--        <p class="muted">Consistent language learning through daily practice</p>-->
@@ -596,13 +595,7 @@
       Games Ends
       -->
 
-      <br/>
-      <br/>
-
-
-
-      <br/>
-      <br/>
+      <div style="margin-top:32px;"></div>
       <div class="section__head" id="learn-for-free">
         <h2 class="about__title">Learn for Free</h2>
       </div>
@@ -912,9 +905,10 @@
             other
               .filter((sec) => sec && (sec.title || sec.subtitle || Array.isArray(sec.topics)))
               .slice(0, 12)
-              .forEach((sec) => {
+              .forEach((sec, secIdx) => {
                 const sectionHead = document.createElement('div');
                 sectionHead.className = 'section__head';
+                if (secIdx > 0) sectionHead.style.marginTop = '80px';
 
                 const h2 = document.createElement('h2');
                 h2.textContent = (sec.title ?? '').toString();

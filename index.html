@@ -4784,6 +4784,33 @@
 
         <br/>
 
+        <!-- ── Interactive Zone ── -->
+        <div class="games-interactive" id="games-interactive">
+
+          <!-- Genre Radar -->
+          <div class="games-interactive__panel">
+            <p class="kicker" style="margin-bottom:4px;align-self:flex-start;">Taste Profile</p>
+            <p class="games-panel-hint">Hover a peak to filter · click to lock</p>
+            <canvas id="games-radar" class="games-radar-canvas"></canvas>
+            <p id="games-radar-label" class="games-radar-label"></p>
+          </div>
+
+          <!-- Slot Machine -->
+          <div class="games-interactive__panel">
+            <p class="kicker" style="margin-bottom:4px;align-self:flex-start;">Can't Decide?</p>
+            <p class="games-panel-hint">Let fate pick your next game</p>
+            <div class="games-slot-display" id="games-slot-display">
+              <div class="games-slot-title" id="games-slot-title" style="color:rgba(0,0,0,.22);letter-spacing:0.04em;">— — —</div>
+              <div class="games-slot-meta" id="games-slot-meta"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+              <button class="games-slot-btn" id="games-slot-btn">Surprise me</button>
+              <button class="games-slot-cta-btn" id="games-slot-cta" style="display:none;">See in list ↓</button>
+            </div>
+          </div>
+
+        </div>
+
         <!-- ── Games filter + explorer — same structure as Countries ── -->
         <div class="coffee-sub-section">
           <span class="places-count" id="gsearch-count" style="display:block;text-align:center;margin-bottom:8px;"></span>
@@ -4832,6 +4859,38 @@
 
           <!-- scrollable list of game cards -->
           <div class="games-card-list" id="games-card-list"></div>
+          <div id="games-card-actions" style="display:flex;justify-content:center;gap:10px;padding:16px 0 60px;"></div>
+        </div>
+
+        <!-- ── Find My Game ── -->
+        <div class="coffee-sub-section" style="padding-top:0;">
+
+          <div class="coffee-quiz" id="games-quiz">
+
+            <!-- Intro -->
+            <div class="coffee-quiz__panel" id="gq-intro">
+              <p class="kicker" style="text-align:center;">Interactive</p>
+              <h3 class="coffee-sub-title" style="margin:6px 0 10px;">Find My Game</h3>
+              <p class="coffee-sub-intro" style="max-width:420px;">No genre knowledge needed. Ten questions about how you want to feel, what you're drawn to, and how you like to play — we'll find the game that's made for you.</p>
+              <button class="cq-btn cq-btn--fill" id="gq-start">Find my game →</button>
+            </div>
+
+            <!-- Questions -->
+            <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="gq-game" aria-hidden="true">
+              <div class="cq-track"><div class="cq-track__fill" id="gq-fill"></div></div>
+              <div class="cq-counter" id="gq-counter">1 ⁄ 10</div>
+              <div class="cq-question" id="gq-question"></div>
+              <div class="cq-options" id="gq-options"></div>
+            </div>
+
+            <!-- Result -->
+            <div class="coffee-quiz__panel coffee-quiz__panel--hidden" id="gq-result" aria-hidden="true">
+              <p class="kicker" style="text-align:center;margin-bottom:14px;">Your match</p>
+              <div class="cq-card" id="gq-card"></div>
+              <button class="cq-btn cq-btn--ghost" id="gq-restart" style="margin-top:20px;">Try again</button>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -5132,7 +5191,7 @@
               activeLetter = l;
               resetBtn.classList.add('is-visible');
             }
-            renderCards();
+            gShowCount = G_PAGE; renderCards();
           });
           letterBtns.push(btn);
           charsRow.appendChild(btn);
@@ -5151,19 +5210,329 @@
           letterBtns.forEach(function(b){ b.classList.remove('places-alpha__btn--active'); });
           resetBtn.classList.remove('is-visible');
           activeLetter = '';
-          renderCards();
+          gShowCount = G_PAGE; renderCards();
           return false;
         };
         alphaBar.appendChild(resetBtn);
       }
 
-      /* wire filter selects */
+      /* wire filter selects — reset to page 1 on filter change */
       ['gsearch-genre','gsearch-rating','gsearch-mode','gsearch-length','gsearch-platform','gsearch-sort'].forEach(function(id){
         var el = document.getElementById(id);
-        if(el) el.addEventListener('change', renderCards);
+        if(el) el.addEventListener('change', function(){ gShowCount = G_PAGE; renderCards(); });
       });
 
       renderCards();
+      initInteractive();
+    }
+
+    /* ══ Genre Radar + Slot Machine ══ */
+    function initInteractive(){
+
+      /* ── Terrain Chart ── */
+      var rcv = document.getElementById('games-radar');
+      if(rcv){
+        var rctx = rcv.getContext('2d');
+        var rdpr = window.devicePixelRatio||1;
+        var lockedGenre = null;
+        var hoveredGenre = null;
+        var peakXs = []; /* {genre, x} for hit-testing */
+
+        /* build genre map */
+        var gCount={};
+        GAMES.forEach(function(g){ gCount[g.g]=(gCount[g.g]||0)+1; });
+        var gList=Object.keys(gCount).sort(function(a,b){ return gCount[b]-gCount[a]; }).slice(0,9);
+        var maxC=Math.max.apply(null,gList.map(function(g){ return gCount[g]; }));
+
+        function resizeR(){
+          var r=rcv.getBoundingClientRect();
+          rcv.width=Math.round(r.width*rdpr);
+          rcv.height=Math.round(r.height*rdpr);
+          rctx.setTransform(rdpr,0,0,rdpr,0,0);
+        }
+
+        /* Catmull-Rom spline through pts — returns path already begun */
+        function splinePath(pts, tension){
+          tension = tension||0.4;
+          rctx.moveTo(pts[0].x, pts[0].y);
+          for(var i=0; i<pts.length-1; i++){
+            var p0=pts[Math.max(i-1,0)];
+            var p1=pts[i];
+            var p2=pts[i+1];
+            var p3=pts[Math.min(i+2,pts.length-1)];
+            var cp1x=p1.x+(p2.x-p0.x)*tension;
+            var cp1y=p1.y+(p2.y-p0.y)*tension;
+            var cp2x=p2.x-(p3.x-p1.x)*tension;
+            var cp2y=p2.y-(p3.y-p1.y)*tension;
+            rctx.bezierCurveTo(cp1x,cp1y,cp2x,cp2y,p2.x,p2.y);
+          }
+        }
+
+        function drawTerrain(prog){
+          var r=rcv.getBoundingClientRect(), W=r.width, H=r.height;
+          rctx.clearRect(0,0,W,H);
+          peakXs=[];
+
+          var mL=18, mR=18, mT=24, mB=36;
+          var pW=W-mL-mR, pH=H-mT-mB;
+          var groundY=mT+pH;
+          var n=gList.length;
+
+          /* genre peak positions */
+          var peaks=gList.map(function(g,i){
+            var x=mL + (n===1 ? pW*0.5 : i/(n-1)*pW);
+            var peakH=(gCount[g]/maxC)*pH*0.78*prog;
+            var y=groundY-peakH;
+            return {g:g, x:x, y:y, h:peakH};
+          });
+
+          /* anchor points at edges at ground level */
+          var allPts=[{x:mL-pW*0.12, y:groundY}].concat(peaks).concat([{x:W-mR+pW*0.12, y:groundY}]);
+
+          /* ── contour lines (horizontal, dashed) ── */
+          rctx.save();
+          rctx.setLineDash([3,7]);
+          [0.25,0.50,0.75,1.0].forEach(function(f){
+            var ly=groundY-f*pH*0.78*prog;
+            rctx.beginPath();
+            rctx.moveTo(mL, ly); rctx.lineTo(W-mR, ly);
+            rctx.strokeStyle='rgba(30,110,60,0.07)';
+            rctx.lineWidth=0.6;
+            rctx.stroke();
+          });
+          rctx.setLineDash([]);
+          rctx.restore();
+
+          /* ── back layer (depth echo, slightly raised) ── */
+          var backPts=allPts.map(function(p,i){
+            return {x:p.x, y:p.y-(p.y<groundY?(groundY-p.y)*0.18:0)-4};
+          });
+          rctx.beginPath();
+          splinePath(backPts);
+          rctx.lineTo(W-mR+pW*0.12, groundY+2);
+          rctx.lineTo(mL-pW*0.12, groundY+2);
+          rctx.closePath();
+          var bgBack=rctx.createLinearGradient(0,mT,0,groundY);
+          bgBack.addColorStop(0,'rgba(140,200,162,0.16)');
+          bgBack.addColorStop(1,'rgba(140,200,162,0.04)');
+          rctx.fillStyle=bgBack; rctx.fill();
+
+          /* ── mid layer ── */
+          var midPts=allPts.map(function(p){
+            return {x:p.x+2, y:p.y-(p.y<groundY?(groundY-p.y)*0.08:0)-1};
+          });
+          rctx.beginPath();
+          splinePath(midPts);
+          rctx.lineTo(W-mR+pW*0.12, groundY+1);
+          rctx.lineTo(mL-pW*0.12, groundY+1);
+          rctx.closePath();
+          var bgMid=rctx.createLinearGradient(0,mT,0,groundY);
+          bgMid.addColorStop(0,'rgba(100,180,130,0.22)');
+          bgMid.addColorStop(1,'rgba(100,180,130,0.06)');
+          rctx.fillStyle=bgMid; rctx.fill();
+
+          /* ── main terrain fill ── */
+          rctx.beginPath();
+          splinePath(allPts);
+          rctx.lineTo(W-mR+pW*0.12, groundY);
+          rctx.lineTo(mL-pW*0.12, groundY);
+          rctx.closePath();
+          var bgMain=rctx.createLinearGradient(0,mT,0,groundY);
+          bgMain.addColorStop(0,'rgba(60,170,100,0.32)');
+          bgMain.addColorStop(0.5,'rgba(80,175,115,0.18)');
+          bgMain.addColorStop(1,'rgba(100,185,130,0.08)');
+          rctx.fillStyle=bgMain; rctx.fill();
+
+          /* ── main ridge line ── */
+          rctx.beginPath();
+          splinePath(allPts);
+          rctx.strokeStyle='rgba(30,130,70,0.45)';
+          rctx.lineWidth=1.2;
+          rctx.stroke();
+
+          /* ── ground baseline ── */
+          rctx.beginPath();
+          rctx.moveTo(mL,groundY); rctx.lineTo(W-mR,groundY);
+          rctx.strokeStyle='rgba(30,110,60,0.12)';
+          rctx.lineWidth=0.5;
+          rctx.stroke();
+
+          /* ── peaks: dots + vertical drop lines + labels ── */
+          peaks.forEach(function(p){
+            var isActive=(p.g===hoveredGenre||p.g===lockedGenre);
+            peakXs.push({genre:p.g, x:p.x});
+
+            /* vertical drop line from peak to ground */
+            rctx.beginPath();
+            rctx.setLineDash([2,4]);
+            rctx.moveTo(p.x, p.y+2);
+            rctx.lineTo(p.x, groundY);
+            rctx.strokeStyle=isActive?'rgba(20,120,60,0.28)':'rgba(30,110,60,0.10)';
+            rctx.lineWidth=0.6;
+            rctx.stroke();
+            rctx.setLineDash([]);
+
+            /* peak glow for active */
+            if(isActive){
+              rctx.beginPath();
+              rctx.arc(p.x, p.y, 10, 0, Math.PI*2);
+              rctx.fillStyle='rgba(40,180,95,0.12)';
+              rctx.fill();
+            }
+
+            /* peak dot */
+            rctx.beginPath();
+            rctx.arc(p.x, p.y, isActive?4:2.5, 0, Math.PI*2);
+            rctx.fillStyle=isActive?'rgba(20,140,65,0.90)':'rgba(30,130,70,0.50)';
+            rctx.fill();
+            /* dot ring */
+            rctx.beginPath();
+            rctx.arc(p.x, p.y, isActive?6:4, 0, Math.PI*2);
+            rctx.strokeStyle=isActive?'rgba(20,140,65,0.30)':'rgba(30,130,70,0.14)';
+            rctx.lineWidth=0.7;
+            rctx.stroke();
+
+            /* count badge just above peak */
+            if(prog>0.7){
+              rctx.save();
+              rctx.font='600 7px Avenir,"Avenir Next",Arial,sans-serif';
+              rctx.fillStyle=isActive?'rgba(10,100,45,0.90)':'rgba(20,100,55,0.38)';
+              rctx.textAlign='center'; rctx.textBaseline='bottom';
+              rctx.fillText(gCount[p.g], p.x, p.y-8);
+              rctx.restore();
+            }
+
+            /* genre label at baseline */
+            rctx.save();
+            rctx.font=(isActive?'700':'500')+' 7px Avenir,"Avenir Next",Arial,sans-serif';
+            rctx.fillStyle=isActive?'rgba(8,90,38,0.95)':'rgba(0,0,0,0.35)';
+            rctx.textAlign='center'; rctx.textBaseline='top';
+            var lbl=p.g.length>8?p.g.slice(0,7)+'…':p.g;
+            rctx.fillText(lbl, p.x, groundY+6);
+            rctx.restore();
+          });
+        }
+
+        /* animate terrain rising */
+        var t0r=null;
+        function animateTerrain(ts){
+          if(!t0r) t0r=ts;
+          var p=Math.min(1,(ts-t0r)/1200);
+          var ep=1-Math.pow(1-p,3);
+          resizeR(); drawTerrain(ep);
+          if(p<1) requestAnimationFrame(animateTerrain);
+        }
+        requestAnimationFrame(animateTerrain);
+
+        /* hit-test: nearest genre peak by x distance */
+        function genreAtX(mx, W){
+          var mL=18, mR=18, pW=W-mL-mR;
+          var best=null, bestD=pW/(peakXs.length||1)*0.55;
+          peakXs.forEach(function(p){
+            var d=Math.abs(mx-p.x);
+            if(d<bestD){ bestD=d; best=p.genre; }
+          });
+          return best;
+        }
+
+        rcv.addEventListener('mousemove',function(e){
+          if(lockedGenre) return;
+          var r=rcv.getBoundingClientRect();
+          var g=genreAtX(e.clientX-r.left, r.width);
+          if(g!==hoveredGenre){
+            hoveredGenre=g; activeRadarGenre=g; gShowCount=G_PAGE;
+            resizeR(); drawTerrain(1); renderCards();
+            var lbl=document.getElementById('games-radar-label');
+            if(lbl) lbl.textContent=g?(g+' · '+gCount[g]+' games'):'';
+          }
+        });
+        rcv.addEventListener('mouseleave',function(){
+          if(lockedGenre) return;
+          hoveredGenre=null; activeRadarGenre=null;
+          resizeR(); drawTerrain(1); renderCards();
+          var lbl=document.getElementById('games-radar-label');
+          if(lbl) lbl.textContent='';
+        });
+        rcv.addEventListener('click',function(e){
+          var r=rcv.getBoundingClientRect();
+          var g=genreAtX(e.clientX-r.left, r.width);
+          if(!g||lockedGenre===g){ lockedGenre=null; activeRadarGenre=null; }
+          else { lockedGenre=g; hoveredGenre=g; activeRadarGenre=g; }
+          gShowCount=G_PAGE;
+          resizeR(); drawTerrain(1); renderCards();
+          var lbl=document.getElementById('games-radar-label');
+          if(lbl) lbl.textContent=lockedGenre?(lockedGenre+' · click again to clear'):'';
+        });
+        window.addEventListener('resize',function(){ resizeR(); drawTerrain(1); });
+      }
+
+      /* ── Slot Machine ── */
+      var slotBtn=document.getElementById('games-slot-btn');
+      var slotDisp=document.getElementById('games-slot-display');
+      var slotTitle=document.getElementById('games-slot-title');
+      var slotMeta=document.getElementById('games-slot-meta');
+      var slotCta=document.getElementById('games-slot-cta');
+      var spinning=false;
+
+      if(slotBtn){
+        slotBtn.addEventListener('click',function(){
+          if(spinning) return;
+          spinning=true;
+          slotBtn.disabled=true;
+          if(slotCta) slotCta.style.display='none';
+          slotDisp.classList.add('is-spinning');
+          slotDisp.classList.remove('is-landed');
+
+          var pool=GAMES;
+          var finalGame=pool[Math.floor(Math.random()*pool.length)];
+
+          /* build step delays: fast → slow */
+          var steps=28;
+          var totalMs=0;
+          var schedule=[];
+          for(var i=0;i<steps;i++){
+            var t=i/(steps-1);
+            var delay=Math.round(35+t*t*t*520);
+            totalMs+=delay;
+            schedule.push({delay:totalMs, last:i===steps-1});
+          }
+
+          schedule.forEach(function(s){
+            setTimeout(function(){
+              if(s.last){
+                slotDisp.classList.remove('is-spinning');
+                slotDisp.classList.add('is-landed');
+                slotTitle.style.color=''; slotTitle.style.letterSpacing='';
+                slotTitle.textContent=finalGame.t;
+                slotMeta.innerHTML=
+                  finalGame.g+'&ensp;·&ensp;'+finalGame.y+'&ensp;·&ensp;'+
+                  '<span style="color:rgba(20,110,55,.85);">'+finalGame.s+'/100</span>';
+                if(slotCta){
+                  slotCta.style.display='inline-flex';
+                  slotCta.onclick=function(){
+                    /* scroll to card list and highlight */
+                    var wrap=document.getElementById('games-card-list');
+                    if(wrap){
+                      var scroller=document.querySelector('.coffee-overlay__scroll');
+                      if(scroller&&wrap){
+                        var top=wrap.getBoundingClientRect().top-scroller.getBoundingClientRect().top+scroller.scrollTop-20;
+                        scroller.scrollTo({top:top,behavior:'smooth'});
+                      }
+                    }
+                  };
+                }
+                spinning=false;
+                slotBtn.disabled=false;
+                slotBtn.textContent='Roll again';
+              } else {
+                var g=pool[Math.floor(Math.random()*pool.length)];
+                slotTitle.textContent=g.t;
+                slotMeta.textContent='';
+              }
+            }, s.delay);
+          });
+        });
+      }
     }
 
     function scoreClass(s){
@@ -5182,6 +5551,7 @@
       var sort   = (document.getElementById('gsearch-sort')||{}).value||'score';
       var list = GAMES.filter(function(g){
         if(activeLetter && g.t[0].toUpperCase() !== activeLetter) return false;
+        if(activeRadarGenre && g.g !== activeRadarGenre) return false;
         if(genre  && g.g !== genre)  return false;
         if(rating && g.s < rating)   return false;
         if(mode   && g.m !== mode)   return false;
@@ -5199,18 +5569,27 @@
       return list;
     }
 
-    /* renderCards — flat list of detail cards */
+    var gShowCount = 10;
+    var G_PAGE = 10;
+    var activeRadarGenre = null; /* set by radar hover/click */
+
+    /* renderCards — paginated 2-col grid */
     function renderCards(){
       var list = getFiltered();
       var wrap = document.getElementById('games-card-list');
+      var actions = document.getElementById('games-card-actions');
       var cnt  = document.getElementById('gsearch-count');
       if(cnt) cnt.textContent = list.length + ' game' + (list.length!==1?'s':'');
       if(!wrap) return;
+
       if(!list.length){
         wrap.innerHTML = '<p class="games-no-results">No games match — try adjusting your filters.</p>';
+        if(actions) actions.innerHTML = '';
         return;
       }
-      wrap.innerHTML = list.map(function(g){
+
+      var visible = list.slice(0, gShowCount);
+      wrap.innerHTML = visible.map(function(g){
         return '<div class="games-card">'+
           '<div class="coffee-detail__name">'+g.t+'</div>'+
           '<div class="coffee-tag-row">'+
@@ -5228,39 +5607,446 @@
           '</div>'+
         '</div>';
       }).join('');
+
+      /* show more / show less buttons */
+      if(actions){
+        actions.innerHTML = '';
+        if(gShowCount > G_PAGE){
+          var lessBtn = document.createElement('button');
+          lessBtn.className = 'roast-pill place-card__toggle';
+          lessBtn.textContent = 'Show less';
+          lessBtn.onclick = function(){ gShowCount = Math.max(G_PAGE, gShowCount - G_PAGE); renderCards(); };
+          actions.appendChild(lessBtn);
+        }
+        if(list.length > gShowCount){
+          var moreBtn = document.createElement('button');
+          moreBtn.className = 'roast-pill place-card__toggle';
+          moreBtn.textContent = 'Show more (' + Math.min(G_PAGE, list.length - gShowCount) + ')';
+          moreBtn.onclick = function(){ gShowCount += G_PAGE; renderCards(); };
+          actions.appendChild(moreBtn);
+        }
+      }
     }
 
-    /* ── shader — same Canvas 2D blobs as Countries/Languages ── */
+    /* ── shader — WebGL fBm warm amber (same technique as countries) ── */
     (function(){
       var cv = document.getElementById('games-shader');
       if(!cv) return;
-      var ctx2 = cv.getContext('2d');
-      var t2 = 0;
-      var blobs = [
-        { bx:0.20, by:0.28, br:0.58, c:[170,148,210] },
-        { bx:0.76, by:0.56, br:0.50, c:[210,180,148] },
-        { bx:0.50, by:0.82, br:0.44, c:[148,190,210] }
-      ];
-      function resizeGS(){ cv.width = window.innerWidth; cv.height = window.innerHeight; }
-      function drawGS(){
-        if(!overlay.classList.contains('is-open')){ requestAnimationFrame(drawGS); return; }
-        t2 += 0.005;
-        ctx2.clearRect(0,0,cv.width,cv.height);
-        blobs.forEach(function(b,i){
-          var x = (b.bx + Math.sin(t2*0.60+i*1.8)*0.14)*cv.width;
-          var y = (b.by + Math.cos(t2*0.45+i*1.2)*0.11)*cv.height;
-          var r = b.br * Math.min(cv.width,cv.height);
-          var g2 = ctx2.createRadialGradient(x,y,0,x,y,r);
-          g2.addColorStop(0,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0.13)');
-          g2.addColorStop(1,'rgba('+b.c[0]+','+b.c[1]+','+b.c[2]+',0)');
-          ctx2.beginPath(); ctx2.arc(x,y,r,0,Math.PI*2);
-          ctx2.fillStyle = g2; ctx2.fill();
-        });
-        requestAnimationFrame(drawGS);
+      var gl = cv.getContext('webgl') || cv.getContext('experimental-webgl');
+      if(!gl){ cv.style.display='none'; return; }
+
+      var VS = 'attribute vec2 a;void main(){gl_Position=vec4(a,0,1);}';
+      var FS = [
+        'precision highp float;',
+        'uniform float u_t;',
+        'uniform vec2  u_r;',
+        'uniform vec2  u_m;',
+
+        'float h(vec2 p){p=fract(p*vec2(127.1,311.7));p+=dot(p,p+19.19);return fract(p.x*p.y);}',
+        'float n(vec2 p){',
+        '  vec2 i=floor(p),f=fract(p);',
+        '  f=f*f*(3.0-2.0*f);',
+        '  return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);',
+        '}',
+        'float fbm(vec2 p){',
+        '  float v=0.0,a=0.5;',
+        '  mat2 m=mat2(1.6,1.2,-1.2,1.6);',
+        '  for(int i=0;i<4;i++){v+=a*n(p);p=m*p;a*=0.5;}',
+        '  return v;',
+        '}',
+
+        'void main(){',
+        '  vec2 uv=gl_FragCoord.xy/u_r;',
+        '  float ar=u_r.x/u_r.y;',
+        '  vec2 p=vec2(uv.x*ar,uv.y);',
+        '  float t=u_t*0.038;',
+
+        '  vec2 mp=vec2(u_m.x/u_r.x*ar,(u_r.y-u_m.y)/u_r.y);',
+        '  float md=length(p-mp);',
+        '  float wind=smoothstep(0.55,0.0,md);',
+
+        '  vec2 q=vec2(fbm(p+t),fbm(p+vec2(5.2,1.3)+t*0.8));',
+        '  vec2 r=vec2(',
+        '    fbm(p+3.2*q+vec2(1.7,9.2)+0.14*t),',
+        '    fbm(p+3.2*q+vec2(8.3,2.8)+0.11*t)',
+        '  );',
+        '  r+=wind*0.14*vec2(sin(t*4.0+md*9.0),cos(t*3.0+md*7.0));',
+        '  float f=fbm(p+3.8*r);',
+        '  float ff=f*0.26+0.012*length(q);',
+
+        /* yellow → green → blue palette (iOS alarm 3-color) */
+        '  vec3 yellow=vec3(0.878,0.952,0.620);',  /* warm yellow-lime */
+        '  vec3 green =vec3(0.680,0.900,0.730);',  /* fresh green      */
+        '  vec3 blue  =vec3(0.580,0.820,0.900);',  /* soft sky-cyan    */
+        '  vec3 wisp  =vec3(0.820,0.948,0.820);',  /* light mint wisp  */
+        '  vec3 deep  =vec3(0.540,0.780,0.870);',  /* deeper blue-teal */
+
+        /* blend the three across the fBm field */
+
+        '  vec3 col=green;',
+        '  col=mix(col,wisp,  smoothstep(0.08,0.18,ff));',
+        '  col=mix(col,yellow,smoothstep(0.16,0.28,ff));',
+        '  col=mix(col,wisp,  smoothstep(0.26,0.36,ff));',
+        '  col=mix(col,green, smoothstep(0.33,0.43,ff));',
+        '  col=mix(col,blue,  smoothstep(0.40,0.54,ff));',
+        '  col=mix(col,deep,  smoothstep(0.50,0.64,ff));',
+
+        '  col+=wind*0.018*vec3(1.0,1.0,1.0);',
+
+        '  float vig=1.0-0.08*dot(uv*2.0-1.0,uv*2.0-1.0);',
+        '  gl_FragColor=vec4(col*vig,1.0);',
+        '}'
+      ].join('\n');
+
+      function mkShader(type,src){
+        var s=gl.createShader(type); gl.shaderSource(s,src); gl.compileShader(s);
+        if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.warn(gl.getShaderInfoLog(s)); return null; }
+        return s;
       }
-      window.addEventListener('resize', resizeGS);
-      resizeGS();
-      drawGS();
+      var vs=mkShader(gl.VERTEX_SHADER,VS), fs=mkShader(gl.FRAGMENT_SHADER,FS);
+      if(!vs||!fs) return;
+      var prog=gl.createProgram();
+      gl.attachShader(prog,vs); gl.attachShader(prog,fs);
+      gl.linkProgram(prog);
+      if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){ console.warn('Link error'); return; }
+      gl.useProgram(prog);
+
+      var buf=gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+      var al=gl.getAttribLocation(prog,'a');
+      gl.enableVertexAttribArray(al);
+      gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+
+      var uT=gl.getUniformLocation(prog,'u_t');
+      var uR=gl.getUniformLocation(prog,'u_r');
+      var uM=gl.getUniformLocation(prog,'u_m');
+      var mouse={x:0,y:0}, t0=null, active=false;
+
+      function resize(){
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        cv.width=Math.round(cv.clientWidth*dpr);
+        cv.height=Math.round(cv.clientHeight*dpr);
+        gl.viewport(0,0,cv.width,cv.height);
+        mouse.x=cv.width*0.5; mouse.y=cv.height*0.5;
+      }
+      function draw(ts){
+        if(!active){ requestAnimationFrame(draw); return; }
+        if(!t0) t0=ts;
+        gl.uniform1f(uT,(ts-t0)*0.001);
+        gl.uniform2f(uR,cv.width,cv.height);
+        gl.uniform2f(uM,mouse.x,mouse.y);
+        gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+        requestAnimationFrame(draw);
+      }
+
+      overlay.addEventListener('mousemove',function(e){
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        mouse.x=e.clientX*dpr; mouse.y=e.clientY*dpr;
+      });
+      overlay.addEventListener('touchmove',function(e){
+        var dpr=Math.min(window.devicePixelRatio||1,2);
+        mouse.x=e.touches[0].clientX*dpr; mouse.y=e.touches[0].clientY*dpr;
+      },{passive:true});
+
+      new MutationObserver(function(ms){
+        ms.forEach(function(m){
+          if(m.attributeName==='class'){
+            active=overlay.classList.contains('is-open');
+            if(active){ t0=null; resize(); }
+          }
+        });
+      }).observe(overlay,{attributes:true});
+
+      window.addEventListener('resize',function(){ if(active) resize(); });
+      resize(); requestAnimationFrame(draw);
+    })();
+
+    /* ── Find My Game Quiz ── */
+    (function(){
+
+      /* Each question has options; each option carries a weight map.
+         Keys correspond to GAMES data fields: g (genre), m (mode), len (length),
+         plus synthetic axes: pace, dark, story, skill, era, vibe, coop */
+      var GQ = [
+        {
+          q: 'What brings you to a game right now?',
+          opts: [
+            { t: 'I want to escape into another world entirely',         w: {story:3, vibe:'immersive', dark:1} },
+            { t: 'I want a challenge that demands everything from me',   w: {skill:3, vibe:'demanding'} },
+            { t: 'I want to unwind and enjoy something beautiful',       w: {pace:'relaxed', vibe:'cosy', skill:-1} },
+            { t: 'I want to play something with friends',                w: {coop:3, vibe:'social'} }
+          ]
+        },
+        {
+          q: 'How do you feel about a steep learning curve?',
+          opts: [
+            { t: 'Bring it — I thrive on mastery',                      w: {skill:3} },
+            { t: 'I like a challenge but not frustration',              w: {skill:1} },
+            { t: 'Easy to pick up, depth optional',                      w: {skill:-1, pace:'relaxed'} },
+            { t: 'I want to be carried by the story, not the mechanics', w: {story:2, skill:-2} }
+          ]
+        },
+        {
+          q: 'What kind of world pulls you in?',
+          opts: [
+            { t: 'Dark, gritty, morally ambiguous',                      w: {dark:3, g:['Survival Horror','Action RPG','RPG','Action']} },
+            { t: 'Rich fantasy or science fiction',                       w: {g:['RPG','Action RPG','Action-Adventure'], story:2} },
+            { t: 'Real settings — historical, urban, grounded',           w: {g:['Action-Adventure','Adventure','Stealth'], vibe:'grounded'} },
+            { t: 'Abstract or completely original',                       w: {vibe:'weird', g:['Puzzle','Adventure','Roguelike']} }
+          ]
+        },
+        {
+          q: 'How long do you want your sessions to be?',
+          opts: [
+            { t: 'Quick bursts — 30 to 60 minutes at a time',           w: {len:['Short','Medium'], pace:'short-session'} },
+            { t: 'A few solid hours per sitting',                        w: {len:['Medium','Long']} },
+            { t: 'I want to sink into something for weeks',              w: {len:['Long','Very Long'], vibe:'immersive'} },
+            { t: 'Endless — something I can always return to',           w: {len:['Very Long'], vibe:'endless'} }
+          ]
+        },
+        {
+          q: 'Story or systems — what gets you hooked?',
+          opts: [
+            { t: 'Story above all — I want to feel something',           w: {story:3, g:['RPG','Adventure','Action-Adventure']} },
+            { t: 'Both — I want narrative and depth',                     w: {story:2, skill:1} },
+            { t: 'Systems — I want deep mechanics to master',            w: {skill:2, g:['Roguelike','Fighting','Strategy','Action']} },
+            { t: 'Neither — pure feeling and atmosphere',                w: {vibe:'atmosphere', g:['Survival Horror','Adventure','Action']} }
+          ]
+        },
+        {
+          q: 'How do you feel about death and failure?',
+          opts: [
+            { t: 'I want to die and learn — that\'s the game',          w: {skill:3, g:['Action RPG','Roguelike','Action']} },
+            { t: 'It\'s fine as long as it\'s not punishing',           w: {skill:1} },
+            { t: 'I\'d rather not die much — I play for the journey',   w: {skill:-1, story:2} },
+            { t: 'I want to feel unstoppable',                           w: {skill:-2, pace:'relaxed', g:['Action','Action-Adventure']} }
+          ]
+        },
+        {
+          q: 'Solo or with others?',
+          opts: [
+            { t: 'Completely solo — this is my private world',           w: {coop:-3, m:'Single-player'} },
+            { t: 'Solo story, but co-op would be a nice bonus',          w: {coop:0, m:'Single-player'} },
+            { t: 'Co-op is the whole point',                             w: {coop:3, m:'Co-op'} },
+            { t: 'Competitive multiplayer — I want to test myself',      w: {coop:2, m:'Multiplayer'} }
+          ]
+        },
+        {
+          q: 'Pick a mood',
+          opts: [
+            { t: 'Tense, atmospheric, on-edge',                          w: {dark:3, g:['Survival Horror','Action RPG','Roguelike']} },
+            { t: 'Heroic and epic — big set pieces',                     w: {g:['Action-Adventure','Action RPG','RPG'], story:1} },
+            { t: 'Warm, funny, or emotionally comforting',               w: {vibe:'cosy', dark:-2, g:['Adventure','Platformer','RPG']} },
+            { t: 'Strange, cerebral, unlike anything I\'ve played',      w: {vibe:'weird', g:['Adventure','Puzzle','RPG'], story:2} }
+          ]
+        },
+        {
+          q: 'What era of games do you gravitate toward?',
+          opts: [
+            { t: 'The very latest — 2023 or 2024',                       w: {era:'new'} },
+            { t: 'Recent — anywhere from 2020 to now',                   w: {era:'recent'} },
+            { t: 'The era doesn\'t matter — quality does',               w: {era:'any'} },
+            { t: 'I love classic styles reborn in modern games',         w: {g:['RPG','Platformer','Adventure'], era:'any'} }
+          ]
+        },
+        {
+          q: 'Finally — what would make you put a game down forever?',
+          opts: [
+            { t: 'Boring or repetitive combat',                          w: {skill:1, pace:'active'} },
+            { t: 'A weak or predictable story',                          w: {story:2} },
+            { t: 'Being so hard I stop having fun',                      w: {skill:-2} },
+            { t: 'Grinding without purpose',                             w: {pace:'relaxed', vibe:'focused'} }
+          ]
+        }
+      ];
+
+      /* Score every game in GAMES against accumulated weights */
+      function computeScores(weights){
+        return GAMES.map(function(game){
+          var score = 0;
+
+          /* genre match */
+          if(Array.isArray(weights.g)){
+            if(weights.g.indexOf(game.g) !== -1) score += 4;
+          }
+
+          /* mode match */
+          if(weights.m){
+            if(game.m === weights.m) score += 3;
+            else if(weights.m === 'Co-op' && game.m === 'Co-op') score += 3;
+            else if(weights.m === 'Single-player' && game.m === 'Single-player') score += 3;
+          }
+          /* coop axis */
+          if(weights.coop > 0 && (game.m === 'Co-op' || game.m === 'Multiplayer')) score += weights.coop;
+          if(weights.coop < 0 && game.m === 'Single-player') score += Math.abs(weights.coop);
+
+          /* length match */
+          if(Array.isArray(weights.len)){
+            if(weights.len.indexOf(game.len) !== -1) score += 3;
+          }
+
+          /* skill / difficulty proxy: use score rating as rough difficulty signal
+             High metascore ≈ polished; Action/Roguelikes ≈ demanding */
+          var demandingGenres = ['Action RPG','Action','Roguelike','Fighting','Survival Horror','Strategy'];
+          var relaxedGenres   = ['Adventure','Puzzle','Platformer','Simulation','Racing','Rhythm'];
+          if(weights.skill > 1 && demandingGenres.indexOf(game.g) !== -1) score += weights.skill;
+          if(weights.skill < 0 && relaxedGenres.indexOf(game.g) !== -1)   score += Math.abs(weights.skill);
+
+          /* story depth signal */
+          var storyGenres = ['RPG','Adventure','Action-Adventure','Action RPG'];
+          if(weights.story > 0 && storyGenres.indexOf(game.g) !== -1) score += weights.story;
+
+          /* dark / horror signal */
+          var darkGenres = ['Survival Horror','Action RPG','Action','Roguelike'];
+          if(weights.dark > 0 && darkGenres.indexOf(game.g) !== -1) score += weights.dark;
+          if(weights.dark < 0 && (game.g === 'Adventure' || game.g === 'Platformer' || game.g === 'Puzzle')) score += 1;
+
+          /* era filter — soft bonus */
+          if(weights.era === 'new'    && game.y >= 2023) score += 3;
+          if(weights.era === 'recent' && game.y >= 2020) score += 1;
+
+          /* vibe bonuses */
+          var v = weights.vibe;
+          if(v === 'cosy'      && (game.g === 'Adventure' || game.g === 'Platformer' || game.g === 'Puzzle' || game.g === 'Simulation')) score += 2;
+          if(v === 'weird'     && ['Adventure','Puzzle','RPG'].indexOf(game.g) !== -1) score += 2;
+          if(v === 'demanding' && demandingGenres.indexOf(game.g) !== -1) score += 2;
+          if(v === 'immersive' && ['RPG','Action RPG','Survival Horror','Action-Adventure'].indexOf(game.g) !== -1) score += 2;
+          if(v === 'endless'   && (game.len === 'Very Long')) score += 2;
+          if(v === 'social'    && (game.m === 'Co-op' || game.m === 'Multiplayer')) score += 2;
+
+          /* always add a quality bonus — higher rated games get a small edge */
+          score += (game.s - 70) * 0.05;
+
+          return {game: game, score: score};
+        });
+      }
+
+      function pickTop(weights, n){
+        var scored = computeScores(weights);
+        scored.sort(function(a,b){ return b.score - a.score; });
+        /* avoid always picking the same #1 — pick randomly from top 3 */
+        var pool = scored.slice(0, 3);
+        var winner = pool[Math.floor(Math.random() * Math.min(pool.length, 2))];
+        var runners = scored.slice(1, n+1).map(function(x){ return x.game; });
+        return {best: winner.game, runners: runners.filter(function(g){ return g.t !== winner.game.t; }).slice(0,3)};
+      }
+
+      /* ── DOM ── */
+      var introEl  = document.getElementById('gq-intro');
+      var gameEl   = document.getElementById('gq-game');
+      var resultEl = document.getElementById('gq-result');
+      var fillEl   = document.getElementById('gq-fill');
+      var counterEl= document.getElementById('gq-counter');
+      var qEl      = document.getElementById('gq-question');
+      var optsEl   = document.getElementById('gq-options');
+      var cardEl   = document.getElementById('gq-card');
+      if(!introEl) return;
+
+      function fadeOut(el, cb){
+        el.style.opacity='0'; el.style.transform='translateY(-10px)';
+        setTimeout(function(){ el.classList.add('coffee-quiz__panel--hidden'); el.setAttribute('aria-hidden','true'); if(cb) cb(); }, 280);
+      }
+      function fadeIn(el){
+        el.classList.remove('coffee-quiz__panel--hidden'); el.removeAttribute('aria-hidden');
+        el.offsetHeight;
+        el.style.opacity='1'; el.style.transform='translateY(0)';
+      }
+
+      var weights, current;
+
+      function mergeWeights(w){
+        Object.keys(w).forEach(function(k){
+          var v = w[k];
+          if(k === 'g' || k === 'len'){
+            /* array accumulation — collect genre/length preferences */
+            if(!weights[k]) weights[k]=[];
+            if(Array.isArray(v)) v.forEach(function(x){ if(weights[k].indexOf(x)===-1) weights[k].push(x); });
+          } else if(typeof v === 'number'){
+            weights[k] = (weights[k]||0) + v;
+          } else {
+            weights[k] = v; /* string/vibe — last write wins */
+          }
+        });
+      }
+
+      function renderQ(idx){
+        var q = GQ[idx];
+        fillEl.style.width = (idx / GQ.length * 100) + '%';
+        counterEl.textContent = (idx+1) + ' ⁄ ' + GQ.length;
+        qEl.style.opacity='0'; optsEl.style.opacity='0';
+        setTimeout(function(){
+          qEl.textContent = q.q;
+          optsEl.innerHTML = '';
+          q.opts.forEach(function(opt){
+            var btn = document.createElement('button');
+            btn.className = 'cq-option';
+            btn.textContent = opt.t;
+            btn.addEventListener('click', function(){
+              mergeWeights(opt.w);
+              btn.classList.add('cq-option--picked');
+              setTimeout(function(){
+                current++;
+                if(current < GQ.length){ renderQ(current); } else { showResult(); }
+              }, 260);
+            });
+            optsEl.appendChild(btn);
+          });
+          qEl.style.opacity='1'; optsEl.style.opacity='1';
+        }, 200);
+      }
+
+      function showResult(){
+        fillEl.style.width='100%';
+        var result = pickTop(weights, 4);
+        var g = result.best;
+        var scoreColor = g.s >= 90 ? 'rgba(20,130,65,.88)' : g.s >= 80 ? 'rgba(100,140,40,.85)' : 'rgba(140,100,30,.85)';
+        fadeOut(gameEl, function(){
+          var runnersHtml = result.runners.length ?
+            '<div class="cq-card__notes-label" style="margin-top:18px;">You might also like</div>'
+            + '<div class="cq-card__notes">'
+            + result.runners.map(function(r){
+                return '<span class="tag tag--alt" style="cursor:default;">'+ r.t +'</span>';
+              }).join('')
+            + '</div>' : '';
+
+          cardEl.innerHTML =
+            '<div class="cq-card__name">' + g.t + '</div>'
+            + '<div class="cq-card__tags">'
+              + '<span class="tag tag--alt">' + g.g + '</span>'
+              + '<span class="tag">' + g.m + '</span>'
+              + '<span class="tag">' + g.len + '</span>'
+              + '<span class="tag">' + g.y + '</span>'
+            + '</div>'
+            + '<p class="cq-card__desc">' + g.desc + '</p>'
+            + '<div class="cq-card__notes-label">Critic Score</div>'
+            + '<div style="font-size:1.6rem;font-weight:200;color:' + scoreColor + ';letter-spacing:-0.02em;margin:2px 0 4px;">'
+              + g.s + '<span style="font-size:0.9rem;opacity:0.5;font-weight:400;"> / 100</span>'
+            + '</div>'
+            + '<div class="cq-card__spec">by ' + g.d + '</div>'
+            + runnersHtml;
+
+          fadeIn(resultEl);
+        });
+      }
+
+      document.getElementById('gq-start').addEventListener('click', function(){
+        weights = {};
+        current = 0;
+        fadeOut(introEl, function(){ renderQ(0); fadeIn(gameEl); });
+      });
+      document.getElementById('gq-restart').addEventListener('click', function(){
+        fadeOut(resultEl, function(){
+          fillEl.style.width='0%';
+          fadeIn(introEl);
+        });
+      });
+
+      [introEl, gameEl, resultEl].forEach(function(el){
+        el.style.transition='opacity 0.28s ease, transform 0.28s ease';
+        el.style.opacity = el.classList.contains('coffee-quiz__panel--hidden') ? '0' : '1';
+        el.style.transform='translateY(0)';
+      });
     })();
 
   })();

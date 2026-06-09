@@ -1362,31 +1362,211 @@ h2.about__title{
 
 /* ===== Games Overlay ===== */
 .games-overlay{
-  background: #F6F7F9;
+  background: #B8DDD0 !important;
   position: relative;
 }
 
-/* scrollable list of game cards */
+/* ── mint-green pill overrides — beat the brown coffee-overlay rules ── */
+.coffee-overlay.games-overlay .tag--alt,
+.coffee-overlay.games-overlay span.tag--alt,
+.coffee-overlay.games-overlay div.tag--alt{
+  color: rgba(20,105,70,.82) !important;
+  background: rgba(30,160,100,.10) !important;
+  border-color: rgba(20,120,75,.22) !important;
+}
+.coffee-overlay.games-overlay .tag--alt::before,
+.coffee-overlay.games-overlay .tag--alt::after,
+.coffee-overlay.games-overlay span.tag--alt::before,
+.coffee-overlay.games-overlay span.tag--alt::after{
+  background: transparent !important;
+}
+.coffee-overlay.games-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3){
+  color: rgba(20,90,55,.78);
+  background: rgba(200,240,215,.65);
+  border-color: rgba(30,140,85,.18);
+}
+.coffee-overlay.games-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3)::before,
+.coffee-overlay.games-overlay .tag:not(.tag--alt):not(.tag--link2):not(.tag--link3)::after{
+  background: transparent !important;
+}
+
+/* scrollable list of game cards — 2-col grid */
 .games-card-list{
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   padding-bottom: 60px;
   padding-top: 4px;
 }
+@media(max-width:600px){
+  .games-card-list{ grid-template-columns: 1fr; gap: 8px; }
+}
 
-/* each card = same warm card as the rest of the site */
+/* each card */
 .games-card{
-  background: rgba(255,254,251,.86);
-  border: 0.2px solid rgba(100,65,30,.16);
+  background: rgba(230,248,236,.78);
+  border: 0.5px solid rgba(30,140,85,.16);
   border-radius: 14px;
-  padding: 22px 24px;
+  padding: 16px 18px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: border-color .15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 .games-card:hover{
-  border-color: rgba(100,65,30,.30);
+  border-color: rgba(30,140,85,.30);
+}
+
+/* smaller pills inside game cards */
+.games-card .tag,
+.games-card .tag--alt{
+  font-size: 7.5px;
+  padding: 6px 9px;
+  letter-spacing: 0.16em;
+}
+@media(max-width:600px){
+  .games-card .tag,
+  .games-card .tag--alt{ font-size: 7px; padding: 6px 8px; }
+  .games-card{ padding: 13px 14px; border-radius: 12px; }
+}
+
+/* ── interactive zone ── */
+.games-interactive{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+@media(max-width:600px){ .games-interactive{ grid-template-columns:1fr; } }
+
+.games-interactive__panel{
+  background: rgba(255,255,255,0.38);
+  border: 0.5px solid rgba(30,140,85,.16);
+  border-radius: 18px;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.games-panel-hint{
+  font-size: 10px;
+  color: rgba(0,0,0,.35);
+  text-align: center;
+  margin: 0;
+  align-self: flex-start;
+}
+
+/* radar canvas */
+.games-radar-canvas{
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  cursor: default;
+  max-height: 240px;
+}
+.games-radar-label{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(20,110,60,.75);
+  min-height: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+/* slot machine */
+.games-slot-display{
+  width: 100%;
+  flex: 1;
+  min-height: 140px;
+  background: rgba(255,255,255,0.45);
+  border-radius: 14px;
+  border: 0.5px solid rgba(30,140,85,.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  text-align: center;
+  overflow: hidden;
+  transition: background .18s ease, border-color .18s ease;
+}
+.games-slot-display.is-spinning{
+  background: rgba(200,240,215,.45);
+  border-color: rgba(30,140,85,.28);
+}
+.games-slot-display.is-landed{
+  background: rgba(220,248,228,.55);
+  border-color: rgba(30,140,85,.35);
+}
+.games-slot-title{
+  font-size: clamp(0.68rem,1.6vw,0.82rem);
+  font-weight: 650;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.75);
+  line-height: 1.45;
+  margin-bottom: 8px;
+  transition: opacity .06s ease;
+  max-width: 100%;
+  font-style: normal;
+}
+.games-slot-display.is-spinning .games-slot-title{ opacity: 0.55; }
+.games-slot-meta{
+  font-size: 8px;
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(20,100,55,.65);
+  min-height: 13px;
+  line-height: 1.6;
+}
+.games-slot-btn{
+  background: rgba(30,140,85,.12);
+  border: 1px solid rgba(30,140,85,.28);
+  border-radius: 100px;
+  padding: 9px 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(20,100,55,.85);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .18s ease;
+  line-height: 1;
+}
+.games-slot-btn:hover:not(:disabled){
+  background: rgba(30,140,85,.22);
+  border-color: rgba(30,140,85,.42);
+}
+.games-slot-btn:disabled{ opacity:.45; cursor:default; }
+.games-slot-cta-btn{
+  background: none;
+  border: 1px solid rgba(30,140,85,.30);
+  border-radius: 100px;
+  padding: 9px 20px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: rgba(20,100,55,.75);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .18s ease;
+  line-height: 1;
+}
+.games-slot-cta-btn:hover{
+  background: rgba(30,140,85,.08);
+  border-color: rgba(30,140,85,.45);
+  color: rgba(15,90,48,1);
 }
 
 /* empty / no-results state */
@@ -1395,6 +1575,32 @@ h2.about__title{
   color: rgba(0,0,0,.40);
   padding: 20px 0;
   font-style: italic;
+}
+
+/* ── Games quiz: neutralise brown coffee-overlay tints ── */
+.coffee-overlay.games-overlay .cq-card{
+  background: rgba(255,254,251,.90);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.coffee-overlay.games-overlay .cq-option{
+  background: rgba(255,252,247,.90);
+  border-color: rgba(0,0,0,.12);
+  color: rgba(0,0,0,.68);
+}
+.coffee-overlay.games-overlay .cq-option:hover{
+  border-color: rgba(20,130,65,.35);
+  background: rgba(20,130,65,.07);
+  color: rgba(15,110,52,.90);
+  transform: translateY(-1px);
+}
+.coffee-overlay.games-overlay .cq-option--picked{
+  border-color: rgba(20,130,65,.55);
+  background: rgba(20,130,65,.10);
+  color: rgba(15,110,52,.90);
+}
+.coffee-overlay.games-overlay .cq-track__fill{
+  background: #111111;
 }
 
 /* ===== Places Overlay ===== */

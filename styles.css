@@ -932,10 +932,10 @@ main{position:relative; z-index:1}
   margin-top:18px;
 }
 .card{
-  border:0.2px solid rgba(0,0,0,.4);
+  border:none;
   border-radius:var(--r);
   background:rgba(240,240,244,.070);
-  box-shadow:0 20px 60px rgba(0,0,0,.02);
+  box-shadow:0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
   padding:18px;
   display:flex;
   flex-direction:column;
@@ -1001,10 +1001,11 @@ main{position:relative; z-index:1}
   margin-top:18px;
 }
 .panel{
-  border:1px solid var(--line);
+  border:none;
   border-radius:var(--r);
   background:rgba(248,248,252,.55);
   padding:18px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
 }
 .panel h3{margin:0 0 10px}
 .panel p{margin:0 0 12px; color:rgba(0,0,0,.86); line-height:1.65}
@@ -1020,7 +1021,8 @@ main{position:relative; z-index:1}
   border-radius: var(--r);
   padding: 16px 18px;
   background: rgba(240,240,244,.3);
-  border: 0.2px solid rgba(0,0,0,.25);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 8px 32px rgba(0,0,0,.07);
   align-items: start;
 }
 /* Make the inner content wrapper participate in the grid (so h3/p can be positioned) */

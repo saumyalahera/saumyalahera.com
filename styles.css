@@ -1467,13 +1467,60 @@ h2.about__title{
   align-self: flex-start;
 }
 
-/* radar canvas */
-.games-radar-canvas{
+/* genre pill bars */
+.games-pill-bars{
   width: 100%;
-  aspect-ratio: 1;
-  display: block;
-  cursor: default;
-  max-height: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.gp-row{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 2px;
+  border-radius: 6px;
+  transition: opacity 0.18s;
+}
+.gp-row--active .gp-pill{ background: rgba(20,130,65,0.55); }
+.gp-row--active .gp-label{ color: rgba(8,90,38,0.95); font-weight: 650; }
+.gp-row--active .gp-count{ color: rgba(8,90,38,0.80); }
+.gp-row--locked .gp-pill{ background: rgba(20,130,65,0.70); }
+.gp-row--locked .gp-label{ color: rgba(8,90,38,1); font-weight: 700; }
+.gp-row--dim{ opacity: 0.25; }
+.gp-label{
+  font-size: 9px;
+  font-weight: 500;
+  color: rgba(0,0,0,0.50);
+  white-space: nowrap;
+  width: 90px;
+  flex-shrink: 0;
+  text-align: right;
+  transition: color 0.18s, font-weight 0.18s;
+}
+.gp-pills{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  flex: 1;
+}
+.gp-pill{
+  display: inline-block;
+  width: 9px;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(30,130,70,0.20);
+  transition: background 0.18s;
+}
+.gp-count{
+  font-size: 8px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.28);
+  width: 18px;
+  text-align: right;
+  flex-shrink: 0;
+  transition: color 0.18s;
 }
 .games-radar-label{
   font-size: 8px;
@@ -1482,7 +1529,7 @@ h2.about__title{
   text-transform: uppercase;
   color: rgba(20,110,60,.75);
   min-height: 13px;
-  margin: 0;
+  margin: 4px 0 0;
   text-align: center;
 }
 

@@ -4781,11 +4781,11 @@
         <!-- ── Interactive Zone ── -->
         <div class="games-interactive" id="games-interactive">
 
-          <!-- Genre Radar -->
-          <div class="games-interactive__panel">
-            <p class="kicker" style="margin-bottom:4px;align-self:flex-start;">Taste Profile</p>
-            <p class="games-panel-hint">Hover a peak to filter · click to lock</p>
-            <canvas id="games-radar" class="games-radar-canvas"></canvas>
+          <!-- Genre Pill Bars -->
+          <div class="games-interactive__panel" style="align-items:stretch;">
+            <p class="kicker" style="margin-bottom:4px;">Genres</p>
+            <p class="games-panel-hint">Hover a row to filter · click to lock</p>
+            <div id="games-radar" class="games-pill-bars"></div>
             <p id="games-radar-label" class="games-radar-label"></p>
           </div>
 
@@ -5223,19 +5223,90 @@
     /* ══ Genre Radar + Slot Machine ══ */
     function initInteractive(){
 
-      /* ── Terrain Chart ── */
-      var rcv = document.getElementById('games-radar');
-      if(rcv){
-        var rctx = rcv.getContext('2d');
-        var rdpr = window.devicePixelRatio||1;
+      /* ── Genre Pill Bars ── */
+      var pillWrap = document.getElementById('games-radar');
+      if(pillWrap){
         var lockedGenre = null;
-        var hoveredGenre = null;
-        var peakXs = []; /* {genre, x} for hit-testing */
 
-        /* build genre map */
         var gCount={};
         GAMES.forEach(function(g){ gCount[g.g]=(gCount[g.g]||0)+1; });
-        var gList=Object.keys(gCount).sort(function(a,b){ return gCount[b]-gCount[a]; }).slice(0,9);
+        var gList=Object.keys(gCount).sort(function(a,b){ return gCount[b]-gCount[a]; });
+
+        function buildPillBars(){
+          pillWrap.innerHTML='';
+          gList.forEach(function(genre){
+            var count=gCount[genre];
+            var isLocked=(genre===lockedGenre);
+
+            var row=document.createElement('div');
+            row.className='gp-row'+(isLocked?' gp-row--locked':'');
+            row.dataset.genre=genre;
+
+            var label=document.createElement('span');
+            label.className='gp-label';
+            label.textContent=genre;
+            row.appendChild(label);
+
+            var pills=document.createElement('div');
+            pills.className='gp-pills';
+            for(var k=0;k<count;k++){
+              var p=document.createElement('span');
+              p.className='gp-pill';
+              pills.appendChild(p);
+            }
+            row.appendChild(pills);
+
+            var cnt=document.createElement('span');
+            cnt.className='gp-count';
+            cnt.textContent=count;
+            row.appendChild(cnt);
+
+            row.addEventListener('mouseenter',function(){
+              if(lockedGenre) return;
+              activeRadarGenre=genre; gShowCount=G_PAGE;
+              renderCards();
+              var lbl=document.getElementById('games-radar-label');
+              if(lbl) lbl.textContent=genre+' · '+count+' games';
+              pillWrap.querySelectorAll('.gp-row').forEach(function(r){
+                r.classList.toggle('gp-row--dim', r.dataset.genre!==genre);
+                r.classList.toggle('gp-row--active', r.dataset.genre===genre);
+              });
+            });
+            row.addEventListener('mouseleave',function(){
+              if(lockedGenre) return;
+              activeRadarGenre=null; gShowCount=G_PAGE;
+              renderCards();
+              var lbl=document.getElementById('games-radar-label');
+              if(lbl) lbl.textContent='';
+              pillWrap.querySelectorAll('.gp-row').forEach(function(r){
+                r.classList.remove('gp-row--dim','gp-row--active');
+              });
+            });
+            row.addEventListener('click',function(){
+              if(lockedGenre===genre){
+                lockedGenre=null; activeRadarGenre=null;
+              } else {
+                lockedGenre=genre; activeRadarGenre=genre;
+              }
+              gShowCount=G_PAGE;
+              buildPillBars(); renderCards();
+              var lbl=document.getElementById('games-radar-label');
+              if(lbl) lbl.textContent=lockedGenre?(lockedGenre+' · click again to clear'):'';
+            });
+
+            pillWrap.appendChild(row);
+          });
+        }
+
+        buildPillBars();
+
+        /* stub out unused vars so later slot-machine code still works */
+        var rcv=pillWrap, rctx=null, rdpr=1;
+        function resizeR(){}
+        function drawTerrain(){}
+        /* ── DEAD CODE REMOVED — replaced by pill bars above ── */
+        if(false){
+        var hoveredGenre=null, peakXs=[];
         var maxC=Math.max.apply(null,gList.map(function(g){ return gCount[g]; }));
 
         function resizeR(){
@@ -5458,6 +5529,7 @@
           if(lbl) lbl.textContent=lockedGenre?(lockedGenre+' · click again to clear'):'';
         });
         window.addEventListener('resize',function(){ resizeR(); drawTerrain(1); });
+        } /* end if(false) — dead terrain code */
       }
 
       /* ── Slot Machine ── */

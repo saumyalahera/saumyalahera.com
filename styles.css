@@ -3135,6 +3135,7 @@ h2.about__title{
   transition: color .2s ease, background .2s ease, border-color .2s ease;
   font-family: inherit;
 }
+/* default (tea, countries, etc.) — green */
 .roast-pill:hover{ color: rgba(20,110,55,.70); }
 .roast-pill.roast-pill--active{
   color: rgba(15,100,48,.90);
@@ -3142,7 +3143,22 @@ h2.about__title{
   border-color: rgba(20,110,55,.32);
 }
 
-/* games overlay — green pill + list overrides */
+/* coffee overlay roast pills — brown (excludes tea pills) */
+#coffee-overlay .roast-pills:not(.tea-ox-pills) .roast-pill:hover{ color: rgba(120,60,20,.70); }
+#coffee-overlay .roast-pills:not(.tea-ox-pills) .roast-pill.roast-pill--active{
+  color: rgba(93,51,21,.90);
+  background: rgba(120,70,25,.10);
+  border-color: rgba(120,60,20,.30);
+}
+/* tea pills — green */
+.tea-ox-pills .roast-pill:hover{ color: rgba(20,110,55,.70); }
+.tea-ox-pills .roast-pill.roast-pill--active{
+  color: rgba(15,100,48,.90);
+  background: rgba(30,130,70,.12);
+  border-color: rgba(20,110,55,.32);
+}
+
+/* games overlay — green */
 .games-overlay .roast-pill:hover{ color: rgba(20,110,55,.70); }
 .games-overlay .roast-pill.roast-pill--active{
   color: rgba(15,100,48,.90);

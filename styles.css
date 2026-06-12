@@ -3185,6 +3185,14 @@ h2.about__title{
   letter-spacing: 0;
   color: rgba(0,0,0,.82);
 }
+/* Quiz "Find My Game" — match coffee quiz title (plain UI font) */
+#games-quiz .coffee-sub-title{
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
 
 
 /* --- Detail text --- */

@@ -2213,9 +2213,9 @@ h2.about__title{
   background: none;
   border: 1px solid rgba(0,0,0,.13);
   border-radius: 100px;
-  padding: 7px 18px;
+  padding: 4px 12px;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 600;
   letter-spacing: 0.10em;
   text-transform: uppercase;
@@ -3084,8 +3084,18 @@ h2.about__title{
   display: grid;
   grid-template-columns: 175px 1fr;
   gap: 36px;
-  align-items: center;
+  align-items: start;
   margin-top: 24px;
+}
+#d20-canvas{
+  display: block;
+  width: 190px;
+  height: 190px;
+}
+#cartridge-canvas{
+  display: block;
+  width: 175px;
+  height: 260px;
 }
 .roast-canvas-wrap{
   display: flex;
@@ -3125,11 +3135,39 @@ h2.about__title{
   transition: color .2s ease, background .2s ease, border-color .2s ease;
   font-family: inherit;
 }
-.roast-pill:hover{ color: rgba(93,51,21,.60); }
+.roast-pill:hover{ color: rgba(20,110,55,.70); }
 .roast-pill.roast-pill--active{
-  color: rgba(107,58,24,.80);
-  background: rgba(140,90,40,.12);
-  border-color: rgba(93,51,21,.28);
+  color: rgba(15,100,48,.90);
+  background: rgba(30,130,70,.12);
+  border-color: rgba(20,110,55,.32);
+}
+
+/* games overlay — green pill + list overrides */
+.games-overlay .roast-pill:hover{ color: rgba(20,110,55,.70); }
+.games-overlay .roast-pill.roast-pill--active{
+  color: rgba(15,100,48,.90);
+  background: rgba(30,130,70,.12);
+  border-color: rgba(20,110,55,.32);
+}
+.games-overlay .coffee-list__item:hover{
+  color: rgba(15,100,48,.85);
+  background: rgba(30,130,70,.07);
+}
+.games-overlay .coffee-list__item--active{
+  border-left-color: rgba(20,120,60,.80);
+  color: rgba(15,100,48,.92);
+  background: rgba(30,130,70,.10);
+}
+.games-overlay .roast-meter__fill{
+  background: rgba(15,100,48,.40);
+}
+/* games overlay title weight + color like countries */
+.games-overlay .coffee-sub-title{
+  font-family: 'DengachoSignature', serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(0,0,0,.82);
 }
 
 

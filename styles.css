@@ -3250,6 +3250,22 @@ h2.about__title{
   .roast-viewer{ grid-template-columns: 1fr; gap: 24px; }
   .roast-canvas-wrap{ justify-content: flex-start; }
   #roast-canvas{ width: 120px; height: 150px; }
+
+  /* Top Picks list — keep as plain rows, not pills */
+  #cart-list .coffee-list__item{
+    width: 100%;
+    border: none;
+    border-left: 1.5px solid transparent;
+    border-radius: 0;
+    padding: 7px 14px 7px 13px;
+    white-space: normal;
+    flex-shrink: 1;
+  }
+  #cart-list .coffee-list__item--active{
+    border-left-color: rgba(20,120,60,.80);
+  }
+  #cart-list .coffee-list__num{ display: inline; }
+  #cart-list .coffee-list__name{ font-size: 11px; }
 }
 
 /* Override portfolio purple inside the coffee overlay — light warm pill */

@@ -5571,7 +5571,7 @@
 
           /* genre tag */
           cctx.font='500 '+Math.round(lw*0.080)+'px "Courier New",Courier,monospace';
-          cctx.fillStyle=ink(0.30);
+          cctx.fillStyle=ink(0.70);
           cctx.textBaseline='bottom'; cctx.textAlign='center';
           cctx.fillText(game.g.toUpperCase(), lx+lw/2, ly+lh-6);
 
@@ -5579,10 +5579,10 @@
           var badgeCx=lx+lw-13, badgeCy=ly+lh-12, badgeR=8;
           /* outer ring — outline only */
           cctx.beginPath(); cctx.arc(badgeCx,badgeCy,badgeR,0,Math.PI*2);
-          cctx.strokeStyle=ink(0.18); cctx.lineWidth=0.7; cctx.stroke();
+          cctx.strokeStyle=ink(0.70); cctx.lineWidth=0.7; cctx.stroke();
           /* inner ring — outline only */
           cctx.beginPath(); cctx.arc(badgeCx,badgeCy,badgeR*0.60,0,Math.PI*2);
-          cctx.strokeStyle=ink(0.18); cctx.lineWidth=0.7; cctx.stroke();
+          cctx.strokeStyle=ink(0.70); cctx.lineWidth=0.7; cctx.stroke();
           /* nucleus — solid black */
           cctx.beginPath(); cctx.arc(badgeCx,badgeCy,badgeR*0.22,0,Math.PI*2);
           cctx.fillStyle='rgba(18,18,18,0.88)'; cctx.fill();

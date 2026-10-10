@@ -70,14 +70,65 @@
     <section id="work" class="section">
       <div class="section__head">
         <h2>Selected work</h2>
-        <p>Two projects that best represent how I think: architecture‑aware performance, expressive tools, and real‑world interactive systems.</p>
+        <p>
+          Research and projects exploring GPU architecture, compiler design,
+          shader programming languages, performance optimization, and
+          real-world interactive systems.
+        </p>
       </div>
 
       <div class="grid">
+          
+          <article class="card">
+            <div class="card__top">
+              <div class="tag">Research</div>
+              <span class="tag tag--alt">Live</span>
+              <h3>Malossa: GPU Shader Programming Language & IDE</h3>
+              <p class="muted">
+                An experimental shader programming language and macOS IDE featuring
+                custom syntax, shader compilation, and GPU programming tools.
+              </p>
+            </div>
+
+            <ul class="bullets">
+              <li>Developing a custom programming language specifically for GPU shader development.</li>
+              <li>Building a native macOS IDE using Swift and SwiftUI for writing, editing, and organizing shader files.</li>
+              <li>Exploring compiler architecture, intermediate representations, and GPU code generation.</li>
+            </ul>
+
+            <div class="card__actions">
+              <a
+                class="link"
+                href="https://github.com/saumyalahera/Malossa/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Download Malossa ↓
+              </a>
+            </div>
+          </article>
+          
+          <article class="card">
+            <div class="card__top">
+              <div class="tag">Research</div>
+              <span class="tag tag--alt">On hold</span>
+              <h3>Tile‑Aware Rendering on Mobile GPUs</h3>
+              <p class="muted">Restructuring multi‑pass pipelines to match tile execution and reduce device‑memory traffic.</p>
+            </div>
+            <ul class="bullets">
+              <li>Designed tile‑aware pass fusion to retain intermediates on‑chip.</li>
+              <li>Improved frame‑time stability and energy efficiency on iPad‑class GPUs.</li>
+              <li>Maintained identical visual output while reducing bandwidth pressure.</li>
+            </ul>
+            <div class="card__actions">
+              <a class="link" href="#research">Read the summary →</a>
+            </div>
+          </article>
+          
         <article class="card">
           <div class="card__top">
             <div class="tag">Research</div>
-            <span class="tag tag--alt">In Progress</span>
+            <span class="tag tag--alt">On hold</span>
             <h3>Tile‑Aware Rendering on Mobile GPUs</h3>
             <p class="muted">Restructuring multi‑pass pipelines to match tile execution and reduce device‑memory traffic.</p>
           </div>
@@ -94,7 +145,7 @@
         <article class="card">
           <div class="card__top">
             <div class="tag">Tools</div>
-            <span class="tag tag--alt">In Progress</span>
+            <span class="tag tag--alt">On hold</span>
             <h3>TileLang</h3>
             <p class="muted">A tile‑locality‑aware programming model that exposes residency semantics for compiler optimization.</p>
           </div>
@@ -249,23 +300,45 @@
       <div class="section__head">
         <h2>Research focus</h2>
         <p class="muted">
-          I’m interested in how carefully exposing architectural structure (like tile locality) can unlock safe, automatic optimization —
-          and make interactive systems feel more predictable and “alive.”
+          My research explores programming language design, compiler architecture,
+          GPU computing, and performance optimization. I’m particularly interested
+          in building expressive tools and leveraging hardware architecture to
+          make graphics and interactive systems more efficient and predictable.
         </p>
       </div>
 
       <div class="split">
+
+        <!-- Malossa -->
         <div class="panel">
-          <h3>Tile‑Aware Pass Fusion</h3>
+          <h3>Malossa: GPU Shader Programming Language & IDE</h3>
           <p>
-            Tile‑based GPUs execute fragments in on‑chip tile memory, yet many pipelines force intermediate writes to device memory.
-            I explore restructuring passes so data stays tile‑local, reducing bandwidth, latency, and energy.
+            Malossa is an experimental shader programming language and native macOS IDE
+            designed to make GPU programming more expressive and accessible.
+            It introduces custom syntax for writing shaders while exploring compiler
+            architecture, intermediate representations, and GPU code generation.
+            The IDE provides a dedicated environment for creating, editing,
+            and organizing shader files.
+          </p>
+          <div class="callout">
+            <strong>Focus:</strong> shader language design, compiler development,
+            and native GPU programming tools.
+          </div>
+        </div>
+
+        <!-- Tile-Aware Pass Fusion -->
+        <div class="panel">
+          <h3>Tile-Aware Pass Fusion</h3>
+          <p>
+            Tile-based GPUs execute fragments in on-chip tile memory, yet many pipelines force intermediate writes to device memory.
+            I explore restructuring passes so data stays tile-local, reducing bandwidth, latency, and energy.
           </p>
           <div class="callout">
             <strong>Outcome:</strong> improved frame stability + efficiency without changing visuals.
           </div>
         </div>
 
+        <!-- TileLang -->
         <div class="panel">
           <h3>TileLang</h3>
           <p>
@@ -273,11 +346,13 @@
             resources, producing efficient Metal pipelines while keeping code expressive for rapid iteration.
           </p>
           <div class="callout">
-            <strong>Outcome:</strong> architecture‑aware optimization that is repeatable and less error‑prone.
+            <strong>Outcome:</strong> architecture-aware optimization that is repeatable and less error-prone.
           </div>
         </div>
+
       </div>
     </section>
+    
 <!-- Sections -->
     <section id="talks" class="section">
       <div id="other_sections" aria-label="Other sections"></div>

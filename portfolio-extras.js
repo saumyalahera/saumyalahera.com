@@ -244,9 +244,45 @@
     });
   }
 
+  // Accent colour picked in the app. Mirrors AccentTheme in the app: text keeps
+  // the hue but is darkened until it reads on white; fills use a pale tint.
+  function applyAccent(d) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(str(d.accent_color));
+    if (!m) return;
+    const v = parseInt(m[1], 16);
+    const r = ((v >> 16) & 255) / 255, g = ((v >> 8) & 255) / 255, b = (v & 255) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), dl = mx - mn;
+    let h = 0, sat = 0, l = (mx + mn) / 2;
+    if (dl > 0) {
+      sat = dl / (1 - Math.abs(2 * l - 1));
+      if (mx === r) h = (g - b) / dl + (g < b ? 6 : 0);
+      else if (mx === g) h = (b - r) / dl + 2;
+      else h = (r - g) / dl + 4;
+      h /= 6;
+    }
+    const toRgb = (L) => [0, 8, 4].map((n) => {
+      const k = (n + h * 12) % 12;
+      const a = sat * Math.min(L, 1 - L);
+      return L - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    });
+    const contrast = (c) => {
+      const lin = (x) => (x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4));
+      return 1.05 / (0.2126 * lin(c[0]) + 0.7152 * lin(c[1]) + 0.0722 * lin(c[2]) + 0.05);
+    };
+    let L = l;
+    while (L > 0.05 && contrast(toRgb(L)) < 4.5) L -= 0.02;
+    const bytes = (c) => c.map((x) => Math.round(Math.min(1, Math.max(0, x)) * 255));
+    const ink = bytes(toRgb(L));
+    const soft = bytes(toRgb(0.89));
+    const root = document.documentElement.style;
+    root.setProperty('--accent-ink', 'rgb(' + ink.join(',') + ')');
+    root.setProperty('--accent-ink-rgb', ink.join(','));
+    root.setProperty('--accent-soft-rgb', soft.join(','));
+  }
+
   window.renderPortfolioExtras = function (d) {
     if (!d || typeof d !== 'object') return;
-    const steps = [applyFields, renderHeroButtons, renderHeroPills, renderSelectedWork,
+    const steps = [applyAccent, applyFields, renderHeroButtons, renderHeroPills, renderSelectedWork,
                    renderResearch, renderDuolingo, renderGames];
     steps.forEach((fn) => {
       try { fn(d); } catch (e) { try { console.error('portfolio extras:', e); } catch (_) {} }

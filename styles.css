@@ -59,6 +59,11 @@
   --accent6:#DBE9F3;
   --shadow: 0 30px 80px rgba(0,0,0,.15);
   --r:18px;
+  /* Accent for pills, buttons and callouts. The Leabhar app can override it
+     (accent_color in the site data); portfolio-extras.js rewrites these three. */
+  --accent-ink:#4C38F0;
+  --accent-ink-rgb:76,56,240;
+  --accent-soft-rgb:204,199,255;
 }
 
 /*text one*/
@@ -162,9 +167,9 @@
   letter-spacing: 0.28em;
   font-size: 9px;
   line-height: 1;
-  color: #4C38F0;
-  background: rgba(204,199,255,.15);              /* lilac fill */
-  border: 0.1px solid rgba(76,56,240,.18);        /* subtle purple border */
+  color: var(--accent-ink);
+  background: rgba(var(--accent-soft-rgb),.15);              /* lilac fill */
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);        /* subtle purple border */
   box-shadow: none;
 }
 
@@ -173,7 +178,7 @@
   position:absolute;
   inset:-0.5px;                 /* size of the boxy plate */
   border-radius:6px;          /* keep this small so it reads as a rectangle */
-  background:rgba(204,199,255,.15);
+  background:rgba(var(--accent-soft-rgb),.15);
   z-index:-20;
 }
 
@@ -182,7 +187,7 @@
   position:absolute;
   inset:1px;
   border-radius:inherit;
-  background: rgba(204,199,255,.15);
+  background: rgba(var(--accent-soft-rgb),.15);
   pointer-events:none;
   filter:brightness(1.08);
 }
@@ -231,7 +236,7 @@
   position:absolute;
   inset:-0.5px;                 /* size of the boxy plate */
   border-radius:6px;          /* keep this small so it reads as a rectangle */
-  background:rgba(204,199,255,.15);
+  background:rgba(var(--accent-soft-rgb),.15);
   z-index:-20;
 }
 
@@ -240,7 +245,7 @@
   position:absolute;
   inset:1px;
   border-radius:inherit;
-  background: rgba(204,199,255,.15);
+  background: rgba(var(--accent-soft-rgb),.15);
   pointer-events:none;
   filter:brightness(1.08);
 }
@@ -273,9 +278,9 @@
   font-size: 9px;
   cursor: default;
   padding:10px 14px;
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
-  border: 0.1px solid rgba(76,56,240,.18);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
   letter-spacing: 0.28em;
   text-decoration:none;
   text-transform: uppercase;
@@ -292,7 +297,7 @@
   position:absolute;
   inset:-0.5px;
   border-radius:6px;
-  background:rgba(204,199,255,.15);
+  background:rgba(var(--accent-soft-rgb),.15);
   z-index:-20;
 }
 
@@ -301,7 +306,7 @@
   position:absolute;
   inset:1px;
   border-radius:inherit;
-  background: rgba(204,199,255,.15);
+  background: rgba(var(--accent-soft-rgb),.15);
 }
 /*Preview ends*/
 /*tags start*/
@@ -341,7 +346,7 @@
   position:absolute;
   inset:-0.5px;                 /* size of the boxy plate */
   border-radius:6px;          /* keep this small so it reads as a rectangle */
-  background:rgba(204,199,255,.15);
+  background:rgba(var(--accent-soft-rgb),.15);
   z-index:-20;
 }
 
@@ -350,7 +355,7 @@
   position:absolute;
   inset:1px;
   border-radius:inherit;
-  background: rgba(204,199,255,.15);
+  background: rgba(var(--accent-soft-rgb),.15);
   pointer-events:none;
   filter:brightness(1.08);
 }
@@ -366,9 +371,9 @@
 
 .tag--link2{
   cursor: pointer;
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
-  border: 0.1px solid rgba(76,56,240,.18);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
 }
 
 .tag--link2:hover{
@@ -380,9 +385,9 @@
   /*cursor: pointer;
   background: linear-gradient(135deg, #e8f1ff 0%, #cfe2ff 45%, #a9c3ff 100%);*/
   cursor: pointer;
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
-  border: 0.1px solid rgba(76,56,240,.18);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
 }
 
 .tag--link3:hover{
@@ -398,9 +403,9 @@
 /* Non-clickable tag with alternate background */
 .tag--alt{
   cursor: default;
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
-  border: 0.1px solid rgba(76,56,240,.18);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
   /*border-color:rgba(0,0,0,.20);
   background:linear-gradient(135deg,var(--accent),var(--accent2));*/
 }
@@ -465,7 +470,7 @@
   position:absolute;
   inset:-0.5px;                 /* size of the boxy plate */
   border-radius:6px;          /* keep this small so it reads as a rectangle */
-  background:rgba(204,199,255,.15);
+  background:rgba(var(--accent-soft-rgb),.15);
   z-index:-20;
 }
 
@@ -474,7 +479,7 @@
   position:absolute;
   inset:1px;
   border-radius:inherit;
-  background: rgba(204,199,255,.15);
+  background: rgba(var(--accent-soft-rgb),.15);
   pointer-events:none;
   filter:brightness(1.08);
 }
@@ -501,9 +506,9 @@
   font-weight:600;
   font-size:14px;
   color:#111111;*/
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
-  border: 0.1px solid rgba(76,56,240,.18);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
 }
 
 .meta--link2:hover{
@@ -521,9 +526,9 @@
   /*border-left:3px solid rgba(182,255,106,.55);
    background:rgba(182,255,106,.06);
   color:rgba(0,0,0,.90);*/
-  border-left:3px solid rgba(204,199,255,.55);
-  background: rgba(204,199,255,.15);
-  color: #4C38F0;
+  border-left:3px solid rgba(var(--accent-soft-rgb),.55);
+  background: rgba(var(--accent-soft-rgb),.15);
+  color: var(--accent-ink);
 }
 /*outcome ends*/
 
@@ -669,7 +674,7 @@
   overflow: hidden;
 
   /* purple-ish base layer INSIDE card */
-  background: rgba(204,199,255,0);
+  background: rgba(var(--accent-soft-rgb),0);
 
   box-shadow: none;
   
@@ -777,9 +782,9 @@
   letter-spacing: 0.28em;
   font-size: 9px;
   line-height: 1;
-  color: #4C38F0;
-  background: rgba(204,199,255,.15);
-  border: 0.1px solid rgba(76,56,240,.18);
+  color: var(--accent-ink);
+  background: rgba(var(--accent-soft-rgb),.15);
+  border: 0.1px solid rgba(var(--accent-ink-rgb),.18);
   box-shadow: none;
 }*/
 /*mini card ends*/

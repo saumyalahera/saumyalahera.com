@@ -24,25 +24,25 @@
       <div class="hero__copy">
         <p class="kicker" id="text_one">Музыка • Comida • Teangacha • İş</p>
         <h1 class="hero-title">
-          <span class="hero-name">Saumya Lahera</span>
-          <span class="accent">(SAW-myuh luh-HAY-ruh)</span>.
-          <span class="hero-native">GUJARATI - </span>
-          <span class="hero-native2">સૌમ્ય લહેરા</span>
+          <span class="hero-name" data-field="hero.name">Saumya Lahera</span>
+          <span class="accent" data-field="hero.pronunciation">(SAW-myuh luh-HAY-ruh)</span>.
+          <span class="hero-native" data-field="hero.native_label">GUJARATI - </span>
+          <span class="hero-native2" data-field="hero.native_name">સૌમ્ય લહેરા</span>
         </h1>
         <p class="lede" id="summary">
           I design real‑time rendering pipelines, programming models, and prototyping tools that
           stay fast under mobile constraints — latency, power, and memory.
         </p>
-        <div class="cta">
+        <div class="cta" id="hero_buttons">
           <a class="btn primary" href="#work">See selected work</a>
           <a class="btn ghost" href="#about">ABOUT ME</a>
           <a class="btn ghost" href="#learn-for-free">Want to learn?</a>
         </div>
         <br>
         <div class="pillrow__wrap" aria-label="Work and experience">
-          <div class="pillrow__title">Education &amp; Experience</div>
+          <div class="pillrow__title" data-field="hero.pills_title">Education &amp; Experience</div>
           <br>
-          <div class="pillrow" aria-label="Highlights">
+          <div class="pillrow" id="hero_pills" aria-label="Highlights">
             <span class="pill"><img class="pill__icon" src="assets/pills/cmu.png" alt="" />Carnegie Mellon University, MS</span>
             <span class="pill"><img class="pill__icon" src="assets/pills/mu.png" alt="" />Mumbai University, BS</span>
             <span class="pill"><img class="pill__icon" src="assets/pills/sbmp.png" alt="" />Shri Bhagubhai Mafatlal Polytechnic</span>
@@ -69,15 +69,15 @@
 
     <section id="work" class="section">
       <div class="section__head">
-        <h2>Selected work</h2>
-        <p>
+        <h2 data-field="section_heads.work.title">Selected work</h2>
+        <p data-field="section_heads.work.subtitle">
           Research and projects exploring GPU architecture, compiler design,
           shader programming languages, performance optimization, and
           real-world interactive systems.
         </p>
       </div>
 
-      <div class="grid">
+      <div class="grid" id="selected_work">
           
           <article class="card">
             <div class="card__top">
@@ -168,8 +168,8 @@
 
     <section id="more-work" class="section">
       <div class="section__head">
-        <h2>More projects</h2>
-        <p class="muted">Additional work across graphics tooling, interactive prototypes, and production systems. (Brief summaries; details available on request.)</p>
+        <h2 data-field="section_heads.more_work.title">More projects</h2>
+        <p class="muted" data-field="section_heads.more_work.subtitle">Additional work across graphics tooling, interactive prototypes, and production systems. (Brief summaries; details available on request.)</p>
       </div>
 
       <div class="grid" id="more_projects" aria-label="More projects from JSON"></div>
@@ -298,8 +298,8 @@
 
     <section id="research" class="section section--alt">
       <div class="section__head">
-        <h2>Research focus</h2>
-        <p class="muted">
+        <h2 data-field="section_heads.research.title">Research focus</h2>
+        <p class="muted" data-field="section_heads.research.subtitle">
           My research explores programming language design, compiler architecture,
           GPU computing, and performance optimization. I’m particularly interested
           in building expressive tools and leveraging hardware architecture to
@@ -307,7 +307,7 @@
         </p>
       </div>
 
-      <div class="split">
+      <div class="split" id="research_panels">
 
         <!-- Malossa -->
         <div class="panel">
@@ -448,7 +448,7 @@
 <!-- Sections    -->
     <section id="about" class="section section--alt">
       <div class="section__head">
-        <h2 class="about__title">About</h2>
+        <h2 class="about__title" data-field="section_heads.about.title">About</h2>
       </div>
       <div class="about">
           <img class="hero-avatar" src="assets/avatar_about.jpg" alt="Saumya Lahera" loading="eager" />
@@ -466,7 +466,7 @@
       </button>
 
       <div class="pillrow__wrap" aria-label="Work and experience">
-          <h2 class="about__title">Featured Skills</h2>
+          <h2 class="about__title" data-field="section_heads.skills.title">Featured Skills</h2>
         <div class="pillrow" id="featured_skills" aria-label="Featured skills">
           <span class="pill">Swift</span>
           <span class="pill">Metal API</span>
@@ -493,8 +493,8 @@
      <br>
 <!-- Locations for now -->
       <div class="section__head">
-        <h2 class="about__title">Locations</h2>
-        <p class="muted"></p>
+        <h2 class="about__title" data-field="section_heads.locations.title">Locations</h2>
+        <p class="muted" data-field="section_heads.locations.subtitle"></p>
       </div>
       <div class="about">
         <div id="miscellaneous" class="mini-grid" aria-label="Miscellaneous cards"></div>
@@ -555,14 +555,14 @@
       <!-- Duolingo -->
       <br/><br/>
       <div class="section__head">
-        <h2 class="about__title">Duolingo</h2>
+        <h2 class="about__title" data-field="section_heads.duolingo.title">Duolingo</h2>
       </div>
 
       <div class="about">
         <p class="muted">
           <span class="duo-streak-line">Maintaining a long-term daily streak.</span>
           <span class="duo-streak-updated muted"></span>.
-          These are the languages I am learning.
+          <span data-field="section_heads.duolingo.subtitle">These are the languages I am learning.</span>
         </p>
       </div>
 
@@ -640,12 +640,12 @@
             <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
-        <h2 class="about__title">Games I Admire</h2>
-        <p class="muted">
+        <h2 class="about__title" data-field="section_heads.games.title">Games I Admire</h2>
+        <p class="muted" data-field="section_heads.games.subtitle">
         Not a complete list — just a selection of games I’ve deeply enjoyed and continue to think about. These stood out to me for their atmosphere, storytelling, and the way they create a lasting emotional experience.
         </p>
         <br/>
-        <div class="pillrow" id="featured_skills" aria-label="Featured skills">
+        <div class="pillrow" id="games_list" aria-label="Games I admire">
           <span class="pill">Last of Us 2</span>
           <span class="pill">Last of Us</span>
           <span class="pill">Uncharted 4: A Thief's End</span>
@@ -672,10 +672,10 @@
 
       <div style="margin-top:32px;"></div>
       <div class="section__head" id="learn-for-free">
-        <h2 class="about__title">Learn for Free</h2>
+        <h2 class="about__title" data-field="section_heads.learn.title">Learn for Free</h2>
       </div>
       <div class="about">
-        <p class="muted">
+        <p class="muted" data-field="learn.text">
           I mentor a small number of students for free in iOS development, mathematics, and programming fundamentals,
           and project building. If you are serious about learning and want to build something real,
           reach out. For selected students, I’m also happy to cover the $99 Apple Developer Program fee
@@ -686,6 +686,8 @@
         <div class="contact" aria-label="Free mentorship contact links">
           <a
             class="btn ghost2"
+            data-field="learn.button_label"
+            data-href="learn.href"
             href="mailto:saumyalaheramentorship@gmail.com?subject=Free%20iOS%20Mentorship&body=Hi%20Saumya%2C%0A%0AI%20want%20to%20learn%20for%20free.%0A%0ABackground%3A%0AWhat%20I%20want%20to%20build%3A%0AWhy%20I%20want%20to%20learn%3A%0A%0AThank%20you."
           >Apply for Free Mentorship</a>
         </div>
@@ -694,7 +696,7 @@
       <br/>
       <br/>
       <div class="section__head">
-        <h2 class="about__title">Contact</h2>
+        <h2 class="about__title" data-field="section_heads.contact.title">Contact</h2>
       </div>
       <div class="about">
         <div id="contact" class="contact" aria-label="Contact links">
@@ -707,9 +709,9 @@
   </main>
   <footer class="site-footer">
     <p class="footer-signature">
-      <span>Saumya</span>
+      <span data-field="footer.first_name">Saumya</span>
       <img class="footer-avatar" src="assets/avatar.jpg" alt="Saumya Lahera" />
-      <span>Lahera</span>
+      <span data-field="footer.last_name">Lahera</span>
     </p>
     <br/>
     <p class="footer-websiteupdate">
@@ -720,6 +722,7 @@
   </footer>
 
   <script src="script.js" defer></script>
+  <script src="portfolio-extras.js"></script>
   <script>
     window.addEventListener('load', () => {
       // --- 1) Duolingo (from GitHub Actions file) ---
@@ -1186,6 +1189,8 @@
                 moreProjectsRoot.appendChild(card);
               });
           }
+          // Everything else on the page (hero, selected work, research, Duolingo, games, headings, footer)
+          if (typeof window.renderPortfolioExtras === 'function') window.renderPortfolioExtras(d);
         } catch (_) {
           // keep fallback text
           

@@ -246,8 +246,40 @@
 
   // Accent colour picked in the app. Mirrors AccentTheme in the app: text keeps
   // the hue but is darkened until it reads on white; fills use a pale tint.
+  // "By the hour": the ink follows the visitor's local time. Kept in step with
+  // AccentTheme.dayInks in the app.
+  const DAY_INKS = [[0, '#2E3A8C'], [5, '#6B4FD8'], [7, '#D9467A'], [9, '#F2C230'],
+                    [13, '#1F8A8A'], [17, '#E5533D'], [20, '#3D24ED'], [24, '#2E3A8C']];
+  let dayTimer = null;
+
+  function dayHex(date) {
+    const h = Math.floor((date.getHours() * 60 + date.getMinutes()) / 15) / 4;
+    let i = 0;
+    while (i < DAY_INKS.length - 2 && DAY_INKS[i + 1][0] <= h) i++;
+    const [ha, a] = DAY_INKS[i], [hb, b] = DAY_INKS[i + 1];
+    const t = Math.max(0, Math.min(1, (h - ha) / (hb - ha)));
+    const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+    let out = '#';
+    for (const shift of [16, 8, 0]) {
+      const ca = (pa >> shift) & 255, cb = (pb >> shift) & 255;
+      out += Math.round(ca + (cb - ca) * t).toString(16).padStart(2, '0');
+    }
+    return out;
+  }
+
   function applyAccent(d) {
-    const m = /^#?([0-9a-f]{6})$/i.exec(str(d.accent_color));
+    const raw = str(d.accent_color);
+    if (dayTimer) { clearInterval(dayTimer); dayTimer = null; }
+    if (raw.toLowerCase() === 'time') {
+      applyHex(dayHex(new Date()));
+      dayTimer = setInterval(() => applyHex(dayHex(new Date())), 5 * 60 * 1000);
+      return;
+    }
+    applyHex(raw);
+  }
+
+  function applyHex(value) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(str(value));
     if (!m) return;
     const v = parseInt(m[1], 16);
     const r = ((v >> 16) & 255) / 255, g = ((v >> 8) & 255) / 255, b = (v & 255) / 255;

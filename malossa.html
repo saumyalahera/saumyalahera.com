@@ -33,13 +33,6 @@
     --sans: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     --mono: "Departure Mono", "SF Mono", ui-monospace, Menlo, monospace;
   }
-  :root[data-theme="dark"] {
-    --paper: #0E0E10; --ink: #E8E8EA; --secondary: #B2B2B8; --grey: #8B8B92;
-    --faint: #4C4C53; --hairline: #232327; --raised: #1A1A1D;
-    --c-keyword: #FFFFFF; --c-incode: #C2B29F; --c-type: #8E8E8E; --c-number: #D9CCBA;
-    --c-function: #FFFFFF; --c-call: #ADADAD; --c-comment: #5A5A5A; --c-text: #C4C4C4;
-    --grain-opacity: .12;
-  }
 
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -87,7 +80,7 @@
   }
   .brand canvas {
     position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
-    opacity: .55;
+    opacity: .3;
   }
   .brand > *:not(canvas) { position: relative; z-index: 1; }
   .title {
@@ -108,10 +101,6 @@
   .actions .primary { font-weight: 600; }
 
   .brand-foot { color: var(--grey); font-size: 12px; }
-  .brand-foot button {
-    font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
-    text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--faint);
-  }
 
   .shelf { padding: 56px 48px 48px; display: flex; flex-direction: column; gap: 40px; }
   /* grid of project cards, like the app's Grid view */
@@ -260,7 +249,7 @@
       </ul>
     </div>
     <div class="brand-foot">
-      macOS · Apple Silicon &nbsp;·&nbsp; <button id="theme" type="button">dark paper</button>
+      macOS · Apple Silicon
     </div>
   </aside>
 
@@ -269,28 +258,28 @@
       <p class="label">Made in Malossa</p>
       <div class="cards">
         <article class="gcard sketch" data-seed="31">
-          <div class="gface sketch" data-seed="32"><canvas class="pencil" data-shader="sunset" aria-label="Sunset shader"></canvas></div>
-          <div class="gmeta"><span class="gname">Sunset</span><span class="gnum">01</span></div>
-          <div class="gsub">stripes on the sea</div>
-          <div class="tags"><span class="tag sketch" data-seed="34">if</span><span class="tag sketch" data-seed="35">step</span></div>
+          <div class="gface sketch" data-seed="32"><canvas class="pencil" data-shader="dunes" aria-label="Dunes shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Dunes</span><span class="gnum">01</span></div>
+          <div class="gsub">hills in layers</div>
+          <div class="tags"><span class="tag sketch" data-seed="34">loop</span><span class="tag sketch" data-seed="35">sin</span></div>
         </article>
         <article class="gcard sketch" data-seed="38">
-          <div class="gface sketch" data-seed="39"><canvas class="pencil" data-shader="aurora" aria-label="Aurora shader"></canvas></div>
-          <div class="gmeta"><span class="gname">Aurora</span><span class="gnum">02</span></div>
-          <div class="gsub">noise in bands</div>
-          <div class="tags"><span class="tag sketch" data-seed="41">fbm</span><span class="tag sketch" data-seed="42">time</span></div>
+          <div class="gface sketch" data-seed="39"><canvas class="pencil" data-shader="tide" aria-label="Tide shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Tide</span><span class="gnum">02</span></div>
+          <div class="gsub">lines that drift</div>
+          <div class="tags"><span class="tag sketch" data-seed="41">sin</span><span class="tag sketch" data-seed="42">time</span></div>
         </article>
         <article class="gcard sketch" data-seed="45">
-          <div class="gface sketch" data-seed="46"><canvas class="pencil" data-shader="cells" aria-label="Cells shader"></canvas></div>
-          <div class="gmeta"><span class="gname">Cells</span><span class="gnum">03</span></div>
-          <div class="gsub">moving voronoi</div>
-          <div class="tags"><span class="tag sketch" data-seed="48">loop</span><span class="tag sketch" data-seed="49">array</span></div>
+          <div class="gface sketch" data-seed="46"><canvas class="pencil" data-shader="mist" aria-label="Mist shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Mist</span><span class="gnum">03</span></div>
+          <div class="gsub">slow fog</div>
+          <div class="tags"><span class="tag sketch" data-seed="48">fc</span><span class="tag sketch" data-seed="49">noise</span></div>
         </article>
         <article class="gcard sketch" data-seed="52">
-          <div class="gface sketch" data-seed="53"><canvas class="pencil" data-shader="bloom" aria-label="Bloom shader"></canvas></div>
-          <div class="gmeta"><span class="gname">Bloom</span><span class="gnum">04</span></div>
-          <div class="gsub">petals in polar</div>
-          <div class="tags"><span class="tag sketch" data-seed="55">pref</span><span class="tag sketch" data-seed="56">atan</span></div>
+          <div class="gface sketch" data-seed="53"><canvas class="pencil" data-shader="moon" aria-label="Moon shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Moon</span><span class="gnum">04</span></div>
+          <div class="gsub">light turning</div>
+          <div class="tags"><span class="tag sketch" data-seed="55">sqrt</span><span class="tag sketch" data-seed="56">dot</span></div>
         </article>
       </div>
     </div>
@@ -361,22 +350,9 @@
 
 <footer>
   <div><a href="/">saumyalahera.com</a> · © 2026 Saumya Lahera. Language design from <em>Malossa Programming Language</em>.</div>
-  <div><a href="https://departuremono.com">Departure Mono</a> under the SIL OFL · <a href="https://github.com/saumyalahera/Malossa/issues">Issues</a></div>
 </footer>
 
 <script>
-/* ---------- theme toggle (remembered per browser) ---------- */
-(function () {
-  const root = document.documentElement, btn = document.getElementById('theme');
-  const isDark = () => root.dataset.theme === 'dark';
-  const label = () => btn.textContent = isDark() ? 'light paper' : 'dark paper';
-  label();
-  btn.onclick = () => {
-    root.dataset.theme = isDark() ? 'light' : 'dark';
-    label();
-  };
-})();
-
 /* ---------- hand-drawn edges, like SketchRect in the app ---------- */
 (function () {
   function rand(seed) { let s = seed * 9301 + 49297; return () => ((s = (s * 9301 + 49297) % 233280) / 233280); }
@@ -433,11 +409,11 @@
     float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
       return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
     float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p=p*2.03+vec2(1.7,9.2);a*=.5;}return v;}
-    void main(){vec2 uv=gl_FragCoord.xy/r.y;float s=t*.04;
+    void main(){vec2 uv=gl_FragCoord.xy/r.y;float s=t*.025;
       vec2 q=vec2(fbm(uv*1.6+s),fbm(uv*1.6-s+4.));
       float f=fbm(uv*1.4+q*1.8+vec2(s*.7,-s));
       float m=smoothstep(.35,.95,f)*(.55+.45*(1.-gl_FragCoord.y/r.y));
-      gl_FragColor=vec4(mix(vec3(.10,.10,.09),vec3(.91,.91,.92),dark),m*.55);}`;
+      gl_FragColor=vec4(mix(vec3(.10,.10,.09),vec3(.91,.91,.92),dark),m*.4);}`;
 
   const ringsFrag = `precision mediump float;uniform float t;uniform vec2 r;
     float ring(float d,float tt){return .5+.5*sin(d*40.-tt*3.);}
@@ -448,42 +424,27 @@
   // Card sketches: each shader rendered the way the app's PencilFace does it —
   // colour laid on the paper, cross-hatching in the dark parts, pencil edges.
   const bodies = {
-    sunset: `vec3 shade(vec2 uv){float hz=.38;
-        vec3 col=mix(vec3(1.,.6,.45),vec3(.99,.9,.72),smoothstep(hz,1.,uv.y));
-        float d=length(uv-vec2(.5,hz+.08));
-        float gap=step(fract((uv.y-hz)*14.+t*.15),.25)*step(uv.y,hz+.14);
-        vec3 sun=mix(vec3(.93,.22,.36),vec3(1.,.82,.32),clamp((uv.y-hz)/.3,0.,1.));
-        col=mix(col,sun,smoothstep(.235,.225,d)*(1.-gap));
-        if(uv.y<hz){float w=.5+.5*sin(uv.x*30.+sin(uv.y*80.+t)*2.);
-          vec3 sea=mix(vec3(.22,.24,.5),vec3(.52,.42,.66),uv.y/hz);
-          float refl=smoothstep(.02,0.,abs(uv.x-.5)-.2*uv.y/hz)*step(.6,fract(uv.y*40.+t*.3+w*.3));
-          col=mix(sea,vec3(1.,.62,.42),refl*.8);}
+    dunes: `vec3 shade(vec2 uv){vec3 col=mix(vec3(.94,.92,.87),vec3(.88,.87,.84),uv.y);
+        for(int i=0;i<5;i++){float f=float(i);
+          float h=.78-f*.13+.045*sin(uv.x*(2.5+f)+f*1.7+t*.04*(f+1.))+.012*sin(uv.x*13.+f*3.);
+          float v=.84-f*.12;col=mix(col,vec3(v*1.03,v,v*.94),smoothstep(h+.002,h-.002,uv.y));}
         return col;}`,
-    aurora: `float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    tide: `vec3 shade(vec2 uv){float w=sin(uv.y*70.+3.*sin(uv.x*3.5+t*.25)+2.*sin(uv.x*1.3-t*.15));
+        float line=smoothstep(.75,1.,w)*(.35+.65*uv.y);
+        return mix(vec3(.94,.92,.88),vec3(.42,.47,.53),line*.8);}`,
+    mist: `float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
         return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
-      float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p*=2.1;a*=.5;}return v;}
-      vec3 shade(vec2 uv){float f=fbm(vec2(uv.x*3.+t*.15,uv.y*1.5));
-        float band=smoothstep(.14,0.,abs(uv.y-.35-.3*f));
-        float glow=smoothstep(.35,0.,abs(uv.y-.42-.3*f))*.35;
-        float streak=.55+.45*n(vec2(uv.x*36.,t*.3));
-        vec3 sky=mix(vec3(.12,.16,.3),vec3(.03,.05,.14),uv.y);
-        vec3 tint=mix(vec3(.25,.95,.65),vec3(.7,.4,1.),smoothstep(.3,.8,uv.y));
-        return sky+tint*clamp(band*streak+glow,0.,1.);}`,
-    cells: `vec2 hh(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return fract(sin(p)*43758.5453);}
-      vec3 shade(vec2 uv){vec2 g=uv*5.;vec2 i=floor(g),f=fract(g);float d1=8.,d2=8.;vec2 id=vec2(0);
-        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 o=vec2(x,y);vec2 q=hh(i+o);
-          q=.5+.4*sin(t*.6+6.28*q);float d=length(o+q-f);
-          if(d<d1){d2=d1;d1=d;id=i+o;}else if(d<d2){d2=d;}}
-        vec2 c=hh(id);vec3 col=.72+.28*cos(6.28*(c.x+vec3(0,.33,.67)));
-        col*=1.-.35*d1*d1;
-        return mix(vec3(.12),col,smoothstep(.0,.06,d2-d1));}`,
-    bloom: `vec3 shade(vec2 uv){vec2 p=uv-.5;float r=length(p),a=atan(p.y,p.x);
-        float k=.28+.12*cos(a*5.+t*.4)+.03*cos(a*15.-t);
-        float m=smoothstep(.006,-.006,r-k);float inner=smoothstep(.07,.05,r);
-        vec3 bg=mix(vec3(.96,.86,.62),vec3(.98,.6,.45),uv.y);
-        vec3 petal=mix(vec3(.85,.15,.3),vec3(1.,.75,.8),r/k);
-        return mix(mix(bg,petal,m),vec3(.98,.8,.2),inner);}`,
+      float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*n(p);p*=2.02;a*=.5;}return v;}
+      vec3 shade(vec2 uv){float f=fbm(uv*3.+vec2(t*.04,t*.01)+fbm(uv*2.-t*.02));
+        return mix(vec3(.95,.93,.89),vec3(.58,.6,.62),smoothstep(.4,.85,f));}`,
+    moon: `float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      vec3 shade(vec2 uv){vec2 p=uv-.5;float r=.27,d=length(p);
+        vec3 col=vec3(.94,.92,.88)-vec3(.05)*smoothstep(.5,.27,d);
+        if(d<r){vec3 nrm=vec3(p,sqrt(r*r-d*d))/r;vec3 l=normalize(vec3(cos(t*.12),.25,sin(t*.12)*.6+.5));
+          float lam=dot(nrm,l);float pits=.06*step(.8,h(floor(p*30.)));
+          col=mix(vec3(.32,.31,.3),vec3(.9,.88,.83),smoothstep(-.05,.45,lam))-pits;}
+        return col;}`,
   };
   const pencilMain = `
     uniform vec3 paper; uniform vec3 ink; uniform float s;
@@ -495,7 +456,7 @@
       vec3 c=clamp(shade(uv),0.,1.);float L=lum(c);
       float e=abs(L-lum(clamp(shade(uv+vec2(px.x,0.)),0.,1.)))+abs(L-lum(clamp(shade(uv+vec2(0.,px.y)),0.,1.)));
       e=smoothstep(.04,.2,e);
-      c=mix(vec3(L),c,.85);c=clamp((c-.5)*1.05+.5,0.,1.);L=lum(c);
+      c=mix(vec3(L),c,.6);c=clamp((c-.5)*1.05+.5,0.,1.);L=lum(c);
       float hx=max(hatch(gl_FragCoord.xy,1.),hatch(gl_FragCoord.xy,-1.));
       vec3 col;
       if(dark<.5){

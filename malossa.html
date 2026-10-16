@@ -33,15 +33,6 @@
     --sans: "Avenir Next", Avenir, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
     --mono: "Departure Mono", "SF Mono", ui-monospace, Menlo, monospace;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --paper: #0E0E10; --ink: #E8E8EA; --secondary: #B2B2B8; --grey: #8B8B92;
-      --faint: #4C4C53; --hairline: #232327; --raised: #1A1A1D;
-      --c-keyword: #FFFFFF; --c-incode: #C2B29F; --c-type: #8E8E8E; --c-number: #D9CCBA;
-      --c-function: #FFFFFF; --c-call: #ADADAD; --c-comment: #5A5A5A; --c-text: #C4C4C4;
-      --grain-opacity: .12;
-    }
-  }
   :root[data-theme="dark"] {
     --paper: #0E0E10; --ink: #E8E8EA; --secondary: #B2B2B8; --grey: #8B8B92;
     --faint: #4C4C53; --hairline: #232327; --raised: #1A1A1D;
@@ -337,16 +328,13 @@
 /* ---------- theme toggle (remembered per browser) ---------- */
 (function () {
   const root = document.documentElement, btn = document.getElementById('theme');
-  const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  try { const t = localStorage.getItem('malossa-theme'); if (t) root.dataset.theme = t; } catch (e) {}
+  const isDark = () => root.dataset.theme === 'dark';
   const label = () => btn.textContent = isDark() ? 'light paper' : 'dark paper';
   label();
   btn.onclick = () => {
     root.dataset.theme = isDark() ? 'light' : 'dark';
-    try { localStorage.setItem('malossa-theme', root.dataset.theme); } catch (e) {}
     label();
   };
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', label);
 })();
 
 /* ---------- hand-drawn edges, like SketchRect in the app ---------- */
@@ -423,10 +411,7 @@
   const rings = setup(document.getElementById('rings'), ringsFrag);
   if (rings) views.push({ ...rings, canvas: document.getElementById('rings') });
 
-  const isDark = () => {
-    const th = document.documentElement.dataset.theme;
-    return th ? th === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-  };
+  const isDark = () => document.documentElement.dataset.theme === 'dark';
   const start = performance.now();
   function frame(now) {
     const time = reduce ? 2 : (now - start) / 1000;

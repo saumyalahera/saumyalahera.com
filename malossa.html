@@ -114,18 +114,41 @@
   }
 
   .shelf { padding: 56px 48px 48px; display: flex; flex-direction: column; gap: 40px; }
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
-  .card { padding: 18px 18px 16px; background: var(--paper); }
-  .card .face {
-    height: 118px; margin: -6px -6px 14px; border-radius: 4px; position: relative; overflow: hidden;
-    background:
-      repeating-linear-gradient(-45deg, transparent 0 3.2px, color-mix(in srgb, var(--ink) 9%, transparent) 3.2px 3.6px),
-      var(--raised);
+  /* grid of project cards, like the app's Grid view */
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px 26px; padding: 6px 4px 10px 10px; }
+  .gcard {
+    position: relative; z-index: 0; padding: 10px; cursor: default;
+    transition: transform .2s ease-out;
   }
-  .card .face svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .card .face svg * { fill: none; stroke: var(--ink); stroke-width: 1; stroke-linecap: round; }
-  .card h3 { margin: 0 0 4px; font-size: 14.5px; font-weight: 600; }
-  .card p { margin: 0; color: var(--secondary); font-size: 13px; line-height: 1.5; }
+  /* the paper of the card, painted over its shadow */
+  .gcard::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--paper); }
+  .gcard:hover { transform: translateY(-4px); }
+  /* the hatched shadow, shaded in by hand */
+  .gcard::before {
+    content: ""; position: absolute; inset: 0; transform: translate(-7px, 9px); z-index: -1;
+    background: repeating-linear-gradient(-58deg, transparent 0 3.5px, color-mix(in srgb, var(--ink) 30%, transparent) 3.5px 4.1px);
+    opacity: .35;
+  }
+  .gcard > svg.edge path { opacity: .75; stroke-width: .8; transition: stroke-width .2s, opacity .2s; }
+  .gcard:hover > svg.edge path { opacity: 1; stroke-width: 1.1; }
+  .gcard > svg.edge path + path { opacity: .28; }
+  .gface { aspect-ratio: 1; position: relative; }
+  .gface canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .gface > svg.edge { z-index: 1; }
+  .gface > svg.edge path { opacity: .7; stroke-width: .7; }
+  .gface > svg.edge path + path { display: none; }
+  .gmeta { display: flex; align-items: baseline; gap: 6px; margin-top: 7px; }
+  .gname { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gnum { margin-left: auto; font-size: 10px; color: var(--grey); }
+  .gsub { font-size: 10px; color: var(--secondary); line-height: 1.4; }
+  .tags { display: flex; gap: 4px; margin-top: 6px; }
+  .tag { font-size: 9.5px; line-height: 1.5; color: var(--secondary); padding: 0 5px; }
+  .tag > svg.edge path { stroke-width: .6; opacity: .55; }
+  .tag > svg.edge path + path { display: none; }
+
+  .features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 26px; }
+  .features li { font-size: 13px; color: var(--secondary); padding: 8px 0; border-top: 1px solid var(--hairline); }
+  .features b { color: var(--ink); font-weight: 600; display: block; font-size: 13.5px; }
 
   /* ---------- editor-like sample ---------- */
   .editor { display: grid; grid-template-columns: 1.2fr 1fr; min-height: 340px; }
@@ -194,6 +217,9 @@
   }
   footer a { text-decoration-color: var(--faint); text-underline-offset: 3px; }
 
+  /* four across when there's room, else two — never a lone card on a row */
+  @media (max-width: 1180px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
   /* ---------- small screens ---------- */
   @media (max-width: 820px) {
     .welcome { grid-template-columns: 1fr; min-height: 0; }
@@ -240,29 +266,43 @@
 
   <div class="shelf">
     <div>
-      <p class="label">What you can do</p>
+      <p class="label">Made in Malossa</p>
       <div class="cards">
-        <div class="card sketch" data-seed="1">
-          <div class="face"><svg viewBox="0 0 200 118"><path d="M30 30h60M30 44h80M30 58h48M30 72h70"/><circle cx="152" cy="58" r="26"/><circle cx="152" cy="58" r="14"/></svg></div>
-          <h3>Live as you type</h3>
-          <p>Code on the left, the picture on the right. Every keystroke redraws.</p>
-        </div>
-        <div class="card sketch" data-seed="2">
-          <div class="face"><svg viewBox="0 0 200 118"><path d="M34 52h120"/><path d="M60 62q4 4 8 0t8 0 8 0 8 0 8 0 8 0" style="stroke:var(--red)"/><path d="M34 82h80"/></svg></div>
-          <h3>Plain errors</h3>
-          <p>Mistakes are underlined right in your code, with a short explanation.</p>
-        </div>
-        <div class="card sketch" data-seed="3">
-          <div class="face"><svg viewBox="0 0 200 118"><path d="M60 40l20 20M80 40 60 60"/><path d="M100 56h56" /><path d="M100 70h36"/></svg></div>
-          <h3>print a pixel</h3>
-          <p>Use <code>print</code> to read a value at the pixel under your mouse.</p>
-        </div>
-        <div class="card sketch" data-seed="4">
-          <div class="face"><svg viewBox="0 0 200 118"><path d="M60 34h30l8 8h42v46H60z"/><path d="M76 58h48M76 70h32"/></svg></div>
-          <h3>Projects that save</h3>
-          <p>Folders of files that share functions. Everything autosaves.</p>
-        </div>
+        <article class="gcard sketch" data-seed="31">
+          <div class="gface sketch" data-seed="32"><canvas class="pencil" data-shader="sunset" aria-label="Sunset shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Sunset</span><span class="gnum">01</span></div>
+          <div class="gsub">stripes on the sea</div>
+          <div class="tags"><span class="tag sketch" data-seed="34">if</span><span class="tag sketch" data-seed="35">step</span></div>
+        </article>
+        <article class="gcard sketch" data-seed="38">
+          <div class="gface sketch" data-seed="39"><canvas class="pencil" data-shader="aurora" aria-label="Aurora shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Aurora</span><span class="gnum">02</span></div>
+          <div class="gsub">noise in bands</div>
+          <div class="tags"><span class="tag sketch" data-seed="41">fbm</span><span class="tag sketch" data-seed="42">time</span></div>
+        </article>
+        <article class="gcard sketch" data-seed="45">
+          <div class="gface sketch" data-seed="46"><canvas class="pencil" data-shader="cells" aria-label="Cells shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Cells</span><span class="gnum">03</span></div>
+          <div class="gsub">moving voronoi</div>
+          <div class="tags"><span class="tag sketch" data-seed="48">loop</span><span class="tag sketch" data-seed="49">array</span></div>
+        </article>
+        <article class="gcard sketch" data-seed="52">
+          <div class="gface sketch" data-seed="53"><canvas class="pencil" data-shader="bloom" aria-label="Bloom shader"></canvas></div>
+          <div class="gmeta"><span class="gname">Bloom</span><span class="gnum">04</span></div>
+          <div class="gsub">petals in polar</div>
+          <div class="tags"><span class="tag sketch" data-seed="55">pref</span><span class="tag sketch" data-seed="56">atan</span></div>
+        </article>
       </div>
+    </div>
+
+    <div>
+      <p class="label">What you can do</p>
+      <ul class="features">
+        <li><b>Live as you type</b>Code on the left, the picture on the right.</li>
+        <li><b>Plain errors</b>Mistakes underlined in your code, explained.</li>
+        <li><b>print a pixel</b>Read any value at the pixel under your mouse.</li>
+        <li><b>Projects that save</b>Files share functions, everything autosaves.</li>
+      </ul>
     </div>
 
     <div class="sketch" data-seed="9">
@@ -314,7 +354,7 @@
     <p class="label" style="margin-top:40px">Requirements</p>
     <div class="req">
       <div><span>Mac</span>Apple Silicon, M1 or later</div>
-      <div><span>System</span>macOS 26.5 or later</div>
+      <div><span>System</span>macOS 15 Sequoia or later</div>
     </div>
   </section>
 </main>
@@ -405,11 +445,85 @@
       for(int i=0;i<3;i++){col+=.25*ring(d+float(i)*.1,t);}
       gl_FragColor=vec4(col,1.);}`;
 
+  // Card sketches: each shader rendered the way the app's PencilFace does it —
+  // colour laid on the paper, cross-hatching in the dark parts, pencil edges.
+  const bodies = {
+    sunset: `vec3 shade(vec2 uv){float hz=.38;
+        vec3 col=mix(vec3(1.,.6,.45),vec3(.99,.9,.72),smoothstep(hz,1.,uv.y));
+        float d=length(uv-vec2(.5,hz+.08));
+        float gap=step(fract((uv.y-hz)*14.+t*.15),.25)*step(uv.y,hz+.14);
+        vec3 sun=mix(vec3(.93,.22,.36),vec3(1.,.82,.32),clamp((uv.y-hz)/.3,0.,1.));
+        col=mix(col,sun,smoothstep(.235,.225,d)*(1.-gap));
+        if(uv.y<hz){float w=.5+.5*sin(uv.x*30.+sin(uv.y*80.+t)*2.);
+          vec3 sea=mix(vec3(.22,.24,.5),vec3(.52,.42,.66),uv.y/hz);
+          float refl=smoothstep(.02,0.,abs(uv.x-.5)-.2*uv.y/hz)*step(.6,fract(uv.y*40.+t*.3+w*.3));
+          col=mix(sea,vec3(1.,.62,.42),refl*.8);}
+        return col;}`,
+    aurora: `float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+        return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+      float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*n(p);p*=2.1;a*=.5;}return v;}
+      vec3 shade(vec2 uv){float f=fbm(vec2(uv.x*3.+t*.15,uv.y*1.5));
+        float band=smoothstep(.14,0.,abs(uv.y-.35-.3*f));
+        float glow=smoothstep(.35,0.,abs(uv.y-.42-.3*f))*.35;
+        float streak=.55+.45*n(vec2(uv.x*36.,t*.3));
+        vec3 sky=mix(vec3(.12,.16,.3),vec3(.03,.05,.14),uv.y);
+        vec3 tint=mix(vec3(.25,.95,.65),vec3(.7,.4,1.),smoothstep(.3,.8,uv.y));
+        return sky+tint*clamp(band*streak+glow,0.,1.);}`,
+    cells: `vec2 hh(vec2 p){p=vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3)));return fract(sin(p)*43758.5453);}
+      vec3 shade(vec2 uv){vec2 g=uv*5.;vec2 i=floor(g),f=fract(g);float d1=8.,d2=8.;vec2 id=vec2(0);
+        for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 o=vec2(x,y);vec2 q=hh(i+o);
+          q=.5+.4*sin(t*.6+6.28*q);float d=length(o+q-f);
+          if(d<d1){d2=d1;d1=d;id=i+o;}else if(d<d2){d2=d;}}
+        vec2 c=hh(id);vec3 col=.72+.28*cos(6.28*(c.x+vec3(0,.33,.67)));
+        col*=1.-.35*d1*d1;
+        return mix(vec3(.12),col,smoothstep(.0,.06,d2-d1));}`,
+    bloom: `vec3 shade(vec2 uv){vec2 p=uv-.5;float r=length(p),a=atan(p.y,p.x);
+        float k=.28+.12*cos(a*5.+t*.4)+.03*cos(a*15.-t);
+        float m=smoothstep(.006,-.006,r-k);float inner=smoothstep(.07,.05,r);
+        vec3 bg=mix(vec3(.96,.86,.62),vec3(.98,.6,.45),uv.y);
+        vec3 petal=mix(vec3(.85,.15,.3),vec3(1.,.75,.8),r/k);
+        return mix(mix(bg,petal,m),vec3(.98,.8,.2),inner);}`,
+  };
+  const pencilMain = `
+    uniform vec3 paper; uniform vec3 ink; uniform float s;
+    float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+    float hs(float x){return fract(sin(x*91.37)*43758.5453);}
+    float hatch(vec2 fc,float dir){float sp=3.4*s;float u=fc.x+dir*fc.y;float i=floor(u/sp);
+      float d=abs(fract(u/sp+hs(i+dir*7.)*.18)-.5)*sp;return clamp(1.-d/(.55*s),0.,1.);}
+    void main(){vec2 uv=gl_FragCoord.xy/r;vec2 px=1.2/r;
+      vec3 c=clamp(shade(uv),0.,1.);float L=lum(c);
+      float e=abs(L-lum(clamp(shade(uv+vec2(px.x,0.)),0.,1.)))+abs(L-lum(clamp(shade(uv+vec2(0.,px.y)),0.,1.)));
+      e=smoothstep(.04,.2,e);
+      c=mix(vec3(L),c,.85);c=clamp((c-.5)*1.05+.5,0.,1.);L=lum(c);
+      float hx=max(hatch(gl_FragCoord.xy,1.),hatch(gl_FragCoord.xy,-1.));
+      vec3 col;
+      if(dark<.5){
+        col=paper*mix(vec3(1.),c,.9);
+        col*=mix(vec3(1.),ink,hx*(1.-L)*.45*.78);
+        col*=mix(vec3(1.),ink,e*.78);
+      }else{
+        col=mix(paper,c,.82);
+        col=mix(col,ink,hx*L*.45*.78);
+        col=mix(col,ink,e*.6);
+      }
+      gl_FragColor=vec4(col,1.);}`;
+  const pencilViews = [];
+  document.querySelectorAll('canvas.pencil').forEach(c => {
+    const body = bodies[c.dataset.shader];
+    const v = body && setup(c, `precision highp float;uniform float t;uniform vec2 r;uniform float dark;${body}${pencilMain}`);
+    if (!v) return;
+    const P = v.gl.getParameter(v.gl.CURRENT_PROGRAM);
+    pencilViews.push({ ...v, canvas: c, fit: 'full', uPaper: v.gl.getUniformLocation(P, 'paper'),
+      uInk: v.gl.getUniformLocation(P, 'ink'), uS: v.gl.getUniformLocation(P, 's') });
+  });
+
   const views = [];
   const smoke = setup(document.getElementById('smoke'), smokeFrag);
   if (smoke) views.push({ ...smoke, canvas: document.getElementById('smoke'), fit: true });
   const rings = setup(document.getElementById('rings'), ringsFrag);
   if (rings) views.push({ ...rings, canvas: document.getElementById('rings') });
+  views.push(...pencilViews);
 
   const isDark = () => document.documentElement.dataset.theme === 'dark';
   const start = performance.now();
@@ -417,10 +531,17 @@
     const time = reduce ? 2 : (now - start) / 1000;
     for (const v of views) {
       const c = v.canvas;
+      const dpr = Math.min(devicePixelRatio || 1, 2);
       if (v.fit) {
-        const dpr = Math.min(devicePixelRatio || 1, 1.5);
-        const w = Math.round(c.clientWidth * dpr / 2), h = Math.round(c.clientHeight * dpr / 2); // half res: it's smoke
+        const k = v.fit === 'full' ? dpr : Math.min(dpr, 1.5) / 2; // half res for the smoke
+        const w = Math.round(c.clientWidth * k), h = Math.round(c.clientHeight * k);
         if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+      }
+      if (v.uPaper) {
+        const d = isDark();
+        v.gl.uniform3fv(v.uPaper, d ? [.055, .055, .063] : [.965, .957, .937]);
+        v.gl.uniform3fv(v.uInk, d ? [.91, .91, .918] : [.102, .098, .094]);
+        v.gl.uniform1f(v.uS, dpr);
       }
       v.gl.viewport(0, 0, c.width, c.height);
       v.gl.uniform1f(v.uT, time);

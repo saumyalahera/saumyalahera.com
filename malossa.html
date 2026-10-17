@@ -313,8 +313,10 @@
       <tr><td><code><span class="k">fc</span> name (<span class="t">int</span> a b)(<span class="t">float</span> c) … <span class="k">end</span></code></td><td>A function. Parameters are grouped by type.</td></tr>
       <tr><td><code><span class="k">end</span> <span class="mf">mf</span></code></td><td>Marks the main function, the shader that draws each pixel.</td></tr>
       <tr><td><code><span class="t">float</span> a b c;</code></td><td>Declares several variables at once.</td></tr>
+      <tr><td><code><span class="k">loop</span> <span class="n">10</span></code> · <code><span class="k">loop</span> i <span class="n">10</span></code></td><td>Repeat 10 times, optionally counting <code>i</code> through 0 to 9.</td></tr>
       <tr><td><code><span class="k">loop</span> i <span class="n">0</span> <span class="k">to</span> <span class="n">10</span></code> · <code><span class="k">loop</span> x &gt; <span class="n">1</span></code></td><td>Count up, count down, or loop while a condition holds.</td></tr>
       <tr><td><code><span class="k">array</span> a; <span class="k">scan</span> a <span class="n">10</span>; a-&gt;<span class="n">3</span></code></td><td>Arrays, and reading or writing an element.</td></tr>
+      <tr><td><code><span class="t">float</span> x = <span class="n">90</span> <span class="k">ink</span> check;</code> · <code><span class="k">ink</span> x check;</code> · <code><span class="k">deink</span> x;</code></td><td>Tethers <code>x</code> to a function, so every write to it goes through <code>check</code> first. <code>deink</code> removes it.</td></tr>
       <tr><td><code><span class="cm">-6  -bl  -e</span></code></td><td>Comment out the next 6 lines, up to the next blank line, or up to the next <code>end</code>.</td></tr>
       <tr><td><code><span class="k">pref</span> <span class="n">2</span>(x)</code></td><td>Calls function number 2.</td></tr>
       <tr><td><code><span class="ic">wc  fc  lc  fs  gp  gmf</span></code></td><td>Word count, function count, line count, function size, function number, main function name.</td></tr>

@@ -1075,3 +1075,16 @@ article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
   background: var(--pw-paper); padding: 2px 8px; border-radius: 3px;
 }
 .pw-clocknote span{ color: var(--pw-accent); }
+
+/* postmark: fine lines, like a light rubber stamp */
+.pc-mark{ opacity: .7; }
+.pc-mark__ring{
+  border-width: .8px !important;
+  box-shadow: none !important;
+  outline: .6px solid var(--pw-accent); outline-offset: -4px;
+}
+.pc-mark__ring span{ font-weight: 700; }
+
+/* lines between the groups inside Talks */
+.pw-rule--sub{ margin: 64px 0 0 calc(50% - 50vw) !important; }
+.pw-rule--sub + div[style*="margin-top"]{ margin-top: 64px !important; }

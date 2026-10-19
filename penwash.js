@@ -1281,6 +1281,50 @@
     });
   }
 
+  // #talks holds several titled groups (Research Assistantship, Talks & Showcases...);
+  // each one after the first gets the same pen line, so they read as sections too.
+  function subRules() {
+    var talks = document.getElementById('talks');
+    if (!talks) return;
+    var k = 0;
+    var run = function () {
+      talks.querySelectorAll('#other_sections, #other_sections_fallback').forEach(function (box) {
+        var heads = box.querySelectorAll(':scope > .section__head');
+        for (var i = 1; i < heads.length; i++) {
+          var at = heads[i];
+          // sit above any spacer the page put before the title
+          while (at.previousElementSibling && !at.previousElementSibling.matches('.list, .section__head, .pw-rule') && !at.previousElementSibling.children.length) at = at.previousElementSibling;
+          if (at.previousElementSibling && at.previousElementSibling.classList.contains('pw-rule')) continue;
+          var r = rng(5300 + (k++) * 17);
+          var svg = document.createElementNS(NS, 'svg');
+          svg.setAttribute('class', 'pw-rule pw-rule--after pw-rule--sub');
+          svg.setAttribute('viewBox', '0 0 1000 14');
+          svg.setAttribute('preserveAspectRatio', 'none');
+          svg.setAttribute('aria-hidden', 'true');
+          svg.setAttribute('focusable', 'false');
+          ['pw-rule__main', 'pw-rule__ghost'].forEach(function (cls) {
+            var path = document.createElementNS(NS, 'path');
+            path.setAttribute('d', rulePath(r));
+            path.setAttribute('pathLength', '1');
+            path.setAttribute('class', cls);
+            svg.appendChild(path);
+          });
+          box.insertBefore(svg, at);
+          if (io) { svg.classList.add('pw-rv'); io.observe(svg); }
+        }
+      });
+    };
+    run();
+    if ('MutationObserver' in window) {
+      var queued = false;
+      new MutationObserver(function () {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; run(); });
+      }).observe(talks, { childList: true, subtree: true });
+    }
+  }
+
   function start() {
     strokes();
     buildNav();
@@ -1290,7 +1334,7 @@
     postcards();
     indexes();
     reveal(blooms);
-    sectionRules();
+    sectionRules(); subRules();
     root.classList.add('pw-on');
   }
 

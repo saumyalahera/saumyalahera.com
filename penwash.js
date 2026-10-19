@@ -1042,7 +1042,6 @@
       if (e.isIntersecting) {
         var ink = e.target.querySelector('.pw-vignette');
         if (ink) ink.classList.add('pw-go');
-        if (v) { try { v.play().catch(function () {}); } catch (_) {} }
       } else if (v) { try { v.pause(); } catch (_) {} }
     });
   }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 }) : null;
@@ -1075,6 +1074,12 @@
       video.addEventListener('error', function () { drawing(); if (pcSeen) setTimeout(function () { frame.querySelector('.pw-vignette') && frame.querySelector('.pw-vignette').classList.add('pw-go'); }, 60); });
       frame.classList.add('pc-pic__frame--video');
       frame.appendChild(video);
+      // videos only run while the pointer is on the card; on touch, a tap on the picture toggles it
+      var play = function () { try { video.play().catch(function () {}); } catch (_) {} card.classList.add('pc--playing'); };
+      var stop = function () { try { video.pause(); video.currentTime = 0; } catch (_) {} card.classList.remove('pc--playing'); };
+      card.addEventListener('mouseenter', play);
+      card.addEventListener('mouseleave', stop);
+      pic.addEventListener('click', function () { if (matchMedia('(hover: hover)').matches) return; video.paused ? play() : stop(); });
     } else drawing();
     pic.appendChild(frame);
     var cap = document.createElement('div');
@@ -1128,7 +1133,12 @@
         var cards = Array.prototype.filter.call(deck.children, function (c) { return c.matches('article.card'); });
         if (!cards.length) return;
         deck.classList.add('pc-deck');
-        cards.forEach(postcard);
+        var seen = {}, n = 0;
+        cards.forEach(function (c) {
+          var t = ((c.querySelector('h3') || {}).textContent || '').trim();
+          if (t && seen[t]) { c.dataset.pc = 'dup'; return; }
+          seen[t] = 1; postcard(c, n++);
+        });
       });
     };
     all();
@@ -1142,6 +1152,51 @@
     }
   }
 
+  // ---- a pen line under every section ------------------------------------------------
+  // Drawn edge to edge across the window: a slow wobble with a slight
+  // tremor, a second fainter pass beside it, inked in as it scrolls into view.
+  function rulePath(r) {
+    var pts = [], N = 60, ph = r() * 6, a1 = 1 + r() * 1.6, a2 = 0.4 + r() * 0.6;
+    for (var i = 0; i <= N; i++) {
+      var t = i / N;
+      pts.push([t * 1000, 7 + Math.sin(t * Math.PI * 1.4 + ph) * a1 + Math.sin(t * Math.PI * 7 + ph * 2) * a2 * 0.5 + (r() - 0.5) * 0.5]);
+    }
+    var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(2);
+    for (i = 1; i < pts.length - 1; i++) {
+      var mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+      d += ' Q' + pts[i][0].toFixed(1) + ' ' + pts[i][1].toFixed(2) + ' ' + mx.toFixed(1) + ' ' + my.toFixed(2);
+    }
+    return d;
+  }
+
+  function sectionRules() {
+    var secs = document.querySelectorAll('main > section, body > section');
+    secs.forEach(function (sec, i) {
+      if (sec.querySelector(':scope > .pw-rule')) return;
+      var r = rng(4100 + i * 13);
+      var svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('class', 'pw-rule');
+      svg.setAttribute('viewBox', '0 0 1000 14');
+      svg.setAttribute('preserveAspectRatio', 'none');
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('focusable', 'false');
+      ['pw-rule__main', 'pw-rule__ghost'].forEach(function (cls) {
+        var p = document.createElementNS(NS, 'path');
+        p.setAttribute('d', rulePath(r));
+        p.setAttribute('pathLength', '1');
+        p.setAttribute('class', cls);
+        svg.appendChild(p);
+      });
+      if (sec.classList.contains('marquee')) {
+        // the marquee clips and fades its own edges, so its line sits just below it
+        if (sec.nextElementSibling && sec.nextElementSibling.classList.contains('pw-rule')) return;
+        svg.classList.add('pw-rule--after');
+        sec.after(svg);
+      } else sec.appendChild(svg);
+      if (io) { svg.classList.add('pw-rv'); io.observe(svg); }
+    });
+  }
+
   function start() {
     strokes();
     buildNav();
@@ -1151,6 +1206,7 @@
     postcards();
     indexes();
     reveal(blooms);
+    sectionRules();
     root.classList.add('pw-on');
   }
 

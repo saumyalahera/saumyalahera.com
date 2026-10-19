@@ -999,3 +999,43 @@ article.card.pc .card__actions{ margin-top: 12px !important; }
   .pc-deck, #selected_work.pc-deck{ grid-template-columns: minmax(0, 1fr) !important; gap: 40px !important; padding: 8px 4px 20px; }
   .pc-deck > article.card.pc:nth-child(n){ margin-top: 0 !important; }
 }
+
+/* ---- Hand-drawn rule after every section ------------------------------------- */
+main > section, body > section{ position: relative; }
+.section--alt, .marquee{ border-top: 0 !important; border-bottom: 0 !important; }
+.pw-rule{
+  position: absolute; left: calc(50% - 50vw); bottom: -7px;
+  width: 100vw; height: 14px; display: block;
+  pointer-events: none; overflow: visible; z-index: 2;
+}
+.pw-rule--after{ position: relative; left: auto; bottom: auto; margin: -7px 0 -7px calc(50% - 50vw); }
+.pw-rule.pw-rv, .pw-rule.pw-rv.pw-in{ opacity: 1 !important; transform: none !important; }
+.pw-rule path{
+  fill: none; stroke: var(--pw-ink); stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  transition: stroke-dashoffset 1.8s var(--pw-ease);
+}
+.pw-rule__main{ stroke-width: 1.3; opacity: .78; }
+.pw-rule__ghost{ stroke-width: .7; opacity: .35; transform: translateY(2px); transition-delay: .25s !important; }
+.pw-rule.pw-in path, .pw-rule:not(.pw-rv) path{ stroke-dashoffset: 0; }
+@media (prefers-reduced-motion: reduce){
+  .pw-rule path{ transition: none !important; stroke-dashoffset: 0 !important; }
+}
+
+/* ---- Postcard videos only run on hover (tap on touch) ---------------------- */
+article.card[data-pc="dup"]{ display: none !important; }
+@media (hover: none){
+.pc-pic__frame--video{ cursor: pointer; }
+.pc-pic__frame--video::after{
+  content: "\25B6"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 44px; height: 44px; line-height: 42px; text-align: center; font-size: 14px; padding-left: 3px;
+  border: 1.2px solid var(--pw-ink); border-radius: 52% 48% 50% 50% / 48% 52% 48% 52%;
+  background: rgba(255,253,248,.85); color: var(--pw-ink); pointer-events: none; transition: opacity .3s ease;
+}
+article.card.pc.pc--playing .pc-pic__frame--video::after{ opacity: 0; }
+}
+@media (hover: hover){ article.card.pc .pc-pic__frame--video video{ filter: grayscale(1); } article.card.pc.pc--playing .pc-pic__frame--video video{ filter: grayscale(0); } }
+
+/* the page hides a backup list once the app's data arrives; keep that hidden */
+.pc-deck[style*="display: none"], .pc-deck[style*="display:none"], .pc-deck[hidden],
+.pw-index[style*="display: none"], .pw-index[style*="display:none"], .pw-index[hidden]{ display: none !important; }

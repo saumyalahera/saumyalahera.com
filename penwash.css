@@ -1039,3 +1039,11 @@ article.card.pc.pc--playing .pc-pic__frame--video::after{ opacity: 0; }
 /* the page hides a backup list once the app's data arrives; keep that hidden */
 .pc-deck[style*="display: none"], .pc-deck[style*="display:none"], .pc-deck[hidden],
 .pw-index[style*="display: none"], .pw-index[style*="display:none"], .pw-index[hidden]{ display: none !important; }
+
+/* video postcards show pen art until the video plays */
+.pc-pic__frame--video .pc-pic__art{
+  position: absolute; inset: 0; width: 100% !important; height: 100%; margin: 0 !important;
+  background: #fbf9f3; z-index: 1; transition: opacity .45s ease;
+}
+article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
+.pc-pic__frame--video::after{ z-index: 2; }

@@ -1074,6 +1074,11 @@
       video.addEventListener('error', function () { drawing(); if (pcSeen) setTimeout(function () { frame.querySelector('.pw-vignette') && frame.querySelector('.pw-vignette').classList.add('pw-go'); }, 60); });
       frame.classList.add('pc-pic__frame--video');
       frame.appendChild(video);
+      // pen art covers the video until it plays
+      var art = vignette(seed);
+      art.classList.add('pc-pic__art');
+      if (!pcSeen) art.classList.add('pw-go');
+      frame.appendChild(art);
       // videos only run while the pointer is on the card; on touch, a tap on the picture toggles it
       var play = function () { try { video.play().catch(function () {}); } catch (_) {} card.classList.add('pc--playing'); };
       var stop = function () { try { video.pause(); video.currentTime = 0; } catch (_) {} card.classList.remove('pc--playing'); };

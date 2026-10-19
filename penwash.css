@@ -616,11 +616,11 @@ h2.about__title.pw-h-major{
     top: auto; right: auto;
     width: calc(100% + 32px);
     margin: 0 -16px -6px !important;
-    aspect-ratio: 62 / 52;
+    aspect-ratio: 62 / 60;
     overflow: hidden !important;
     opacity: 1;
   }
-  .pw-cover .pw-stage{ inset: auto; left: -61.3%; top: -18%; width: 161.3%; height: auto; aspect-ratio: 10 / 7; }
+  .pw-cover .pw-stage{ inset: auto; left: -61.3%; top: -3%; width: 161.3%; height: auto; aspect-ratio: 10 / 7; }
   .hero__media .media__hint{ display: none; }
   .hero__copy{ max-width: none; }
   .lede{ max-width: none !important; }
@@ -1063,3 +1063,15 @@ article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
 .pw-num{ color: var(--pw-accent); }
 .hero .accent{ color: var(--pw-accent) !important; }
 .pw-rule__ghost{ stroke: var(--pw-accent); opacity: .45; }
+
+/* the sun or moon in the cover sky, in the theme ink */
+.pw-clock .pw-clock__ink{ stroke: var(--pw-accent); }
+.pw-clock__fill{ fill: rgba(var(--accent-soft-rgb, 204,199,255), .55); stroke: none; opacity: 0; transition: opacity 2s ease 1.2s; }
+.pw-clock__fill--moon{ fill: rgba(var(--accent-soft-rgb, 204,199,255), .7); }
+.pw-drawn .pw-clock__fill{ opacity: 1; }
+.pw-clocknote{
+  position: absolute; right: 8px; bottom: 6px; margin: 0; z-index: 3;
+  font-family: var(--pw-serif); font-style: italic; font-size: 14px; color: var(--pw-ink-2);
+  background: var(--pw-paper); padding: 2px 8px; border-radius: 3px;
+}
+.pw-clocknote span{ color: var(--pw-accent); }

@@ -275,7 +275,7 @@
     // washing strung between the towers, a kite and birds
     pen.washing(a.right + 2, a.top + 110, b.left - 2, b.top + 80);
     pen.washing(b.right + 2, b.top + 60, c.left - 2, c.top + 90);
-    pen.kite(800, 120, 14);
+    pen.kite(895, 165, 14);
     pen.bird(655, 120, 6); pen.bird(684, 102, 5); pen.bird(940, 150, 5); pen.bird(905, 128, 4); pen.bird(520, 90, 4);
     pen.tree(455, G - 2, 150);
     // posts and a fence along the lane
@@ -298,6 +298,84 @@
     var p = paintCanvas(w, h, 1), r = rng(seed);
     wash(p.ctx, { cx: w / 2, cy: h / 2, rx: w * 0.36, ry: h * 0.34, color: [0, 0, 0], alpha: 0.07, layers: 26, raw: true }, r);
     return p.c.toDataURL('image/png');
+  }
+
+  // The sun or the moon, wherever it is for the visitor right now. It is inked in the
+  // theme colour, so when the app's ink follows the hour the sky says why.
+  function skyClock(svg, media) {
+    var g = null, timer = null, note = null;
+    function draw() {
+      var now = new Date(), h = now.getHours() + now.getMinutes() / 60;
+      var day = h >= 6 && h < 18;
+      var p = day ? (h - 6) / 12 : ((h - 18 + 24) % 24) / 12;
+      var x = 440 + 540 * p, y = 300 - 230 * Math.sin(Math.PI * p);
+      if (g) g.remove();
+      g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'pw-clock ' + (day ? 'pw-clock--sun' : 'pw-clock--moon'));
+      svg.insertBefore(g, svg.firstChild);
+      var pen = new Pen(g, rng(Math.floor(h * 4) + 3));
+      var glow = document.createElementNS(NS, 'circle');
+      glow.setAttribute('cx', x); glow.setAttribute('cy', y); glow.setAttribute('r', day ? 25 : 21);
+      glow.setAttribute('class', 'pw-clock__fill');
+      g.appendChild(glow);
+      if (day) {
+        pen.scribble(x, y, 25, 25, 1, 0.6, { cls: 'pw-ink pw-clock__ink' });
+        for (var k = 0; k < 12; k++) {
+          var a = k / 12 * Math.PI * 2 + 0.2, r1 = 33 + (k % 2) * 3, r2 = r1 + 9 + (k % 3) * 3;
+          pen.line(x + Math.cos(a) * r1, y + Math.sin(a) * r1, x + Math.cos(a) * r2, y + Math.sin(a) * r2, { cls: 'pw-ink pw-fine pw-clock__ink' });
+        }
+      } else {
+        // a crescent: the part of one disc that a second, offset disc leaves uncovered
+        var R = 22, bx = x + 10, by = y - 5, bR = 19, out = [], inn = [];
+        for (var i = 0; i <= 72; i++) {
+          var t = i / 72 * Math.PI * 2;
+          var ox = x + Math.cos(t) * R, oy = y + Math.sin(t) * R;
+          if (Math.hypot(ox - bx, oy - by) > bR) out.push([t, ox, oy]);
+          var ix = bx + Math.cos(t) * bR, iy = by + Math.sin(t) * bR;
+          if (Math.hypot(ix - x, iy - y) < R) inn.push([t, ix, iy]);
+        }
+        // start each arc where it leaves the other disc so the points run in order
+        var order = function (arr) {
+          for (var j = 1; j < arr.length; j++) if (arr[j][0] - arr[j - 1][0] > 0.2) return arr.slice(j).concat(arr.slice(0, j));
+          return arr;
+        };
+        out = order(out).map(function (q) { return [q[1], q[2]]; });
+        inn = order(inn).map(function (q) { return [q[1], q[2]]; });
+        pen.path(out, { cls: 'pw-ink pw-clock__ink', tremor: 0.15 });
+        pen.path(inn, { cls: 'pw-ink pw-fine pw-clock__ink', tremor: 0.15 });
+        var cres = document.createElementNS(NS, 'path');
+        cres.setAttribute('d', 'M' + out.concat(inn.slice().reverse()).map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' L') + 'Z');
+        cres.setAttribute('class', 'pw-clock__fill pw-clock__fill--moon');
+        g.replaceChild(cres, glow); glow = cres;
+        [[x - 70, y - 20, 4], [x + 60, y + 30, 3], [x - 40, y + 50, 3], [x + 90, y - 30, 4], [x + 20, y - 60, 3]].forEach(function (st) {
+          if (st[1] < 10 || st[1] > 330) return;
+          pen.line(st[0] - st[2], st[1], st[0] + st[2], st[1], { cls: 'pw-ink pw-fine pw-clock__ink' });
+          pen.line(st[0], st[1] - st[2], st[0], st[1] + st[2], { cls: 'pw-ink pw-fine pw-clock__ink' });
+        });
+      }
+      var hh = now.getHours() % 12 || 12, mm = ('0' + now.getMinutes()).slice(-2);
+      var label = (day ? 'The sun' : 'The moon') + ' at ' + hh + ':' + mm + (now.getHours() < 12 ? ' am' : ' pm') + ' where you are';
+      var t = document.createElementNS(NS, 'title'); t.textContent = label; g.appendChild(t);
+      if (note) note.querySelector('span').textContent = hh + ':' + mm + (now.getHours() < 12 ? ' am' : ' pm');
+    }
+    draw();
+    timer = setInterval(draw, 5 * 60 * 1000);
+    // when the app sets the ink to follow the hour, say so under the drawing
+    var hook = function (fn) {
+      return function (d) {
+        var out = fn.apply(this, arguments);
+        var byHour = d && String(d.accent_color || '').toLowerCase() === 'time';
+        if (byHour && !note) {
+          note = document.createElement('p');
+          note.className = 'pw-clocknote';
+          note.innerHTML = 'The ink follows your clock: <span></span>';
+          media.appendChild(note);
+          draw();
+        } else if (!byHour && note) { note.remove(); note = null; }
+        return out;
+      };
+    };
+    if (typeof window.renderPortfolioExtras === 'function') window.renderPortfolioExtras = hook(window.renderPortfolioExtras);
   }
 
   function buildCover() {
@@ -332,6 +410,7 @@
     var svg = svgEl('0 0 ' + W + ' ' + H, 'pw-svg');
     il.appendChild(svg);
     var shadows = coverInk(new Pen(svg, rng(7)));
+    skyClock(svg, media);
     requestAnimationFrame(function () {
       coverWashes(p.ctx, r, shadows);
       wl.classList.add('pw-dry');

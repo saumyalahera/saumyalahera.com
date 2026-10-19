@@ -832,12 +832,324 @@
     }
   }
 
+  // ---- sections as lists ------------------------------------------------------------
+  // Every group of entries becomes a numbered list: one line per entry with
+  // its title and a one-line summary. Clicking a line opens it in place,
+  // with the project's video (or a small pen drawing when there is none)
+  // beside the details and links. The entries stay where the data scripts
+  // put them; what opens underneath is a copy.
+
+  var ENTRY = 'article.card, .panel, .row';
+  var BOXES = 'main .grid, main .split, main .list';
+  var actionKey = 0;
+
+  function hashStr(t) { var h = 7; for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0; return h; }
+
+  // A wide pen skyline for entries without a video: a few towers and
+  // houses on a line of ground, different for every title.
+  function vignette(seed) {
+    var holder = document.createElement('div');
+    holder.className = 'pw-vignette';
+    var r = rng(seed), sh = [], G = 330;
+    var svg = svgEl('0 0 640 400', 'pw-svg');
+    var pen = new Pen(svg, r);
+    pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
+    var x = 70 + r() * 30, n = 0;
+    while (x < 600 && n < 6) {
+      var kind = r();
+      if (kind < 0.55) {
+        var t = tower(pen, x, G, 150 + r() * 150, r, sh);
+        x = t.right + 30 + r() * 30;
+      } else {
+        var w = 50 + r() * 26, h = 50 + r() * 40, top = G - h;
+        pen.rect(x - w / 2, top, w, h);
+        if (r() < 0.5) pen.stones(x - w / 2, top, w, h, 7); else pen.planks(x - w / 2, top, w, h, 5, true);
+        pen.window(x - w / 2 + 9, top + 14, 9, 12, 'square'); pen.window(x + w / 2 - 18, top + 14, 9, 12, 'square');
+        pen.rect(x - 5, G - 18, 10, 18, { cls: 'pw-ink pw-fine' });
+        pen.gable(x - w / 2, top, w, 22 + r() * 12);
+        sh.push([[x + w * 0.2, top + 2], [x + w / 2 - 1, top + 2], [x + w / 2 - 1, G - 2], [x + w * 0.2, G - 2]]);
+        x += w / 2 + 40 + r() * 30;
+      }
+      n++;
+    }
+    for (var k = 0; k < 5; k++) pen.line(40 + r() * 480, G + 12 + k * 9, 90 + r() * 520, G + 12 + k * 9, { cls: 'pw-ink pw-fine' });
+    if (r() < 0.6) pen.kite(80 + r() * 480, 60 + r() * 40, 11);
+    birds(pen, r, 60, 30, 520, 60, 3 + Math.floor(r() * 3));
+    if (r() < 0.6) pen.tree(r() < 0.5 ? 40 : 610, G, 90 + r() * 40);
+    var kids = svg.children, nk = kids.length || 1;
+    for (k = 0; k < kids.length; k++) kids[k].style.setProperty('--t', (k / nk).toFixed(3));
+    var p = paintCanvas(640, 400, Math.min(1.5, window.devicePixelRatio || 1)), wr = rng(seed + 1);
+    sh.forEach(function (s) {
+      wash(p.ctx, { pts: box(s, wr, 0.25), color: GREY.mid, alpha: 0.05, layers: 6, wet: 0.05, spread: 0.04, raw: true }, wr);
+    });
+    p.c.className = 'pw-canvas';
+    holder.appendChild(p.c);
+    holder.appendChild(svg);
+    return holder;
+  }
+
+  function previewOf(entry) {
+    var inner = document.createElement('div');
+    inner.className = 'pw-pv__inner';
+    var media = document.createElement('div');
+    media.className = 'pw-pv__media';
+    var title = ((entry.querySelector('h3') || {}).textContent || '').trim();
+    var src = entry.getAttribute('data-video');
+    var drawing = function () {
+      media.className = 'pw-pv__media pw-pv__media--ink';
+      media.innerHTML = '';
+      var v = vignette(hashStr(title) % 997 + 11);
+      media.appendChild(v);
+      requestAnimationFrame(function () { requestAnimationFrame(function () { v.classList.add('pw-go'); }); });
+    };
+    if (src) {
+      var video = document.createElement('video');
+      video.src = src; video.muted = true; video.loop = true; video.autoplay = true;
+      video.playsInline = true; video.setAttribute('playsinline', ''); video.preload = 'metadata';
+      video.addEventListener('error', drawing);
+      media.className = 'pw-pv__media pw-pv__media--video';
+      media.appendChild(video);
+      video.play && video.play().catch(function () {});
+    } else drawing();
+    inner.appendChild(media);
+
+    // the entry's own content, copied; buttons in the copy press the real ones
+    entry.querySelectorAll('button, [role="button"], a:not([href]), a[href="#"]').forEach(function (b) {
+      if (!b.dataset.pwKey) b.dataset.pwKey = String(++actionKey);
+    });
+    var body = document.createElement('div');
+    body.className = 'pw-pv__body';
+    Array.prototype.forEach.call(entry.childNodes, function (n) {
+      if (n.nodeType === 1 && n.matches('video, .card__previewBtn, .card__previewLayer, .pw-item__n, .pw-item__x, br')) return;
+      body.appendChild(n.cloneNode(true));
+    });
+    body.querySelectorAll('[id]').forEach(function (el) { el.removeAttribute('id'); });
+    body.querySelectorAll('.pw-rv').forEach(function (el) { el.classList.remove('pw-rv'); });
+    body.addEventListener('click', function (e) {
+      var t = e.target.closest('[data-pw-key]');
+      if (!t) return;
+      var real = entry.querySelector('[data-pw-key="' + t.dataset.pwKey + '"]');
+      if (real) { e.preventDefault(); real.click(); }
+    });
+    inner.appendChild(body);
+    return inner;
+  }
+
+  function stopVideos(el) { el.querySelectorAll('video').forEach(function (v) { try { v.pause(); } catch (_) {} }); }
+
+  function openItem(box, it) {
+    var pane = box.querySelector(':scope > .pw-pv');
+    var was = box.querySelector(':scope > .pw-item.pw-open');
+    if (was) { was.classList.remove('pw-open'); was.setAttribute('aria-expanded', 'false'); }
+    stopVideos(pane);
+    pane.classList.remove('pw-pv--on');
+    pane.innerHTML = '';
+    if (was === it) return;            // a second click folds it away
+    it.classList.add('pw-open'); it.setAttribute('aria-expanded', 'true');
+    var inner = previewOf(it);
+    if (!inner.querySelector('.pw-pv__body').textContent.trim()) inner.classList.add('pw-pv__inner--solo');
+    pane.appendChild(inner);
+    if (it.nextSibling !== pane) box.insertBefore(pane, it.nextSibling);
+    requestAnimationFrame(function () {
+      pane.classList.add('pw-pv--on');
+      var b = it.getBoundingClientRect();
+      if (b.top < 70 || b.top > innerHeight * 0.55) window.scrollTo({ top: window.scrollY + b.top - 90, behavior: reduceMotion ? 'auto' : 'smooth' });
+    });
+  }
+
+  function indexify(box) {
+    if (box.closest('[role="dialog"]') || box.matches(DECKS)) return;
+    var items = Array.prototype.filter.call(box.children, function (c) { return c.matches(ENTRY); });
+    if (!items.length) return;
+    box.classList.add('pw-index');
+    var pane = box.querySelector(':scope > .pw-pv');
+    if (!pane) {
+      pane = document.createElement('div');
+      pane.className = 'pw-pv';
+      pane.setAttribute('aria-live', 'polite');
+      box.appendChild(pane);
+    }
+    items.forEach(function (it, k) {
+      var n = it.querySelector(':scope > .pw-item__n');
+      if (!n) {
+        n = document.createElement('span');
+        n.className = 'pw-item__n';
+        n.setAttribute('aria-hidden', 'true');
+        it.insertBefore(n, it.firstChild);
+        var x = document.createElement('span');
+        x.className = 'pw-item__x';
+        x.setAttribute('aria-hidden', 'true');
+        it.appendChild(x);
+      }
+      n.textContent = (k + 1 < 10 ? '0' : '') + (k + 1);
+      if (it.dataset.pwItem) return;
+      it.dataset.pwItem = '1';
+      it.classList.add('pw-item');
+      it.setAttribute('tabindex', '0');
+      it.setAttribute('role', 'button');
+      it.setAttribute('aria-expanded', 'false');
+      it.addEventListener('click', function (e) {
+        if (e.target.closest('a[href]:not([href="#"]), button')) return;
+        openItem(box, it);
+      });
+      it.addEventListener('keydown', function (e) {
+        if (e.target !== it || (e.key !== 'Enter' && e.key !== ' ')) return;
+        e.preventDefault(); openItem(box, it);
+      });
+    });
+    var open = box.querySelector(':scope > .pw-item.pw-open');
+    if (open && !pane.firstChild) { open.classList.remove('pw-open'); open.setAttribute('aria-expanded', 'false'); }
+  }
+
+  function indexes() {
+    var all = function () { document.querySelectorAll(BOXES).forEach(indexify); };
+    all();
+    if ('MutationObserver' in window) {
+      var queued = false;
+      new MutationObserver(function (ms) {
+        // ignore the preview's own changes
+        if (ms.every(function (m) { return m.target.closest && m.target.closest('.pw-pv'); })) return;
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; all(); });
+      }).observe(document.querySelector('main') || document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // ---- projects as postcards -----------------------------------------------------------
+  // Each project is a postcard laid open: the picture side on the left (its
+  // video, or a pen drawing when there is none) and the written side on the
+  // right, with a stamp and a postmark carrying the project's status. The
+  // card's own content is not moved; the picture, stamp and postmark are
+  // added around it.
+
+  var DECKS = '#selected_work, #more_projects, #more_projects_fallback';
+
+  function shortTitle(t) { return t.split(/[:—(]| - /)[0].trim(); }
+
+  function stampArt(seed) {
+    var r = rng(seed), svg = svgEl('0 0 120 150', 'pw-svg');
+    var pen = new Pen(svg, r);
+    pen.line(6, 138, 114, 138);
+    tower(pen, 60, 138, 132, r, []);
+    birds(pen, r, 10, 10, 30, 20, 2);
+    return svg;
+  }
+
+  var pcSeen = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) {
+      var v = e.target.querySelector('video');
+      if (e.isIntersecting) {
+        var ink = e.target.querySelector('.pw-vignette');
+        if (ink) ink.classList.add('pw-go');
+        if (v) { try { v.play().catch(function () {}); } catch (_) {} }
+      } else if (v) { try { v.pause(); } catch (_) {} }
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.15 }) : null;
+
+  function postcard(card, k) {
+    if (card.dataset.pc) return;
+    card.dataset.pc = '1';
+    card.classList.add('pc');
+    var title = ((card.querySelector('h3') || {}).textContent || '').trim();
+    var seed = hashStr(title) % 997 + 11;
+
+    // the picture side
+    var pic = document.createElement('div');
+    pic.className = 'pc-pic';
+    pic.setAttribute('aria-hidden', 'true');
+    var frame = document.createElement('div');
+    frame.className = 'pc-pic__frame';
+    var src = card.getAttribute('data-video');
+    var drawing = function () {
+      frame.innerHTML = '';
+      frame.classList.remove('pc-pic__frame--video');
+      var v = vignette(seed);
+      frame.appendChild(v);
+      if (!pcSeen) v.classList.add('pw-go');
+    };
+    if (src) {
+      var video = document.createElement('video');
+      video.src = src; video.muted = true; video.loop = true;
+      video.playsInline = true; video.setAttribute('playsinline', ''); video.preload = 'metadata';
+      video.addEventListener('error', function () { drawing(); if (pcSeen) setTimeout(function () { frame.querySelector('.pw-vignette') && frame.querySelector('.pw-vignette').classList.add('pw-go'); }, 60); });
+      frame.classList.add('pc-pic__frame--video');
+      frame.appendChild(video);
+    } else drawing();
+    pic.appendChild(frame);
+    var cap = document.createElement('div');
+    cap.className = 'pc-pic__cap';
+    cap.textContent = shortTitle(title);
+    pic.appendChild(cap);
+    card.insertBefore(pic, card.firstChild);
+
+    // the stamp and the postmark
+    var tags = card.querySelectorAll('.tag');
+    var status = '';
+    Array.prototype.some.call(tags, function (t) {
+      if (/tag--alt/.test(t.className) && !t.matches('a')) { status = t.textContent.trim(); return true; }
+      return false;
+    });
+    var corner = document.createElement('div');
+    corner.className = 'pc-corner';
+    corner.setAttribute('aria-hidden', 'true');
+    var stamp = document.createElement('div');
+    stamp.className = 'pc-stamp';
+    var inner = document.createElement('div');
+    inner.className = 'pc-stamp__in';
+    inner.appendChild(stampArt(seed + 3));
+    var val = document.createElement('span');
+    val.className = 'pc-stamp__val';
+    val.textContent = (k + 1 < 10 ? '0' : '') + (k + 1);
+    inner.appendChild(val);
+    stamp.appendChild(inner);
+    corner.appendChild(stamp);
+    var mark = document.createElement('div');
+    mark.className = status ? 'pc-mark' : 'pc-mark pc-mark--blank';
+    mark.innerHTML = '<svg class="pc-mark__waves" viewBox="0 0 120 40" preserveAspectRatio="none"><path d="M0 8 Q15 2 30 8 T60 8 T90 8 T120 8"/><path d="M0 20 Q15 14 30 20 T60 20 T90 20 T120 20"/><path d="M0 32 Q15 26 30 32 T60 32 T90 32 T120 32"/></svg><span class="pc-mark__ring"><span>' + (status || 'Sent') + '</span></span>';
+    corner.appendChild(mark);
+    card.insertBefore(corner, pic.nextSibling);
+    card.style.setProperty('--pc-tilt', ((k % 2 ? 1 : -1) * (0.5 + (seed % 7) * 0.17)).toFixed(2) + 'deg');
+    // about half are held up with a strip of tape
+    if (seed % 2) {
+      var tape = document.createElement('span');
+      tape.className = 'pc-tape';
+      tape.setAttribute('aria-hidden', 'true');
+      tape.style.setProperty('--pc-tape', (((seed >> 3) % 9) - 4) + 'deg');
+      card.insertBefore(tape, card.firstChild);
+    }
+    if (pcSeen) pcSeen.observe(card);
+  }
+
+  function postcards() {
+    var all = function () {
+      document.querySelectorAll(DECKS).forEach(function (deck) {
+        if (deck.closest('[role="dialog"]')) return;
+        var cards = Array.prototype.filter.call(deck.children, function (c) { return c.matches('article.card'); });
+        if (!cards.length) return;
+        deck.classList.add('pc-deck');
+        cards.forEach(postcard);
+      });
+    };
+    all();
+    if ('MutationObserver' in window) {
+      var queued = false;
+      new MutationObserver(function () {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; all(); });
+      }).observe(document.querySelector('main') || document.body, { childList: true, subtree: true });
+    }
+  }
+
   function start() {
     strokes();
     buildNav();
     buildCover();
     var blooms = chapters();
     tintEntries();
+    postcards();
+    indexes();
     reveal(blooms);
     root.classList.add('pw-on');
   }

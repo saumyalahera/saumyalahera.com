@@ -423,15 +423,37 @@
       return z.split('/').pop().replace(/_/g, ' ');
     } catch (_) { return ''; }
   }
-  function fetchWeather(city, done) {
-    var key = 'pw-weather:' + city.toLowerCase();
+  // where the visitor is: the nearest city to their connection, found without
+  // a permission prompt; failing that, the city their time zone is named after
+  function findPlace(done) {
+    var key = 'pw-place', fallback = function () { done({ city: zoneCity() }); };
+    try {
+      var c = JSON.parse(localStorage.getItem(key) || 'null');
+      if (c && c.city && Date.now() - c.t < 6 * 60 * 60 * 1000) return done(c);
+    } catch (_) {}
+    if (!window.fetch) return fallback();
+    var settled = false, finish = function (p) { if (settled) return; settled = true; p ? done(p) : fallback(); };
+    setTimeout(function () { finish(null); }, 4000);
+    fetch('https://get.geojs.io/v1/ip/geo.json')
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        var lat = parseFloat(g && g.latitude), lon = parseFloat(g && g.longitude);
+        if (!g || !g.city || isNaN(lat) || isNaN(lon)) return finish(null);
+        var p = { t: Date.now(), city: g.city, lat: lat, lon: lon };
+        try { localStorage.setItem(key, JSON.stringify(p)); } catch (_) {}
+        finish(p);
+      })
+      .catch(function () { finish(null); });
+  }
+  function fetchWeather(place, done) {
+    var city = place.city, key = 'pw-weather:' + city.toLowerCase();
     try {
       var c = JSON.parse(localStorage.getItem(key) || 'null');
       if (c && Date.now() - c.t < 30 * 60 * 1000) return done(c);
     } catch (_) {}
     if (!window.fetch) return;
-    fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=' + encodeURIComponent(city))
-      .then(function (r) { return r.json(); })
+    (place.lat != null ? Promise.resolve({ results: [{ latitude: place.lat, longitude: place.lon }] })
+      : fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=' + encodeURIComponent(city)).then(function (r) { return r.json(); }))
       .then(function (g) {
         var p = g && g.results && g.results[0];
         if (!p) throw new Error('no place');
@@ -580,16 +602,17 @@
       if (!note) { note = document.createElement('p'); note.className = 'pw-wxnote'; media.appendChild(note); }
       note.textContent = WX_WORDS[kind] + ' in ' + city + ', where you are';
     }
-    function go(city) {
+    function go(place) {
+      var city = place.city;
       var force = (location.search.match(/[?&]weather=([a-z]+)/) || [])[1];
       if (force && WX_WORDS[force]) { if (shown !== 'forced') { shown = 'forced'; draw(city || 'your city', { kind: force, wind: 12 }); } return; }
       if (!city || city === shown) return;
       shown = city;
-      fetchWeather(city, function (wx) { if (shown === city) draw(city, wx); });
+      fetchWeather(place, function (wx) { if (shown === city) draw(city, wx); });
     }
-    go(zoneCity());
+    findPlace(go);
     // check again now and then, for a page left open
-    setInterval(function () { shown = ''; go(zoneCity()); }, 30 * 60 * 1000);
+    setInterval(function () { shown = ''; findPlace(go); }, 30 * 60 * 1000);
   }
 
   function buildCover() {

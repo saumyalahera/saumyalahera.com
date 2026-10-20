@@ -1220,13 +1220,14 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 /* the sun hides behind heavy weather */
 .pw-wx--overcast .pw-clock, .pw-wx--rain .pw-clock, .pw-wx--storm .pw-clock, .pw-wx--snow .pw-clock, .pw-wx--fog .pw-clock{ opacity: .3; }
 .pw-wxnote{
-  position: absolute; left: 8px; bottom: 6px; margin: 0; z-index: 3;
+  position: absolute; right: 8px; bottom: 6px; margin: 0; z-index: 3;
   font-family: var(--pw-serif); font-style: italic; font-size: 14px; color: var(--pw-ink-2);
   background: var(--pw-paper); padding: 2px 8px; border-radius: 3px;
 }
-.pw-clocknote ~ .pw-wxnote, .pw-wxnote ~ .pw-clocknote{ bottom: 6px; }
+/* bottom right of the drawing, clear of the pills under the intro; stacked over the clock note when both show */
+.pw-cover:has(.pw-clocknote) .pw-wxnote, .pw-clocknote ~ .pw-wxnote{ bottom: 36px; }
 @media (max-width: 720px){
-  .pw-wxnote{ left: auto; right: 8px; bottom: 32px; font-size: 13px; }
+  .pw-wxnote{ font-size: 13px; }
 }
 /* live weather: everything keeps moving a little */
 .pw-wx-drop--far{ stroke-width: .6; opacity: .22; }

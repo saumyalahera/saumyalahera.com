@@ -1088,3 +1088,24 @@ article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
 /* lines between the groups inside Talks */
 .pw-rule--sub{ margin: 64px 0 0 calc(50% - 50vw) !important; }
 .pw-rule--sub + div[style*="margin-top"]{ margin-top: 64px !important; }
+
+/* ---- Tighter chapters: the building sets the head's height, so keep it small
+   and start it right under the separator line ---------------------------------- */
+.section, .section--alt{ padding: 40px 22px 32px !important; }
+.pw-bloom--right, .pw-bloom--left{ top: 40px; }
+.pw-scene{ width: min(196px, 17vw); }
+.pw-chapter .section__head.pw-lead, .pw-chapter #other_sections_fallback > .section__head:first-child, .pw-chapter #other_sections > .section__head:first-child{ min-height: min(225px, calc(17vw * 1.15)); }
+.pw-chapter .section__head{ max-width: min(760px, calc(100% - 230px)); margin-bottom: 28px; }
+.pc-deck{ padding-bottom: 12px; }
+@media (max-width: 720px){
+  .section, .section--alt{ padding: 32px 16px 20px !important; }
+  .pw-scene{ width: 48vw; max-width: 210px; margin: 0 auto 2px; }
+  .pw-chapter .section__head{ max-width: none; }
+}
+/* title starts level with the top of the drawing, not at the bottom of it */
+.pw-chapter .section__head.pw-lead, .pw-chapter #other_sections_fallback > .section__head:first-child, .pw-chapter #other_sections > .section__head:first-child{ justify-content: flex-start; padding-top: 8px; }
+@media (max-width: 720px){
+  .pw-chapter .section__head.pw-lead, .pw-chapter #other_sections_fallback > .section__head:first-child, .pw-chapter #other_sections > .section__head:first-child{ padding-top: 0; }
+  /* the drawing's empty sky is trimmed on phones */
+  .pw-scene{ margin: -18vw auto -2px; clip-path: inset(17vw -20px 0 -20px); }
+}

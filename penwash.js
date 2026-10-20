@@ -1784,20 +1784,19 @@
     corner.appendChild(mark);
     card.insertBefore(corner, pic.nextSibling);
     card.style.setProperty('--pc-tilt', ((k % 2 ? 1 : -1) * (0.5 + (seed % 7) * 0.17)).toFixed(2) + 'deg');
-    // about half are held up with a strip of tape
-    if (seed % 2) {
-      var tape = document.createElement('span');
-      tape.className = 'pc-tape';
-      tape.setAttribute('aria-hidden', 'true');
-      tape.style.setProperty('--pc-tape', (((seed >> 3) % 9) - 4) + 'deg');
-      card.insertBefore(tape, card.firstChild);
-      writeTape(tape, card);
-    }
+    // about half are held up with a strip of tape; any card with a note gets one
+    var tape = document.createElement('span');
+    tape.className = 'pc-tape';
+    tape.setAttribute('aria-hidden', 'true');
+    tape.style.setProperty('--pc-tape', (((seed >> 3) % 9) - 4) + 'deg');
+    if (seed % 2) tape.dataset.plain = '1';
+    card.insertBefore(tape, card.firstChild);
+    writeTape(tape, card);
     if (pcSeen) pcSeen.observe(card);
   }
 
-  // What the tape says: the year and place the app sends for the project
-  // ("year" and "place" on each item of selected_work / more_projects).
+  // What the tape says: the note the app sends for the project ("tape" on each
+  // item of selected_work / more_projects; older data may have year and place).
   var tapeInfo = {};
   var tapeKey = function (t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
   function writeTape(tape, card) {
@@ -1806,14 +1805,16 @@
     var text = tapeInfo[tapeKey(title)] || '';
     tape.textContent = text;
     tape.classList.toggle('pc-tape--note', !!text);
+    tape.hidden = !text && tape.dataset.plain !== '1';
   }
   function tapesFrom(d) {
     if (!d || typeof d !== 'object') return;
     [d.selected_work, d.more_projects].forEach(function (list) {
       (Array.isArray(list) ? list : []).forEach(function (p) {
         if (!p || !p.title) return;
-        var bits = [p.year || p.when || p.date, p.place || p.location || p.city].map(function (v) { return v == null ? '' : String(v).trim(); }).filter(Boolean);
-        if (bits.length) tapeInfo[tapeKey(p.title)] = bits.join(' · ');
+        var note = p.tape == null ? '' : String(p.tape).trim();
+        if (!note) note = [p.year, p.place].map(function (v) { return v == null ? '' : String(v).trim(); }).filter(Boolean).join(' · ');
+        if (note) tapeInfo[tapeKey(p.title)] = note; else delete tapeInfo[tapeKey(p.title)];
       });
     });
     document.querySelectorAll('article.card.pc > .pc-tape').forEach(function (t) { writeTape(t, t.parentElement); });

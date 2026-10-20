@@ -1344,3 +1344,4 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 .pw-smark__ring{ border-color: var(--pw-ink); outline-color: var(--pw-ink); color: var(--pw-ink); background: none; }
 .pw-smark__waves path{ stroke: var(--pw-ink); }
 .pw-stamp-val{ font-size: 11px; opacity: .85; }
+.pc-tape[hidden]{ display: none !important; }

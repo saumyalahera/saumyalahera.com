@@ -1784,12 +1784,11 @@
     corner.appendChild(mark);
     card.insertBefore(corner, pic.nextSibling);
     card.style.setProperty('--pc-tilt', ((k % 2 ? 1 : -1) * (0.5 + (seed % 7) * 0.17)).toFixed(2) + 'deg');
-    // about half are held up with a strip of tape; any card with a note gets one
+    // a strip of tape only on cards with a note from the app
     var tape = document.createElement('span');
     tape.className = 'pc-tape';
     tape.setAttribute('aria-hidden', 'true');
     tape.style.setProperty('--pc-tape', (((seed >> 3) % 9) - 4) + 'deg');
-    if (seed % 2) tape.dataset.plain = '1';
     card.insertBefore(tape, card.firstChild);
     writeTape(tape, card);
     if (pcSeen) pcSeen.observe(card);
@@ -1805,7 +1804,7 @@
     var text = tapeInfo[tapeKey(title)] || '';
     tape.textContent = text;
     tape.classList.toggle('pc-tape--note', !!text);
-    tape.hidden = !text && tape.dataset.plain !== '1';
+    tape.hidden = !text;
   }
   function tapesFrom(d) {
     if (!d || typeof d !== 'object') return;

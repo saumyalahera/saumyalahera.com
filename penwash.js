@@ -470,7 +470,7 @@
       .catch(function () {});
   }
   function skyWeather(svg, media) {
-    var shown = '', g = null, note = null;
+    var shown = '', g = null;
     function draw(city, wx) {
       if (g) g.remove();
       media.classList.remove('pw-wx--cloudy', 'pw-wx--overcast', 'pw-wx--fog', 'pw-wx--drizzle', 'pw-wx--rain', 'pw-wx--snow', 'pw-wx--storm');
@@ -599,8 +599,6 @@
         });
       }
       media.style.setProperty('--pw-wind', Math.min(1, (wx.wind || 0) / 40).toFixed(2));
-      if (!note) { note = document.createElement('p'); note.className = 'pw-wxnote'; media.appendChild(note); }
-      note.textContent = WX_WORDS[kind] + ' in ' + city + ', where you are';
     }
     function go(place) {
       var city = place.city;

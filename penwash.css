@@ -1107,7 +1107,7 @@ article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
 @media (max-width: 720px){
   .pw-chapter .section__head.pw-lead, .pw-chapter #other_sections_fallback > .section__head:first-child, .pw-chapter #other_sections > .section__head:first-child{ padding-top: 0; }
   /* the drawing's empty sky is trimmed on phones */
-  .pw-scene{ margin: -18vw auto -2px; clip-path: inset(17vw -20px 0 -20px); }
+  .pw-scene{ margin: calc(var(--pw-sky, 0) * min(48vw, 210px) * -1.15) auto -2px; clip-path: inset(calc(var(--pw-sky, 0) * 100%) -20px 0 -20px); }
 }
 
 /* ---- The hour's ink inside the drawings -------------------------------------
@@ -1123,3 +1123,12 @@ html.pw-night .pw-fill.pw-win{ fill: var(--pw-accent); }
 html.pw-night .pw-fill.pw-hue-fill.pw-beam{ fill: rgba(var(--accent-ink-rgb, 76,56,240), .24); }
 html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 .pc-stamp__in .pw-fill.pw-win{ fill: var(--pw-ink); }
+
+/* a note written on the tape: year and place, or the tools used */
+.pc-tape--note{
+  width: auto; min-width: 92px; max-width: 70%;
+  margin-left: 0; transform: translateX(-50%) rotate(var(--pc-tape, -3deg));
+  padding: 0 12px; box-sizing: border-box;
+  font-family: var(--pw-serif); font-style: italic; font-size: 12px; line-height: 26px;
+  color: var(--pw-ink-2); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}

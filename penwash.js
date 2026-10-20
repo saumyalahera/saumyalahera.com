@@ -747,6 +747,8 @@
       p.c.className = 'pw-canvas';
       holder.appendChild(p.c);
       holder.appendChild(svg);
+      // how much empty sky sits above the drawing, so phones can trim exactly that
+      try { var bb = svg.getBBox(); holder.style.setProperty('--pw-sky', (Math.max(0, bb.y - 10) / 460).toFixed(3)); } catch (_) {}
       holder.classList.add('pw-ready');
     };
     return { el: holder, paint: paint };
@@ -1464,8 +1466,46 @@
       tape.setAttribute('aria-hidden', 'true');
       tape.style.setProperty('--pc-tape', (((seed >> 3) % 9) - 4) + 'deg');
       card.insertBefore(tape, card.firstChild);
+      writeTape(tape, card);
     }
     if (pcSeen) pcSeen.observe(card);
+  }
+
+  // What the tape says: the year and place the app sends for the project
+  // ("year" and "place" on each item of selected_work / more_projects), or, until
+  // then, the tools named in the card's own text.
+  var tapeInfo = {};
+  var TECH = ['SwiftUI', 'Swift', 'Metal', 'C++', 'OpenGL', 'WebGL', 'GLSL', 'Vulkan', 'CUDA', 'Core ML', 'MPS', 'SceneKit', 'ARKit', 'RealityKit', 'TensorFlow', 'PyTorch', 'Python', 'Unity', 'Rust', 'JavaScript', 'TypeScript', 'macOS', 'iPadOS', 'iOS', 'iPad', 'Android', 'Kotlin', 'OpenCV', 'Blender', 'WebAssembly', 'React', 'GPU'];
+  var tapeKey = function (t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
+  function writeTape(tape, card) {
+    var title = ((card.querySelector('h3') || {}).textContent || '').trim();
+    var text = tapeInfo[tapeKey(title)];
+    if (!text) {
+      var body = card.textContent || '', found = [];
+      TECH.forEach(function (w) {
+        if (found.length >= 2) return;
+        var re = new RegExp('(^|[^A-Za-z])' + w.replace(/[+]/g, '\\+') + '(?![A-Za-z])');
+        if (re.test(body) && !found.some(function (f) { return f.indexOf(w) === 0 || w.indexOf(f) === 0; })) found.push(w);
+      });
+      text = found.join(' · ');
+    }
+    tape.textContent = text;
+    tape.classList.toggle('pc-tape--note', !!text);
+  }
+  function tapesFrom(d) {
+    if (!d || typeof d !== 'object') return;
+    [d.selected_work, d.more_projects].forEach(function (list) {
+      (Array.isArray(list) ? list : []).forEach(function (p) {
+        if (!p || !p.title) return;
+        var bits = [p.year || p.when || p.date, p.place || p.location || p.city].map(function (v) { return v == null ? '' : String(v).trim(); }).filter(Boolean);
+        if (bits.length) tapeInfo[tapeKey(p.title)] = bits.join(' · ');
+      });
+    });
+    document.querySelectorAll('article.card.pc > .pc-tape').forEach(function (t) { writeTape(t, t.parentElement); });
+  }
+  if (typeof window.renderPortfolioExtras === 'function') {
+    var renderExtras = window.renderPortfolioExtras;
+    window.renderPortfolioExtras = function (d) { var out = renderExtras.apply(this, arguments); try { tapesFrom(d); } catch (_) {} return out; };
   }
 
   function postcards() {

@@ -1270,3 +1270,77 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
   .pw-chapter .section__head.pw-lead:has(+ .about .pw-portrait){ min-height: 0 !important; }
   #about .pw-about__words #about_summary{ max-width: calc(100% - min(196px, 17vw) - 40px); }
 }
+
+/* Locations and Duolingo cards as postage stamps, like the ones on the postcards:
+   a bright perforated paper edge, a double frame in the theme colour, a value in
+   the corner, a slight tilt; past places carry a cancellation mark */
+.mini-card{
+  --stamp-paper: #ffffff;
+  overflow: visible !important;
+  padding: 11px !important;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 4.6px, var(--stamp-paper) 5.3px) -7px -7px / 14px 14px !important;
+  filter: drop-shadow(0 0 .6px rgba(43,46,36,.5)) drop-shadow(0 2px 3px rgba(43,46,36,.16));
+  transform: rotate(-1.2deg);
+  transition: transform .35s ease, filter .35s ease;
+}
+.mini-card:nth-child(2n){ transform: rotate(1.1deg); }
+.mini-card:nth-child(3n){ transform: rotate(-.5deg); }
+.mini-card:hover{ transform: rotate(0deg) translateY(-4px); filter: drop-shadow(0 0 .6px rgba(43,46,36,.5)) drop-shadow(0 8px 10px rgba(43,46,36,.16)); }
+.mini-card::before{ display: none !important; }
+.mini-card::after{
+  inset: 11px !important;
+  opacity: 1 !important;
+  border: 1.5px solid rgba(var(--accent-ink-rgb, 76,56,240), .75);
+  outline: 1px solid rgba(var(--accent-ink-rgb, 76,56,240), .35); outline-offset: -6px;
+  background: linear-gradient(rgba(var(--accent-soft-rgb, 204,199,255), .3), rgba(var(--accent-soft-rgb, 204,199,255), .3)), #fbf8f0 !important;
+}
+.mini-card__img{ border-radius: 0 !important; filter: grayscale(1) contrast(1.02); margin: 12px 12px 8px !important; width: calc(100% - 24px) !important; }
+.mini-card.duo-card .duo-card__img{ border-radius: 0 !important; }
+.mini-card .mini-card__body{ padding-bottom: 14px !important; }
+.mini-card .duo-card__text{ padding-top: 24px !important; }
+.pw-stamp-val{
+  position: absolute; z-index: 2; top: 15px; right: 17px;
+  font-family: var(--pw-sans); font-weight: 800; font-size: 13px; line-height: 1; letter-spacing: .02em;
+  color: var(--pw-accent); background: #fbf8f0; padding: 1px 3px; pointer-events: none;
+}
+/* the cancellation: a ring with the year and wavy lines running off it */
+.pw-smark{
+  position: absolute; z-index: 3; right: 2px; top: 50px; width: 112px; height: 46px; transform-origin: 100% 50%;
+  transform: rotate(var(--r, -12deg)); opacity: .7; pointer-events: none;
+}
+.pw-smark__ring{
+  position: absolute; right: 0; top: 0; width: 46px; height: 46px; border-radius: 50%; background: rgba(251,248,240,.35);
+  border: 1px solid var(--pw-accent); outline: .7px solid var(--pw-accent); outline-offset: -4px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  font-family: var(--pw-sans); font-weight: 700; font-size: 7.5px; line-height: 1.15; letter-spacing: .1em; text-transform: uppercase; color: var(--pw-accent);
+}
+.pw-smark__waves{ position: absolute; left: 0; top: 7px; width: 68px; height: 32px; overflow: visible; }
+.pw-smark__waves path{ fill: none; stroke: var(--pw-accent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+@media (prefers-reduced-motion: reduce){ .mini-card{ transition: none; } }
+@media (max-width: 520px){
+  .mini-card{ padding: 7px !important; background: radial-gradient(circle at 50% 50%, transparent 3px, var(--stamp-paper) 3.6px) -5px -5px / 10px 10px !important; }
+  .mini-card::after{ inset: 7px !important; outline-offset: -4px; }
+  .mini-card__img{ margin: 9px 9px 6px !important; width: calc(100% - 18px) !important; }
+  .mini-card__body{ padding-left: 4px !important; padding-right: 4px !important; }
+  .pw-stamp-val{ top: 11px; right: 12px; font-size: 10px; }
+  .pw-smark{ transform: rotate(var(--r, -12deg)) scale(.7); right: 0; top: 36px; }
+}
+
+/* the stamps are drawn in pen now: the paper, perforations and frames come from the svg */
+.mini-card{ background: none !important; }
+.mini-card::after{ display: none !important; }
+.mini-card > .pw-stampsvg{ position: absolute !important; inset: 0; width: 100%; height: 100%; z-index: 0 !important; overflow: visible; pointer-events: none; }
+.pw-stamp__paper{ fill: #ffffff; stroke: var(--pw-ink); stroke-width: .8; stroke-opacity: .55; stroke-linejoin: round; }
+.pw-stamp__panel{ fill: rgba(var(--accent-soft-rgb, 204,199,255), .3); stroke: none; }
+.pw-stamp__frame{ fill: none; stroke: var(--pw-accent); stroke-width: 1.3; stroke-linecap: round; opacity: .85; }
+.pw-stamp__frame--fine{ stroke-width: .7; opacity: .5; }
+.pw-stamp-val{ background: none; }
+/* quieter stamps: ink lines on near-white paper; the theme colour only on the number */
+.pw-stamp__panel{ fill: rgba(43,46,36,.035); }
+.pw-stamp__frame{ stroke: var(--pw-ink); opacity: .55; stroke-width: 1.1; }
+.pw-stamp__frame--fine{ opacity: .3; stroke-width: .6; }
+.pw-smark{ opacity: .5; }
+.pw-smark__ring{ border-color: var(--pw-ink); outline-color: var(--pw-ink); color: var(--pw-ink); background: none; }
+.pw-smark__waves path{ stroke: var(--pw-ink); }
+.pw-stamp-val{ font-size: 11px; opacity: .85; }

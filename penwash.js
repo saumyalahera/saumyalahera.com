@@ -253,6 +253,95 @@
     return g;
   }
 
+  // The stamp itself, drawn in pen at the card's size: a paper edge bitten by
+  // perforations, a tinted panel and a double frame in the theme ink.
+  function penStamp(card, i) {
+    var w = card.offsetWidth, h = card.offsetHeight;
+    if (!w || !h) return;
+    var old = card.querySelector(':scope > .pw-stampsvg');
+    if (old && Math.abs(old._w - w) < 2 && Math.abs(old._h - h) < 2) return;
+    if (old) old.remove();
+    var small = w < 140, P = small ? 9.5 : 13, R = P * 0.3, m = 1.5, inset = small ? 7 : 11;
+    var title = (card.textContent || '').trim().slice(0, 24), seed = 17 + i * 31;
+    for (var c = 0; c < title.length; c++) seed = (seed * 33 + title.charCodeAt(c)) >>> 0;
+    var r = rng(seed % 100000 + 1);
+    var svg = svgEl('0 0 ' + w + ' ' + h, 'pw-stampsvg');
+    svg._w = w; svg._h = h;
+    // one side of the edge: straight paper, then a round bite, all the way along
+    var edge = function (pts, x0, y0, x1, y1, nx, ny) {
+      var L = Math.hypot(x1 - x0, y1 - y0), n = Math.max(2, Math.round(L / P)), st = L / n, ux = (x1 - x0) / L, uy = (y1 - y0) / L;
+      for (var k = 0; k < n; k++) {
+        var cx = x0 + ux * (k * st + st / 2), cy = y0 + uy * (k * st + st / 2);
+        pts.push([cx - ux * (st / 2), cy - uy * (st / 2)]);
+        if (k === 0 || k === n) continue;
+        for (var j = 0; j <= 6; j++) {
+          var a = Math.PI * j / 6, rr = R * (0.9 + r() * 0.2);
+          pts.push([cx - ux * Math.cos(a) * rr + nx * Math.sin(a) * rr, cy - uy * Math.cos(a) * rr + ny * Math.sin(a) * rr]);
+        }
+      }
+    };
+    var pts = [];
+    edge(pts, m, m, w - m, m, 0, 1);
+    edge(pts, w - m, m, w - m, h - m, -1, 0);
+    edge(pts, w - m, h - m, m, h - m, 0, -1);
+    edge(pts, m, h - m, m, m, 1, 0);
+    pts.push(pts[0]);
+    var add = function (d, cls) {
+      var p = document.createElementNS(NS, 'path');
+      p.setAttribute('d', d); p.setAttribute('class', cls); svg.appendChild(p); return p;
+    };
+    add(smooth(tremble(pts, r, 0.25)) + 'Z', 'pw-stamp__paper');
+    // the panel, washed in and then outlined twice, a little loosely
+    var box = function (d) { return [[d, d], [w - d, d], [w - d, h - d], [d, h - d], [d, d]]; };
+    add(smooth(tremble(box(inset + 1), r, 0.5)) + 'Z', 'pw-stamp__panel');
+    var frame = function (d, cls, over) {
+      var q = box(d);
+      for (var k = 0; k < 4; k++) {
+        var a = q[k], b = q[k + 1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy);
+        var o1 = r() * over, o2 = r() * over;
+        add(smooth(tremble([[a[0] - dx / L * o1, a[1] - dy / L * o1], [b[0] + dx / L * o2, b[1] + dy / L * o2]], r, 0.45)), cls);
+      }
+    };
+    frame(inset, 'pw-stamp__frame', 4);
+    frame(inset + (small ? 3.5 : 5), 'pw-stamp__frame pw-stamp__frame--fine', 2.5);
+    card.insertBefore(svg, card.firstChild);
+    if (window.ResizeObserver && !card._pwRO) {
+      card._pwRO = new ResizeObserver(function () { penStamp(card, i); });
+      card._pwRO.observe(card);
+    }
+  }
+
+  // Locations and Duolingo cards are stamps: a value in the corner, and the places
+  // left behind get a cancellation mark. Duolingo cards are drawn later, so watch.
+  function stampCards() {
+    var dress = function () {
+      document.querySelectorAll('.mini-grid, .duo-grid').forEach(function (grid) {
+        var cards = grid.querySelectorAll('.mini-card');
+        cards.forEach(function (card, i) {
+          penStamp(card, i);
+          if (card.querySelector('.pw-stamp-val')) return;
+          var val = document.createElement('span');
+          val.className = 'pw-stamp-val'; val.setAttribute('aria-hidden', 'true');
+          val.textContent = (i + 1 < 10 ? '0' : '') + (i + 1);
+          card.appendChild(val);
+          var meta = card.querySelector('.mini-card__meta');
+          if (meta && /past/i.test(meta.textContent)) {
+            var mark = document.createElement('span');
+            mark.className = 'pw-smark'; mark.setAttribute('aria-hidden', 'true');
+            mark.innerHTML = '<span class="pw-smark__ring">Left<br>behind</span><svg class="pw-smark__waves" viewBox="0 0 76 32" preserveAspectRatio="none"><path d="M0 5 Q9.5 1 19 5 T38 5 T57 5 T76 5"/><path d="M0 16 Q9.5 12 19 16 T38 16 T57 16 T76 16"/><path d="M0 27 Q9.5 23 19 27 T38 27 T57 27 T76 27"/></svg>';
+            mark.style.setProperty('--r', (-8 - (i * 5) % 9) + 'deg');
+            card.appendChild(mark);
+          }
+        });
+      });
+    };
+    dress();
+    if (window.MutationObserver) {
+      var t = null;
+      new MutationObserver(function () { clearTimeout(t); t = setTimeout(dress, 60); }).observe(document.querySelector('#about') || document.body, { childList: true, subtree: true });
+    }
+  }
+
   // strung between the towers, a kite, birds. Returns where the shadows fall.
   function coverInk(pen) {
     var r = pen.r, tr = rng(31), sh = [];
@@ -1909,7 +1998,7 @@
     postcards();
     indexes();
     reveal(blooms);
-    sectionRules(); subRules(); nightfall(); aboutPortrait();
+    sectionRules(); subRules(); nightfall(); aboutPortrait(); stampCards();
     root.classList.add('pw-on');
   }
 

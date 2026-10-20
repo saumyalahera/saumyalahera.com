@@ -1109,3 +1109,17 @@ article.card.pc.pc--playing .pc-pic__frame--video .pc-pic__art{ opacity: 0; }
   /* the drawing's empty sky is trimmed on phones */
   .pw-scene{ margin: -18vw auto -2px; clip-path: inset(17vw -20px 0 -20px); }
 }
+
+/* ---- The hour's ink inside the drawings -------------------------------------
+   Flags, kites, washing, sails, lanterns, the clock face and the fairground take the
+   theme colour, which follows the visitor's clock when the app asks for it. After
+   dark, windows light up in it and the lighthouse beam grows stronger. */
+.pw-ink.pw-hue{ stroke: var(--pw-accent); }
+.pw-fill.pw-hue-fill{ fill: var(--pw-accent); }
+.pw-fill.pw-hue-fill.pw-soft{ fill: rgba(var(--accent-ink-rgb, 76,56,240), .38); }
+.pw-fill.pw-hue-fill.pw-beam{ fill: rgba(var(--accent-ink-rgb, 76,56,240), .10); }
+.pw-fill.pw-win{ transition: opacity 1.2s ease, fill 1.6s ease; }
+html.pw-night .pw-fill.pw-win{ fill: var(--pw-accent); }
+html.pw-night .pw-fill.pw-hue-fill.pw-beam{ fill: rgba(var(--accent-ink-rgb, 76,56,240), .24); }
+html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
+.pc-stamp__in .pw-fill.pw-win{ fill: var(--pw-ink); }

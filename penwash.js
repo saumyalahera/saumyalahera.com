@@ -450,7 +450,7 @@
   Pen.prototype.fill = function (pts, o) {
     var p = document.createElementNS(NS, 'path');
     p.setAttribute('d', smooth(tremble(pts.concat([pts[0]]), this.r, (o && o.tremor) || 0.3)) + ' Z');
-    p.setAttribute('class', 'pw-fill');
+    p.setAttribute('class', 'pw-fill' + (o && o.cls ? ' ' + o.cls : ''));
     p.style.setProperty('--i', this.n++);
     this.svg.appendChild(p);
     return p;
@@ -494,23 +494,23 @@
       var pts = [[x, y + h], [x, y + w / 2]];
       for (var a = 0; a <= 8; a++) { var t = Math.PI + a / 8 * Math.PI; pts.push([x + w / 2 + Math.cos(t) * w / 2, y + w / 2 + Math.sin(t) * w / 2]); }
       pts.push([x + w, y + h]);
-      this.fill(pts);
+      this.fill(pts, { cls: 'pw-win' });
       this.line(x - 2, y + h + 1.5, x + w + 2, y + h + 1.5, { cls: 'pw-ink pw-fine' });
     } else if (kind === 'round') {
       var c = [];
       for (var k = 0; k <= 10; k++) { var b = k / 10 * Math.PI * 2; c.push([x + w / 2 + Math.cos(b) * w / 2, y + w / 2 + Math.sin(b) * w / 2]); }
       this.path(c, { tremor: 0.2 });
-      this.fill(c.map(function (p) { return [x + w / 2 + (p[0] - x - w / 2) * 0.55, y + w / 2 + (p[1] - y - w / 2) * 0.55]; }));
+      this.fill(c.map(function (p) { return [x + w / 2 + (p[0] - x - w / 2) * 0.55, y + w / 2 + (p[1] - y - w / 2) * 0.55]; }), { cls: 'pw-win' });
     } else {
       this.rect(x, y, w, h, { cls: 'pw-ink pw-fine' });
-      this.fill([[x + 1.5, y + 1.5], [x + w - 1.5, y + 1.5], [x + w - 1.5, y + h - 1.5], [x + 1.5, y + h - 1.5]]);
+      this.fill([[x + 1.5, y + 1.5], [x + w - 1.5, y + 1.5], [x + w - 1.5, y + h - 1.5], [x + 1.5, y + h - 1.5]], { cls: 'pw-win' });
       if (r() < 0.5) this.line(x + w / 2, y + 1, x + w / 2, y + h - 1, { cls: 'pw-ink pw-paper' });
       this.line(x - 2, y + h + 1.5, x + w + 2, y + h + 1.5, { cls: 'pw-ink pw-fine' });
     }
   };
   Pen.prototype.flag = function (x, y, h, dir) {
     this.line(x, y, x, y - h, { cls: 'pw-ink pw-fine' });
-    this.fill([[x, y - h], [x + 11 * dir, y - h + 3], [x, y - h + 7]]);
+    this.fill([[x, y - h], [x + 11 * dir, y - h + 3], [x, y - h + 7]], { cls: 'pw-hue-fill' });
   };
   // a cone roof with rows of shingles and a finial
   Pen.prototype.cone = function (x, y, w, h, flagDir) {
@@ -548,15 +548,16 @@
     for (var i = 0; i < items; i++) {
       var t = (i + 0.7) / (items + 0.6), px = x1 + (x2 - x1) * t, py = y1 + (y2 - y1) * t + Math.sin(t * Math.PI) * sag;
       var w = 7 + r() * 6, h = 9 + r() * 9;
-      if (r() < 0.5) this.path([[px, py], [px - 1, py + h], [px + w * 0.45, py + h - 2], [px + w * 0.5, py + 4], [px + w * 0.55, py + h - 2], [px + w + 1, py + h], [px + w, py]], { cls: 'pw-ink pw-fine', tremor: 0.2 });
-      else this.path([[px, py], [px - 1, py + h], [px + w, py + h + 1], [px + w, py]], { cls: 'pw-ink pw-fine', tremor: 0.25 });
+      if (r() < 0.5) this.path([[px, py], [px - 1, py + h], [px + w * 0.45, py + h - 2], [px + w * 0.5, py + 4], [px + w * 0.55, py + h - 2], [px + w + 1, py + h], [px + w, py]], { cls: 'pw-ink pw-fine' + (i % 2 ? '' : ' pw-hue'), tremor: 0.2 });
+      else this.path([[px, py], [px - 1, py + h], [px + w, py + h + 1], [px + w, py]], { cls: 'pw-ink pw-fine' + (i % 2 ? ' pw-hue' : ''), tremor: 0.25 });
     }
   };
   Pen.prototype.bird = function (x, y, s) {
     this.path([[x - s, y - s * 0.4], [x - s * 0.4, y - s * 0.5], [x, y], [x + s * 0.5, y - s * 0.6], [x + s * 1.1, y - s * 0.5]], { cls: 'pw-ink pw-fine', tremor: 0.08 });
   };
   Pen.prototype.kite = function (x, y, s) {
-    this.path([[x, y - s], [x + s * 0.6, y], [x, y + s * 1.2], [x - s * 0.6, y], [x, y - s]], { tremor: 0.15 });
+    this.fill([[x, y - s], [x + s * 0.6, y], [x, y + s * 1.2], [x - s * 0.6, y]], { cls: 'pw-hue-fill pw-soft', tremor: 0.1 });
+    this.path([[x, y - s], [x + s * 0.6, y], [x, y + s * 1.2], [x - s * 0.6, y], [x, y - s]], { tremor: 0.15, cls: 'pw-ink pw-hue' });
     this.line(x, y - s, x, y + s * 1.2, { cls: 'pw-ink pw-fine' }); this.line(x - s * 0.6, y, x + s * 0.6, y, { cls: 'pw-ink pw-fine' });
     var r = this.r, pts = [[x, y + s * 1.2]];
     for (var k = 1; k <= 8; k++) pts.push([x + Math.sin(k * 0.9) * 5 + k * 1.5, y + s * 1.2 + k * 8]);
@@ -972,7 +973,8 @@
   function boat(pen, r, x, y, s) {
     pen.path([[x - 22 * s, y - 6 * s], [x - 14 * s, y + 3 * s], [x + 16 * s, y + 3 * s], [x + 24 * s, y - 7 * s], [x - 22 * s, y - 6 * s]], { tremor: 0.2 });
     pen.line(x, y - 6 * s, x, y - 44 * s, { cls: 'pw-ink pw-fine' });
-    pen.path([[x + 1, y - 42 * s], [x + 20 * s, y - 10 * s], [x + 1, y - 10 * s]], { tremor: 0.2 });
+    pen.fill([[x + 1, y - 42 * s], [x + 20 * s, y - 10 * s], [x + 1, y - 10 * s]], { cls: 'pw-hue-fill pw-soft', tremor: 0.1 });
+    pen.path([[x + 1, y - 42 * s], [x + 20 * s, y - 10 * s], [x + 1, y - 10 * s], [x + 1, y - 42 * s]], { tremor: 0.2, cls: 'pw-ink pw-hue' });
     if (r() < 0.6) pen.path([[x - 1, y - 36 * s], [x - 14 * s, y - 11 * s], [x - 1, y - 11 * s]], { cls: 'pw-ink pw-fine', tremor: 0.2 });
   }
   function house(pen, r, x, G, w, h, sh) {
@@ -1008,14 +1010,16 @@
       pen.line(cx - tw / 2 - 10, top, cx + tw / 2 + 10, top);
       for (var x = cx - tw / 2 - 8; x <= cx + tw / 2 + 8; x += 5) pen.line(x, top, x, top - 9, { cls: 'pw-ink pw-fine' });
       pen.line(cx - tw / 2 - 10, top - 9, cx + tw / 2 + 10, top - 9, { cls: 'pw-ink pw-fine' });
+      pen.fill([[cx - 12, top - 33], [cx + 12, top - 33], [cx + 12, top - 10], [cx - 12, top - 10]], { cls: 'pw-hue-fill pw-soft pw-lamp' });
       pen.rect(cx - 13, top - 34, 26, 25);
       for (x = cx - 6; x < cx + 13; x += 6.5) pen.line(x, top - 33, x, top - 10, { cls: 'pw-ink pw-fine' });
       pen.path(ring(cx, top - 34, 17, 14, 12, Math.PI, Math.PI * 2), { tremor: 0.2 });
       pen.line(cx, top - 48, cx, top - 58, { cls: 'pw-ink pw-fine' });
       // beams of light
       var dir = cx > 440 ? -1 : 1;
-      pen.line(cx + dir * 16, top - 24, cx + dir * 260, top - 70, { cls: 'pw-ink pw-fine' });
-      pen.line(cx + dir * 16, top - 18, cx + dir * 260, top + 10, { cls: 'pw-ink pw-fine' });
+      pen.fill([[cx + dir * 14, top - 24], [cx + dir * 260, top - 70], [cx + dir * 260, top + 10], [cx + dir * 14, top - 18]], { cls: 'pw-hue-fill pw-beam' });
+      pen.line(cx + dir * 16, top - 24, cx + dir * 260, top - 70, { cls: 'pw-ink pw-fine pw-hue' });
+      pen.line(cx + dir * 16, top - 18, cx + dir * 260, top + 10, { cls: 'pw-ink pw-fine pw-hue' });
       sh.push([[cx + 4, base - h + 4], [R(1) - 1, base - h + 4], [R(0) - 1, base - 2], [cx + 8, base - 2]]);
       house(pen, r, cx + 40, G - 20, 44, 40, sh);
       boat(pen, r, cx > 440 ? 120 + r() * 80 : 470 + r() * 80, G + 12, 0.9);
@@ -1043,8 +1047,9 @@
         var a = a0 + s * Math.PI / 2, L = 100 + r() * 12, ca = Math.cos(a), sa = Math.sin(a), nx = -sa, ny = ca;
         pen.line(hx, hy, hx + ca * L, hy + sa * L);
         var w = 15;
-        pen.line(hx + ca * 18 + nx * w, hy + sa * 18 + ny * w, hx + ca * L + nx * w, hy + sa * L + ny * w, { cls: 'pw-ink pw-fine' });
-        for (var q = 22; q <= L; q += 11) pen.line(hx + ca * q, hy + sa * q, hx + ca * q + nx * w, hy + sa * q + ny * w, { cls: 'pw-ink pw-fine' });
+        pen.fill([[hx + ca * 18, hy + sa * 18], [hx + ca * L, hy + sa * L], [hx + ca * L + nx * w, hy + sa * L + ny * w], [hx + ca * 18 + nx * w, hy + sa * 18 + ny * w]], { cls: 'pw-hue-fill pw-soft', tremor: 0.05 });
+        pen.line(hx + ca * 18 + nx * w, hy + sa * 18 + ny * w, hx + ca * L + nx * w, hy + sa * L + ny * w, { cls: 'pw-ink pw-fine pw-hue' });
+        for (var q = 22; q <= L; q += 11) pen.line(hx + ca * q, hy + sa * q, hx + ca * q + nx * w, hy + sa * q + ny * w, { cls: 'pw-ink pw-fine pw-hue' });
       }
       pen.path(ring(hx, hy, 4, 4, 8), { tremor: 0.1 });
       sh.push([[cx + 6, base - h + 4], [cx + tw / 2, base - h + 4], [cx + bw / 2 - 1, base - 2], [cx + 10, base - 2]]);
@@ -1064,7 +1069,7 @@
       var dr = 70, dy = top;
       pen.path(ring(cx, dy, dr, dr * 0.9, 20, Math.PI, Math.PI * 2), { tremor: 0.25 });
       for (var m = 1; m < 4; m++) pen.path(ring(cx, dy, dr * m / 4, dr * 0.9, 12, Math.PI, Math.PI * 2), { cls: 'pw-ink pw-fine', tremor: 0.2 });
-      pen.fill([[cx - 9, dy - 2], [cx - 9, dy - dr * 0.86], [cx + 9, dy - dr * 0.86], [cx + 9, dy - 2]]);
+      pen.fill([[cx - 9, dy - 2], [cx - 9, dy - dr * 0.86], [cx + 9, dy - dr * 0.86], [cx + 9, dy - 2]], { cls: 'pw-win' });
       // the telescope: a tapered tube with a band and a lens ring
       var ta = -1.0 - r() * 0.25, tl = 92, ca = Math.cos(ta), sa = Math.sin(ta), nx = -sa, ny = ca;
       var ox = cx, oy = dy - 46, ex = ox + ca * tl, ey = oy + sa * tl;
@@ -1080,11 +1085,11 @@
       for (var st = 0; st < 7; st++) {
         var sx = 40 + r() * 560, sy = 30 + r() * 110, z = 3 + r() * 2;
         if (Math.abs(sx - cx) < 90 && sy > 60) continue;
-        pen.line(sx - z, sy, sx + z, sy, { cls: 'pw-ink pw-fine' }); pen.line(sx, sy - z, sx, sy + z, { cls: 'pw-ink pw-fine' });
+        pen.line(sx - z, sy, sx + z, sy, { cls: 'pw-ink pw-fine pw-hue' }); pen.line(sx, sy - z, sx, sy + z, { cls: 'pw-ink pw-fine pw-hue' });
       }
       var mx = cx > 330 ? 110 : 530;
-      pen.path(ring(mx, 70, 18, 18, 14, -2.2, 2.2), { tremor: 0.15 });
-      pen.path(ring(mx + 8, 66, 15, 15, 10, -1.9, 1.9), { cls: 'pw-ink pw-fine', tremor: 0.15 });
+      pen.path(ring(mx, 70, 18, 18, 14, -2.2, 2.2), { tremor: 0.15, cls: 'pw-ink pw-hue' });
+      pen.path(ring(mx + 8, 66, 15, 15, 10, -1.9, 1.9), { cls: 'pw-ink pw-fine pw-hue', tremor: 0.15 });
       pen.tree(x + w + 60, G, 100 + r() * 30);
     },
     clocktower: function (pen, r, sh, G) {
@@ -1093,11 +1098,12 @@
       pen.rect(x, top, w, h); pen.bricks(x, top + 70, w, h - 70);
       // the clock face, with the hands at the hour the page drew it
       var cy = top + 34, now = new Date(), hr = (now.getHours() % 12 + now.getMinutes() / 60) / 12 * Math.PI * 2 - Math.PI / 2, mn = now.getMinutes() / 60 * Math.PI * 2 - Math.PI / 2;
+      pen.fill(ring(cx, cy, 22, 22, 22), { cls: 'pw-hue-fill pw-soft', tremor: 0.05 });
       pen.path(ring(cx, cy, 23, 23, 22), { tremor: 0.15 });
       pen.path(ring(cx, cy, 19, 19, 20), { cls: 'pw-ink pw-fine', tremor: 0.1 });
       for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; pen.line(cx + Math.cos(a) * 15, cy + Math.sin(a) * 15, cx + Math.cos(a) * 18, cy + Math.sin(a) * 18, { cls: 'pw-ink pw-fine' }); }
       pen.line(cx, cy, cx + Math.cos(hr) * 10, cy + Math.sin(hr) * 10, { w: 2 });
-      pen.line(cx, cy, cx + Math.cos(mn) * 15, cy + Math.sin(mn) * 15);
+      pen.line(cx, cy, cx + Math.cos(mn) * 15, cy + Math.sin(mn) * 15, { cls: 'pw-ink pw-hue' });
       pen.window(cx - 6, top + 80, 12, 20, 'arch'); pen.window(cx - 6, top + 120, 12, 20, 'arch');
       pen.rect(cx - 8, G - 26, 16, 26, { cls: 'pw-ink pw-fine' });
       // belfry and spire
@@ -1145,6 +1151,7 @@
       pen.line(cx - 90, G - 150, cx + 30, G - 150); pen.line(cx - 90, G - 150, cx + 5, G - 175);
       pen.line(cx - 70, G - 150, cx - 70, G - 90, { cls: 'pw-ink pw-fine' });
       pen.rect(cx - 78, G - 90, 16, 12, { cls: 'pw-ink pw-fine' });
+      pen.fill([[cx - 77, G - 89], [cx - 63, G - 89], [cx - 63, G - 79], [cx - 77, G - 79]], { cls: 'pw-hue-fill' });
       // boats at anchor
       boat(pen, r, 90 + r() * 30, G + 10, 1.1);
       boat(pen, r, 220 + r() * 40, G + 20, 0.8);
@@ -1161,6 +1168,7 @@
         var a = a0 + k / n * Math.PI * 2, px = cx + Math.cos(a) * R, py = cy + Math.sin(a) * R;
         pen.line(cx, cy, px, py, { cls: 'pw-ink pw-fine' });
         pen.line(px, py, px, py + 8, { cls: 'pw-ink pw-fine' });
+        pen.fill([[px - 8, py + 8], [px + 8, py + 8], [px + 6, py + 20], [px - 6, py + 20]], { cls: k % 2 ? 'pw-hue-fill' : 'pw-hue-fill pw-soft', tremor: 0.05 });
         pen.path([[px - 8, py + 8], [px + 8, py + 8], [px + 6, py + 20], [px - 6, py + 20], [px - 8, py + 8]], { tremor: 0.1 });
       }
       pen.path(ring(cx, cy, 8, 8, 10), { tremor: 0.1 });
@@ -1169,7 +1177,8 @@
       // a striped tent and a flag
       var tx = cx + R + 50, tw = 110, th = 90;
       pen.path([[tx, G], [tx + 8, G - 50], [tx + tw / 2, G - th], [tx + tw - 8, G - 50], [tx + tw, G]], { tremor: 0.3 });
-      for (var s = 1; s < 6; s++) pen.line(tx + tw / 2, G - th, tx + s * tw / 6, G, { cls: 'pw-ink pw-fine' });
+      for (var s = 0; s < 6; s += 2) pen.fill([[tx + tw / 2, G - th], [tx + s * tw / 6 + (s ? 0 : 4), G], [tx + (s + 1) * tw / 6, G]], { cls: 'pw-hue-fill pw-soft', tremor: 0.05 });
+      for (s = 1; s < 6; s++) pen.line(tx + tw / 2, G - th, tx + s * tw / 6, G, { cls: 'pw-ink pw-fine' });
       pen.flag(tx + tw / 2, G - th, 22, 1);
       pen.fill([[tx + tw / 2 - 10, G], [tx + tw / 2, G - 30], [tx + tw / 2 + 10, G]]);
       sh.push([[tx + tw / 2, G - th + 4], [tx + tw - 8, G - 50], [tx + tw - 2, G - 2], [tx + tw / 2, G - 2]]);
@@ -1177,7 +1186,7 @@
       var bx1 = cx + 40, bx2 = tx + tw / 2, pts = [];
       for (var b = 0; b <= 8; b++) { var t = b / 8; pts.push([bx1 + (bx2 - bx1) * t, G - 60 - (bx2 - bx1) * 0 + Math.sin(t * Math.PI) * 18 - t * 30]); }
       pen.path(pts, { cls: 'pw-ink pw-fine' });
-      for (b = 1; b < 8; b++) { var q = pts[b]; pen.path([[q[0] - 4, q[1]], [q[0], q[1] + 8], [q[0] + 4, q[1]]], { cls: 'pw-ink pw-fine', tremor: 0.05 }); }
+      for (b = 1; b < 8; b++) { var q = pts[b]; pen.fill([[q[0] - 4, q[1]], [q[0], q[1] + 8], [q[0] + 4, q[1]]], { cls: 'pw-hue-fill', tremor: 0.05 }); }
       pen.kite(560, 60, 11);
     },
     town: function (pen, r, sh, G) {
@@ -1580,6 +1589,12 @@
     }
   }
 
+  // night falls on the drawings when it is night where the visitor is: windows light up
+  function nightfall() {
+    var set = function () { var h = new Date().getHours(); root.classList.toggle('pw-night', h < 6 || h >= 19); };
+    set(); setInterval(set, 5 * 60 * 1000);
+  }
+
   function start() {
     strokes();
     buildNav();
@@ -1589,7 +1604,7 @@
     postcards();
     indexes();
     reveal(blooms);
-    sectionRules(); subRules();
+    sectionRules(); subRules(); nightfall();
     root.classList.add('pw-on');
   }
 

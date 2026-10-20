@@ -1797,23 +1797,13 @@
   }
 
   // What the tape says: the year and place the app sends for the project
-  // ("year" and "place" on each item of selected_work / more_projects), or, until
-  // then, the tools named in the card's own text.
+  // ("year" and "place" on each item of selected_work / more_projects).
   var tapeInfo = {};
-  var TECH = ['SwiftUI', 'Swift', 'Metal', 'C++', 'OpenGL', 'WebGL', 'GLSL', 'Vulkan', 'CUDA', 'Core ML', 'MPS', 'SceneKit', 'ARKit', 'RealityKit', 'TensorFlow', 'PyTorch', 'Python', 'Unity', 'Rust', 'JavaScript', 'TypeScript', 'macOS', 'iPadOS', 'iOS', 'iPad', 'Android', 'Kotlin', 'OpenCV', 'Blender', 'WebAssembly', 'React', 'GPU'];
   var tapeKey = function (t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
   function writeTape(tape, card) {
     var title = ((card.querySelector('h3') || {}).textContent || '').trim();
-    var text = tapeInfo[tapeKey(title)];
-    if (!text) {
-      var body = card.textContent || '', found = [];
-      TECH.forEach(function (w) {
-        if (found.length >= 2) return;
-        var re = new RegExp('(^|[^A-Za-z])' + w.replace(/[+]/g, '\\+') + '(?![A-Za-z])');
-        if (re.test(body) && !found.some(function (f) { return f.indexOf(w) === 0 || w.indexOf(f) === 0; })) found.push(w);
-      });
-      text = found.join(' · ');
-    }
+    // only what the app sends; a project without a year or place gets plain tape
+    var text = tapeInfo[tapeKey(title)] || '';
     tape.textContent = text;
     tape.classList.toggle('pc-tape--note', !!text);
   }

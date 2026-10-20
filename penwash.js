@@ -1635,6 +1635,35 @@
     set(); setInterval(set, 5 * 60 * 1000);
   }
 
+  // The About photo as a print pinned to the page: a white border, a strip of tape
+  // and the name written underneath, large enough to see the face.
+  function aboutPortrait() {
+    var img = document.querySelector('#about .about .hero-avatar');
+    if (!img || img.closest('.pw-portrait')) return;
+    var fig = document.createElement('figure');
+    fig.className = 'pw-portrait';
+    var tape = document.createElement('span');
+    tape.className = 'pw-portrait__tape';
+    tape.setAttribute('aria-hidden', 'true');
+    img.parentNode.insertBefore(fig, img);
+    fig.appendChild(tape);
+    fig.appendChild(img);
+    var cap = document.createElement('figcaption');
+    cap.textContent = img.getAttribute('alt') || '';
+    fig.appendChild(cap);
+    // the words, the Beverages link and the skills share the column beside it
+    var box = fig.parentNode, words = document.createElement('div');
+    words.className = 'pw-about__words';
+    box.appendChild(words);
+    var summary = box.querySelector('#about_summary');
+    if (summary) words.appendChild(summary);
+    var section = box.parentNode;
+    var bev = section.querySelector(':scope > #coffee-trigger');
+    if (bev) words.appendChild(bev);
+    var skills = section.querySelector(':scope > .pillrow__wrap');
+    if (skills && skills.querySelector('#featured_skills')) words.appendChild(skills);
+  }
+
   function start() {
     strokes();
     buildNav();
@@ -1644,7 +1673,7 @@
     postcards();
     indexes();
     reveal(blooms);
-    sectionRules(); subRules(); nightfall();
+    sectionRules(); subRules(); nightfall(); aboutPortrait();
     root.classList.add('pw-on');
   }
 

@@ -926,37 +926,286 @@
 
   // A wide pen skyline for entries without a video: a few towers and
   // houses on a line of ground, different for every title.
-  function vignette(seed) {
+  // ---- postcard pictures -------------------------------------------------------
+  // Each project gets its own kind of place, chosen from words in its title, so the
+  // cards differ at a glance and not only up close. Within a kind, the title's hash
+  // still varies proportions, textures and the small things in the sky.
+  var VIGNETTES = ['lighthouse', 'windmill', 'observatory', 'clocktower', 'bridge', 'harbour', 'wheel', 'town'];
+  var VIGNETTE_WORDS = [
+    ['observatory', /research|compiler|language|\blang|theory|learning|\bml\b|\bai\b/],
+    ['lighthouse', /\bray|light|render|vision|camera|shader|graphic/],
+    ['windmill', /engine|pipeline|machine|tool|power|simulat|printer|\b3d\b/],
+    ['wheel', /playground|game|sketch|interactive|play|demo|fun/],
+    ['harbour', /\bios\b|mobile|ship|360|video|getaway|travel|trip/],
+    ['clocktower', /app store|distribution|download|time|35k|release/],
+    ['bridge', /fusion|\bpass|tile|bridge|memory|aware|\bide\b/]
+  ];
+  function sceneKind(title, used, seed) {
+    var t = (title || '').toLowerCase();
+    for (var i = 0; i < VIGNETTE_WORDS.length; i++) {
+      var k = VIGNETTE_WORDS[i][0];
+      if (!used[k] && VIGNETTE_WORDS[i][1].test(t)) return k;
+    }
+    for (i = 0; i < VIGNETTES.length; i++) {
+      k = VIGNETTES[(seed + i) % VIGNETTES.length];
+      if (!used[k]) return k;
+    }
+    return VIGNETTES[seed % VIGNETTES.length];
+  }
+
+  function waves(pen, r, x1, x2, y, rows) {
+    pen.path([[x1, y], [(x1 + x2) / 2, y + 1], [x2, y]], { tremor: 0.4 });
+    for (var k = 0; k < rows; k++) {
+      var yy = y + 10 + k * 9;
+      for (var x = x1 + r() * 30; x < x2 - 20; x += 40 + r() * 50) {
+        var w = 12 + r() * 16;
+        pen.path([[x, yy], [x + w * 0.25, yy - 2.5], [x + w * 0.5, yy], [x + w * 0.75, yy - 2.5], [x + w, yy]], { cls: 'pw-ink pw-fine', tremor: 0.1 });
+      }
+    }
+  }
+  function ring(cx, cy, rx, ry, n, a0, a1) {
+    var pts = [];
+    a0 = a0 == null ? 0 : a0; a1 = a1 == null ? Math.PI * 2 : a1;
+    for (var i = 0; i <= n; i++) { var t = a0 + (a1 - a0) * i / n; pts.push([cx + Math.cos(t) * rx, cy + Math.sin(t) * ry]); }
+    return pts;
+  }
+  function boat(pen, r, x, y, s) {
+    pen.path([[x - 22 * s, y - 6 * s], [x - 14 * s, y + 3 * s], [x + 16 * s, y + 3 * s], [x + 24 * s, y - 7 * s], [x - 22 * s, y - 6 * s]], { tremor: 0.2 });
+    pen.line(x, y - 6 * s, x, y - 44 * s, { cls: 'pw-ink pw-fine' });
+    pen.path([[x + 1, y - 42 * s], [x + 20 * s, y - 10 * s], [x + 1, y - 10 * s]], { tremor: 0.2 });
+    if (r() < 0.6) pen.path([[x - 1, y - 36 * s], [x - 14 * s, y - 11 * s], [x - 1, y - 11 * s]], { cls: 'pw-ink pw-fine', tremor: 0.2 });
+  }
+  function house(pen, r, x, G, w, h, sh) {
+    var top = G - h;
+    pen.rect(x, top, w, h);
+    if (r() < 0.5) pen.stones(x, top, w, h, 7); else pen.planks(x, top, w, h, 5, true);
+    pen.window(x + 7, top + 12, 8, 10, 'square');
+    if (w > 40) pen.window(x + w - 15, top + 12, 8, 10, 'square');
+    pen.rect(x + w / 2 - 4, G - 15, 8, 15, { cls: 'pw-ink pw-fine' });
+    pen.gable(x, top, w, 18 + r() * 10);
+    sh.push([[x + w * 0.65, top + 2], [x + w - 1, top + 2], [x + w - 1, G - 2], [x + w * 0.65, G - 2]]);
+  }
+
+  var VIGNETTE_DRAW = {
+    lighthouse: function (pen, r, sh, G) {
+      waves(pen, r, 10, 630, G, 4);
+      var cx = 380 + r() * 120, base = G - 14, h = 190 + r() * 40, bw = 64, tw = 38;
+      // rocks it stands on
+      pen.path([[cx - 80, G], [cx - 60, G - 18], [cx - 30, G - 24], [cx + 10, G - 16], [cx + 50, G - 26], [cx + 85, G - 8], [cx + 96, G]], { tremor: 0.6 });
+      pen.stones(cx - 70, G - 20, 150, 18, 9);
+      var L = function (t) { return cx - (bw + (tw - bw) * t) / 2; }, R = function (t) { return cx + (bw + (tw - bw) * t) / 2; };
+      pen.line(L(0), base, L(1), base - h); pen.line(R(0), base, R(1), base - h);
+      // painted bands
+      for (var k = 1; k < 6; k++) {
+        var t = k / 6, y = base - h * t;
+        pen.line(L(t) + 1, y, R(t) - 1, y, { cls: 'pw-ink pw-fine' });
+        if (k % 2) pen.hatch(L(t), y, R(t) - L(t), h / 6, 4, 0.9);
+      }
+      pen.window(cx - 4, base - h * 0.42, 8, 11, 'arch');
+      pen.rect(cx - 6, base - 18, 12, 18, { cls: 'pw-ink pw-fine' });
+      // gallery, lantern and cap
+      var top = base - h;
+      pen.line(cx - tw / 2 - 10, top, cx + tw / 2 + 10, top);
+      for (var x = cx - tw / 2 - 8; x <= cx + tw / 2 + 8; x += 5) pen.line(x, top, x, top - 9, { cls: 'pw-ink pw-fine' });
+      pen.line(cx - tw / 2 - 10, top - 9, cx + tw / 2 + 10, top - 9, { cls: 'pw-ink pw-fine' });
+      pen.rect(cx - 13, top - 34, 26, 25);
+      for (x = cx - 6; x < cx + 13; x += 6.5) pen.line(x, top - 33, x, top - 10, { cls: 'pw-ink pw-fine' });
+      pen.path(ring(cx, top - 34, 17, 14, 12, Math.PI, Math.PI * 2), { tremor: 0.2 });
+      pen.line(cx, top - 48, cx, top - 58, { cls: 'pw-ink pw-fine' });
+      // beams of light
+      var dir = cx > 440 ? -1 : 1;
+      pen.line(cx + dir * 16, top - 24, cx + dir * 260, top - 70, { cls: 'pw-ink pw-fine' });
+      pen.line(cx + dir * 16, top - 18, cx + dir * 260, top + 10, { cls: 'pw-ink pw-fine' });
+      sh.push([[cx + 4, base - h + 4], [R(1) - 1, base - h + 4], [R(0) - 1, base - 2], [cx + 8, base - 2]]);
+      house(pen, r, cx + 40, G - 20, 44, 40, sh);
+      boat(pen, r, cx > 440 ? 120 + r() * 80 : 470 + r() * 80, G + 12, 0.9);
+      birds(pen, r, 60, 40, 200, 50, 3);
+    },
+    windmill: function (pen, r, sh, G) {
+      // a round hill with fields
+      pen.path([[10, G + 10], [120, G - 30], [260, G - 52], [400, G - 40], [520, G - 12], [630, G + 4]], { tremor: 0.5 });
+      for (var k = 0; k < 5; k++) pen.path([[40 + k * 40, G + 30 + k * 4], [220 + k * 50, G - 20 + k * 12], [420 + k * 40, G + 6 + k * 8]], { cls: 'pw-ink pw-fine', tremor: 0.4 });
+      var cx = 230 + r() * 120, base = G - 46, h = 130 + r() * 30, bw = 82, tw = 50;
+      pen.line(cx - bw / 2, base, cx - tw / 2, base - h); pen.line(cx + bw / 2, base, cx + tw / 2, base - h);
+      pen.line(cx - bw / 2 - 4, base, cx + bw / 2 + 4, base);
+      for (var y = base - 8; y > base - h + 4; y -= 7) {
+        var t = (base - y) / h, half = (bw + (tw - bw) * t) / 2;
+        pen.line(cx - half + 2, y, cx + half - 2, y, { cls: 'pw-ink pw-fine', tremor: 0.2 });
+      }
+      pen.window(cx - 6, base - 24, 12, 22, 'arch');
+      pen.window(cx - 4, base - h * 0.55, 8, 10, 'square');
+      var top = base - h;
+      pen.path(ring(cx, top, tw / 2 + 6, 22, 14, Math.PI, Math.PI * 2), { tremor: 0.2 });
+      pen.line(cx - tw / 2 - 6, top, cx + tw / 2 + 6, top);
+      // four sails with their lattice
+      var hx = cx, hy = top - 6, a0 = r() * Math.PI / 2;
+      for (var s = 0; s < 4; s++) {
+        var a = a0 + s * Math.PI / 2, L = 100 + r() * 12, ca = Math.cos(a), sa = Math.sin(a), nx = -sa, ny = ca;
+        pen.line(hx, hy, hx + ca * L, hy + sa * L);
+        var w = 15;
+        pen.line(hx + ca * 18 + nx * w, hy + sa * 18 + ny * w, hx + ca * L + nx * w, hy + sa * L + ny * w, { cls: 'pw-ink pw-fine' });
+        for (var q = 22; q <= L; q += 11) pen.line(hx + ca * q, hy + sa * q, hx + ca * q + nx * w, hy + sa * q + ny * w, { cls: 'pw-ink pw-fine' });
+      }
+      pen.path(ring(hx, hy, 4, 4, 8), { tremor: 0.1 });
+      sh.push([[cx + 6, base - h + 4], [cx + tw / 2, base - h + 4], [cx + bw / 2 - 1, base - 2], [cx + 10, base - 2]]);
+      // a fence and a cart track
+      for (var fx = 430; fx < 600; fx += 18 + r() * 6) pen.line(fx, G - 6 - (600 - fx) * 0.03, fx + (r() - 0.5) * 2, G - 24 - (600 - fx) * 0.03, { cls: 'pw-ink pw-fine' });
+      pen.path([[430, G - 16], [520, G - 10], [600, G - 4]], { cls: 'pw-ink pw-fine' });
+      pen.tree(cx < 300 ? 520 : 90, G - (cx < 300 ? 10 : 24), 80 + r() * 30);
+      birds(pen, r, 420, 50, 160, 50, 3);
+    },
+    observatory: function (pen, r, sh, G) {
+      pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
+      var cx = 300 + r() * 60, w = 190, h = 92, x = cx - w / 2, top = G - h;
+      pen.rect(x, top, w, h); pen.bricks(x, top, w, h);
+      for (var k = 0; k < 4; k++) pen.window(x + 22 + k * 44, top + 24, 12, 24, 'arch');
+      pen.line(x - 8, top, x + w + 8, top);
+      // the dome, its slit and the telescope
+      var dr = 70, dy = top;
+      pen.path(ring(cx, dy, dr, dr * 0.9, 20, Math.PI, Math.PI * 2), { tremor: 0.25 });
+      for (var m = 1; m < 4; m++) pen.path(ring(cx, dy, dr * m / 4, dr * 0.9, 12, Math.PI, Math.PI * 2), { cls: 'pw-ink pw-fine', tremor: 0.2 });
+      pen.fill([[cx - 9, dy - 2], [cx - 9, dy - dr * 0.86], [cx + 9, dy - dr * 0.86], [cx + 9, dy - 2]]);
+      // the telescope: a tapered tube with a band and a lens ring
+      var ta = -1.0 - r() * 0.25, tl = 92, ca = Math.cos(ta), sa = Math.sin(ta), nx = -sa, ny = ca;
+      var ox = cx, oy = dy - 46, ex = ox + ca * tl, ey = oy + sa * tl;
+      pen.line(ox + nx * 5, oy + ny * 5, ex + nx * 7, ey + ny * 7);
+      pen.line(ox - nx * 5, oy - ny * 5, ex - nx * 7, ey - ny * 7);
+      pen.line(ex + nx * 8, ey + ny * 8, ex - nx * 8, ey - ny * 8);
+      var mx0 = ox + ca * tl * 0.55, my0 = oy + sa * tl * 0.55;
+      pen.line(mx0 + nx * 7, my0 + ny * 7, mx0 - nx * 7, my0 - ny * 7, { cls: 'pw-ink pw-fine' });
+      sh.push([[cx + 10, dy - dr * 0.8], [cx + dr - 4, dy - 6], [cx + 10, dy - 6]]);
+      sh.push([[x + w * 0.7, top + 2], [x + w - 1, top + 2], [x + w - 1, G - 2], [x + w * 0.7, G - 2]]);
+      pen.stair(x - 40, G, 40, 30, 5);
+      // stars and a crescent
+      for (var st = 0; st < 7; st++) {
+        var sx = 40 + r() * 560, sy = 30 + r() * 110, z = 3 + r() * 2;
+        if (Math.abs(sx - cx) < 90 && sy > 60) continue;
+        pen.line(sx - z, sy, sx + z, sy, { cls: 'pw-ink pw-fine' }); pen.line(sx, sy - z, sx, sy + z, { cls: 'pw-ink pw-fine' });
+      }
+      var mx = cx > 330 ? 110 : 530;
+      pen.path(ring(mx, 70, 18, 18, 14, -2.2, 2.2), { tremor: 0.15 });
+      pen.path(ring(mx + 8, 66, 15, 15, 10, -1.9, 1.9), { cls: 'pw-ink pw-fine', tremor: 0.15 });
+      pen.tree(x + w + 60, G, 100 + r() * 30);
+    },
+    clocktower: function (pen, r, sh, G) {
+      pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
+      var cx = 300 + r() * 50, w = 62, x = cx - w / 2, h = 190, top = G - h;
+      pen.rect(x, top, w, h); pen.bricks(x, top + 70, w, h - 70);
+      // the clock face, with the hands at the hour the page drew it
+      var cy = top + 34, now = new Date(), hr = (now.getHours() % 12 + now.getMinutes() / 60) / 12 * Math.PI * 2 - Math.PI / 2, mn = now.getMinutes() / 60 * Math.PI * 2 - Math.PI / 2;
+      pen.path(ring(cx, cy, 23, 23, 22), { tremor: 0.15 });
+      pen.path(ring(cx, cy, 19, 19, 20), { cls: 'pw-ink pw-fine', tremor: 0.1 });
+      for (var k = 0; k < 12; k++) { var a = k / 12 * Math.PI * 2; pen.line(cx + Math.cos(a) * 15, cy + Math.sin(a) * 15, cx + Math.cos(a) * 18, cy + Math.sin(a) * 18, { cls: 'pw-ink pw-fine' }); }
+      pen.line(cx, cy, cx + Math.cos(hr) * 10, cy + Math.sin(hr) * 10, { w: 2 });
+      pen.line(cx, cy, cx + Math.cos(mn) * 15, cy + Math.sin(mn) * 15);
+      pen.window(cx - 6, top + 80, 12, 20, 'arch'); pen.window(cx - 6, top + 120, 12, 20, 'arch');
+      pen.rect(cx - 8, G - 26, 16, 26, { cls: 'pw-ink pw-fine' });
+      // belfry and spire
+      var by = top - 40;
+      pen.rect(x + 4, by, w - 8, 40);
+      pen.window(x + 12, by + 8, 12, 26, 'arch'); pen.window(x + w - 24, by + 8, 12, 26, 'arch');
+      pen.cone(x, by, w, 70 + r() * 20, 1);
+      sh.push([[x + w * 0.65, top + 2], [x + w - 1, top + 2], [x + w - 1, G - 2], [x + w * 0.65, G - 2]]);
+      // rooftops crowding round its foot
+      var hx = x - 160;
+      for (var i = 0; i < 3; i++) { var hw = 40 + r() * 14, hh = 36 + r() * 30; house(pen, r, hx, G, hw, hh, sh); hx += hw + 6; }
+      hx = x + w + 8;
+      for (i = 0; i < 3; i++) { hw = 38 + r() * 14; hh = 30 + r() * 34; house(pen, r, hx, G, hw, hh, sh); hx += hw + 6; }
+      birds(pen, r, cx + 60, 40, 180, 60, 4);
+    },
+    bridge: function (pen, r, sh, G) {
+      waves(pen, r, 10, 630, G + 6, 4);
+      var x = 140 + r() * 40, w = 340;
+      pen.bridge(x, G - 70, w, 76);
+      // gate towers at each end
+      [x - 46, x + w - 4].forEach(function (tx, i) {
+        var tw = 50, th = 120 + r() * 30;
+        pen.rect(tx, G - th, tw, th); pen.stones(tx, G - th, tw, th, 8);
+        pen.window(tx + 18, G - th + 18, 12, 18, 'arch');
+        pen.cone(tx, G - th, tw, 50 + r() * 16, i ? 1 : -1);
+        sh.push([[tx + tw * 0.65, G - th + 2], [tx + tw - 1, G - th + 2], [tx + tw - 1, G - 2], [tx + tw * 0.65, G - 2]]);
+      });
+      boat(pen, r, x + w * 0.45, G + 26, 0.75);
+      for (var k = 0; k < 6; k++) pen.line(x + 20 + r() * (w - 40), G + 40 + k * 3, x + 40 + r() * (w - 40), G + 40 + k * 3, { cls: 'pw-ink pw-fine' });
+      pen.kite(560, 70, 11);
+      birds(pen, r, 60, 40, 200, 50, 3);
+    },
+    harbour: function (pen, r, sh, G) {
+      waves(pen, r, 10, 630, G, 4);
+      // the quay and a warehouse
+      var qx = 380 + r() * 40;
+      pen.line(qx, G - 18, 630, G - 18); pen.line(qx, G - 18, qx, G + 4);
+      pen.planks(qx, G - 18, 630 - qx, 22, 9, false);
+      house(pen, r, qx + 30, G - 18, 70, 66, sh);
+      house(pen, r, qx + 110, G - 18, 48, 48, sh);
+      // a crane on the quay
+      var cx = qx + 190;
+      pen.line(cx, G - 18, cx, G - 150); pen.line(cx + 10, G - 18, cx + 10, G - 150);
+      for (var y = G - 30; y > G - 150; y -= 14) pen.line(cx, y, cx + 10, y - 12, { cls: 'pw-ink pw-fine' });
+      pen.line(cx - 90, G - 150, cx + 30, G - 150); pen.line(cx - 90, G - 150, cx + 5, G - 175);
+      pen.line(cx - 70, G - 150, cx - 70, G - 90, { cls: 'pw-ink pw-fine' });
+      pen.rect(cx - 78, G - 90, 16, 12, { cls: 'pw-ink pw-fine' });
+      // boats at anchor
+      boat(pen, r, 90 + r() * 30, G + 10, 1.1);
+      boat(pen, r, 220 + r() * 40, G + 20, 0.8);
+      boat(pen, r, 320 + r() * 20, G + 6, 0.6);
+      birds(pen, r, 60, 40, 300, 60, 4);
+    },
+    wheel: function (pen, r, sh, G) {
+      pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
+      var cx = 230 + r() * 80, R = 112, cy = G - R - 30;
+      pen.path(ring(cx, cy, R, R, 40), { tremor: 0.2 });
+      pen.path(ring(cx, cy, R - 8, R - 8, 36), { cls: 'pw-ink pw-fine', tremor: 0.2 });
+      var n = 10, a0 = r();
+      for (var k = 0; k < n; k++) {
+        var a = a0 + k / n * Math.PI * 2, px = cx + Math.cos(a) * R, py = cy + Math.sin(a) * R;
+        pen.line(cx, cy, px, py, { cls: 'pw-ink pw-fine' });
+        pen.line(px, py, px, py + 8, { cls: 'pw-ink pw-fine' });
+        pen.path([[px - 8, py + 8], [px + 8, py + 8], [px + 6, py + 20], [px - 6, py + 20], [px - 8, py + 8]], { tremor: 0.1 });
+      }
+      pen.path(ring(cx, cy, 8, 8, 10), { tremor: 0.1 });
+      pen.line(cx, cy, cx - 50, G); pen.line(cx, cy, cx + 50, G);
+      pen.line(cx - 34, G - 40, cx + 34, G - 40, { cls: 'pw-ink pw-fine' });
+      // a striped tent and a flag
+      var tx = cx + R + 50, tw = 110, th = 90;
+      pen.path([[tx, G], [tx + 8, G - 50], [tx + tw / 2, G - th], [tx + tw - 8, G - 50], [tx + tw, G]], { tremor: 0.3 });
+      for (var s = 1; s < 6; s++) pen.line(tx + tw / 2, G - th, tx + s * tw / 6, G, { cls: 'pw-ink pw-fine' });
+      pen.flag(tx + tw / 2, G - th, 22, 1);
+      pen.fill([[tx + tw / 2 - 10, G], [tx + tw / 2, G - 30], [tx + tw / 2 + 10, G]]);
+      sh.push([[tx + tw / 2, G - th + 4], [tx + tw - 8, G - 50], [tx + tw - 2, G - 2], [tx + tw / 2, G - 2]]);
+      // bunting
+      var bx1 = cx + 40, bx2 = tx + tw / 2, pts = [];
+      for (var b = 0; b <= 8; b++) { var t = b / 8; pts.push([bx1 + (bx2 - bx1) * t, G - 60 - (bx2 - bx1) * 0 + Math.sin(t * Math.PI) * 18 - t * 30]); }
+      pen.path(pts, { cls: 'pw-ink pw-fine' });
+      for (b = 1; b < 8; b++) { var q = pts[b]; pen.path([[q[0] - 4, q[1]], [q[0], q[1] + 8], [q[0] + 4, q[1]]], { cls: 'pw-ink pw-fine', tremor: 0.05 }); }
+      pen.kite(560, 60, 11);
+    },
+    town: function (pen, r, sh, G) {
+      pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
+      var x = 70 + r() * 30, n = 0;
+      while (x < 600 && n < 6) {
+        if (r() < 0.55) { var t = tower(pen, x, G, 150 + r() * 150, r, sh); x = t.right + 30 + r() * 30; }
+        else { var w = 50 + r() * 26, h = 50 + r() * 40; house(pen, r, x - w / 2, G, w, h, sh); x += w / 2 + 40 + r() * 30; }
+        n++;
+      }
+      for (var k = 0; k < 5; k++) pen.line(40 + r() * 480, G + 12 + k * 9, 90 + r() * 520, G + 12 + k * 9, { cls: 'pw-ink pw-fine' });
+      if (r() < 0.6) pen.kite(80 + r() * 480, 60 + r() * 40, 11);
+      birds(pen, r, 60, 30, 520, 60, 3 + Math.floor(r() * 3));
+      if (r() < 0.6) pen.tree(r() < 0.5 ? 40 : 610, G, 90 + r() * 40);
+    }
+  };
+
+  function vignette(seed, kind) {
     var holder = document.createElement('div');
     holder.className = 'pw-vignette';
     var r = rng(seed), sh = [], G = 330;
     var svg = svgEl('0 0 640 400', 'pw-svg');
     var pen = new Pen(svg, r);
-    pen.path([[20, G], [220, G - 1], [420, G + 1], [620, G]], { tremor: 0.4 });
-    var x = 70 + r() * 30, n = 0;
-    while (x < 600 && n < 6) {
-      var kind = r();
-      if (kind < 0.55) {
-        var t = tower(pen, x, G, 150 + r() * 150, r, sh);
-        x = t.right + 30 + r() * 30;
-      } else {
-        var w = 50 + r() * 26, h = 50 + r() * 40, top = G - h;
-        pen.rect(x - w / 2, top, w, h);
-        if (r() < 0.5) pen.stones(x - w / 2, top, w, h, 7); else pen.planks(x - w / 2, top, w, h, 5, true);
-        pen.window(x - w / 2 + 9, top + 14, 9, 12, 'square'); pen.window(x + w / 2 - 18, top + 14, 9, 12, 'square');
-        pen.rect(x - 5, G - 18, 10, 18, { cls: 'pw-ink pw-fine' });
-        pen.gable(x - w / 2, top, w, 22 + r() * 12);
-        sh.push([[x + w * 0.2, top + 2], [x + w / 2 - 1, top + 2], [x + w / 2 - 1, G - 2], [x + w * 0.2, G - 2]]);
-        x += w / 2 + 40 + r() * 30;
-      }
-      n++;
-    }
-    for (var k = 0; k < 5; k++) pen.line(40 + r() * 480, G + 12 + k * 9, 90 + r() * 520, G + 12 + k * 9, { cls: 'pw-ink pw-fine' });
-    if (r() < 0.6) pen.kite(80 + r() * 480, 60 + r() * 40, 11);
-    birds(pen, r, 60, 30, 520, 60, 3 + Math.floor(r() * 3));
-    if (r() < 0.6) pen.tree(r() < 0.5 ? 40 : 610, G, 90 + r() * 40);
+    kind = kind || VIGNETTES[seed % VIGNETTES.length];
+    holder.dataset.kind = kind;
+    (VIGNETTE_DRAW[kind] || VIGNETTE_DRAW.town)(pen, r, sh, G);
     var kids = svg.children, nk = kids.length || 1;
-    for (k = 0; k < kids.length; k++) kids[k].style.setProperty('--t', (k / nk).toFixed(3));
+    for (var k = 0; k < kids.length; k++) kids[k].style.setProperty('--t', (k / nk).toFixed(3));
     var p = paintCanvas(640, 400, Math.min(1.5, window.devicePixelRatio || 1)), wr = rng(seed + 1);
     sh.forEach(function (s) {
       wash(p.ctx, { pts: box(s, wr, 0.25), color: GREY.mid, alpha: 0.05, layers: 6, wet: 0.05, spread: 0.04, raw: true }, wr);
@@ -1142,7 +1391,7 @@
     var drawing = function () {
       frame.innerHTML = '';
       frame.classList.remove('pc-pic__frame--video');
-      var v = vignette(seed);
+      var v = vignette(seed, card.dataset.pcKind);
       frame.appendChild(v);
       if (!pcSeen) v.classList.add('pw-go');
     };
@@ -1154,7 +1403,7 @@
       frame.classList.add('pc-pic__frame--video');
       frame.appendChild(video);
       // pen art covers the video until it plays
-      var art = vignette(seed);
+      var art = vignette(seed, card.dataset.pcKind);
       art.classList.add('pc-pic__art');
       if (!pcSeen) art.classList.add('pw-go');
       frame.appendChild(art);
@@ -1217,11 +1466,17 @@
         var cards = Array.prototype.filter.call(deck.children, function (c) { return c.matches('article.card'); });
         if (!cards.length) return;
         deck.classList.add('pc-deck');
-        var seen = {}, n = 0;
+        var seen = {}, n = 0, kinds = {};
+        cards.forEach(function (c) { if (c.dataset.pcKind) kinds[c.dataset.pcKind] = 1; });
         cards.forEach(function (c) {
           var t = ((c.querySelector('h3') || {}).textContent || '').trim();
           if (t && seen[t]) { c.dataset.pc = 'dup'; return; }
-          seen[t] = 1; postcard(c, n++);
+          seen[t] = 1;
+          if (!c.dataset.pcKind) {
+            c.dataset.pcKind = sceneKind(t, kinds, hashStr(t) % 997 + 11);
+          }
+          kinds[c.dataset.pcKind] = 1;
+          postcard(c, n++);
         });
       });
     };

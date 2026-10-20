@@ -244,6 +244,15 @@
 
   // A hill town in pen: a tall tower, a bridge on two arches carrying a
   // second one, a third beside it, a row of houses, stone steps, washing
+  // draws into a group of its own, turning about (x, y)
+  function bunch(pen, cls, x, y, fn) {
+    var g = document.createElementNS(NS, 'g'), was = pen.svg;
+    g.setAttribute('class', cls);
+    g.style.transformOrigin = x + 'px ' + y + 'px';
+    was.appendChild(g); pen.svg = g; fn(); pen.svg = was;
+    return g;
+  }
+
   // strung between the towers, a kite, birds. Returns where the shadows fall.
   function coverInk(pen) {
     var r = pen.r, tr = rng(31), sh = [];
@@ -275,8 +284,13 @@
     // washing strung between the towers, a kite and birds
     pen.washing(a.right + 2, a.top + 110, b.left - 2, b.top + 80);
     pen.washing(b.right + 2, b.top + 60, c.left - 2, c.top + 90);
-    pen.kite(895, 165, 14);
-    pen.bird(655, 120, 6); pen.bird(684, 102, 5); pen.bird(940, 150, 5); pen.bird(905, 128, 4); pen.bird(520, 90, 4);
+    // the kite and the birds each get a group of their own so the weather can move them
+    bunch(pen, 'pw-kite', 897, 248, function () { pen.kite(895, 165, 14); });
+    [[655, 120, 6], [684, 102, 5], [940, 150, 5], [905, 128, 4], [520, 90, 4]].forEach(function (b, i) {
+      var g = bunch(pen, 'pw-bird', b[0], b[1], function () { pen.bird(b[0], b[1], b[2]); });
+      g.style.animationDuration = (2.6 + i * 0.7) + 's, ' + (1.1 + (i % 3) * 0.25) + 's';
+      g.style.animationDelay = (-i * 0.9) + 's';
+    });
     pen.tree(455, G - 2, 150);
     // posts and a fence along the lane
     [452, 478, 503, 527].forEach(function (px, i) {
@@ -320,10 +334,12 @@
       g.appendChild(glow);
       if (day) {
         pen.scribble(x, y, 25, 25, 1, 0.6, { cls: 'pw-ink pw-clock__ink' });
-        for (var k = 0; k < 12; k++) {
-          var a = k / 12 * Math.PI * 2 + 0.2, r1 = 33 + (k % 2) * 3, r2 = r1 + 9 + (k % 3) * 3;
-          pen.line(x + Math.cos(a) * r1, y + Math.sin(a) * r1, x + Math.cos(a) * r2, y + Math.sin(a) * r2, { cls: 'pw-ink pw-fine pw-clock__ink' });
-        }
+        bunch(pen, 'pw-clock__rays', x, y, function () {
+          for (var k = 0; k < 12; k++) {
+            var a = k / 12 * Math.PI * 2 + 0.2, r1 = 33 + (k % 2) * 3, r2 = r1 + 9 + (k % 3) * 3;
+            pen.line(x + Math.cos(a) * r1, y + Math.sin(a) * r1, x + Math.cos(a) * r2, y + Math.sin(a) * r2, { cls: 'pw-ink pw-fine pw-clock__ink' });
+          }
+        });
       } else {
         // a crescent: the part of one disc that a second, offset disc leaves uncovered
         var R = 22, bx = x + 10, by = y - 5, bR = 19, out = [], inn = [];
@@ -347,10 +363,14 @@
         cres.setAttribute('d', 'M' + out.concat(inn.slice().reverse()).map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' L') + 'Z');
         cres.setAttribute('class', 'pw-clock__fill pw-clock__fill--moon');
         g.replaceChild(cres, glow); glow = cres;
-        [[x - 70, y - 20, 4], [x + 60, y + 30, 3], [x - 40, y + 50, 3], [x + 90, y - 30, 4], [x + 20, y - 60, 3]].forEach(function (st) {
+        [[x - 70, y - 20, 4], [x + 60, y + 30, 3], [x - 40, y + 50, 3], [x + 90, y - 30, 4], [x + 20, y - 60, 3]].forEach(function (st, i) {
           if (st[1] < 10 || st[1] > 330) return;
-          pen.line(st[0] - st[2], st[1], st[0] + st[2], st[1], { cls: 'pw-ink pw-fine pw-clock__ink' });
-          pen.line(st[0], st[1] - st[2], st[0], st[1] + st[2], { cls: 'pw-ink pw-fine pw-clock__ink' });
+          var sg = bunch(pen, 'pw-clock__star', st[0], st[1], function () {
+            pen.line(st[0] - st[2], st[1], st[0] + st[2], st[1], { cls: 'pw-ink pw-fine pw-clock__ink' });
+            pen.line(st[0], st[1] - st[2], st[0], st[1] + st[2], { cls: 'pw-ink pw-fine pw-clock__ink' });
+          });
+          sg.style.animationDelay = (-i * 1.3) + 's';
+          sg.style.animationDuration = (3 + (i % 3)) + 's';
         });
       }
       var hh = now.getHours() % 12 || 12, mm = ('0' + now.getMinutes()).slice(-2);
@@ -454,42 +474,74 @@
       var layer = function (cls) { var e = document.createElementNS(NS, 'g'); e.setAttribute('class', cls); g.appendChild(e); return e; };
       // clouds: loose scribbles drifting across
       if (kind !== 'clear') {
-        var n = kind === 'cloudy' ? 2 : 4, cl = layer('pw-wx-clouds');
+        var n = kind === 'cloudy' ? 3 : 5, cl = layer('pw-wx-clouds');
         var pen = new Pen(cl, r);
         for (var i = 0; i < n; i++) {
-          var cx = 430 + (i + r() * 0.6) * (560 / n), cy = 60 + r() * 70, w = 70 + r() * 50;
-          pen.scribble(cx, cy, w, 18 + r() * 8, 2, 4, { cls: 'pw-wx-cloud' });
-          pen.scribble(cx - w * 0.4, cy + 6, w * 0.5, 14, 1, 3, { cls: 'pw-wx-cloud' });
+          var cx = 430 + (i + r() * 0.6) * (560 / n), cy = 50 + r() * 90, w = 70 + r() * 50;
+          // each cloud sails at its own pace, quicker in a strong wind
+          var one = bunch(pen, 'pw-wx-sail', cx, cy, function () {
+            pen.scribble(cx, cy, w, 18 + r() * 8, 2, 4, { cls: 'pw-wx-cloud' });
+            pen.scribble(cx - w * 0.4, cy + 6, w * 0.5, 14, 1, 3, { cls: 'pw-wx-cloud' });
+          });
+          var dur = (70 + r() * 40) / (1 + (wx.wind || 0) / 25);
+          one.style.animationDuration = dur.toFixed(1) + 's';
+          one.style.animationDelay = (-r() * dur).toFixed(1) + 's';
         }
       }
       var P = 90, slant = Math.min(0.55, 0.15 + (wx.wind || 0) / 80);
       if (kind === 'rain' || kind === 'drizzle' || kind === 'storm') {
-        var dense = kind === 'drizzle' ? 14 : 30, len = kind === 'drizzle' ? 7 : 14;
-        var rain = layer('pw-wx-fall pw-wx-rain');
-        rain.style.setProperty('--dx', (-slant * P).toFixed(1) + 'px');
-        rain.style.setProperty('--dy', P + 'px');
-        var drops = [];
-        for (i = 0; i < dense; i++) drops.push([360 + r() * 700, r() * P]);
-        for (var k = -1; k < 8; k++) drops.forEach(function (d) {
-          var x = d[0] - k * slant * P, y = d[1] + k * P;
-          line(rain, x, y, x - slant * len, y + len, 'pw-wx-drop');
+        var gust = layer('pw-wx-gust');
+        // a far sheet of fine rain behind a near one of heavier drops
+        [[kind === 'drizzle' ? 10 : 26, kind === 'drizzle' ? 5 : 9, 'pw-wx-drop pw-wx-drop--far', 'pw-wx-fall pw-wx-rain pw-wx-rain--far'],
+         [kind === 'drizzle' ? 14 : 30, kind === 'drizzle' ? 7 : 14, 'pw-wx-drop', 'pw-wx-fall pw-wx-rain']].forEach(function (sheet) {
+          var dense = sheet[0], len = sheet[1], rain = document.createElementNS(NS, 'g');
+          rain.setAttribute('class', sheet[3]); gust.appendChild(rain);
+          rain.style.setProperty('--dx', (-slant * P).toFixed(1) + 'px');
+          rain.style.setProperty('--dy', P + 'px');
+          var drops = [];
+          for (var i = 0; i < dense; i++) drops.push([360 + r() * 700, r() * P]);
+          for (var k = -1; k < 8; k++) drops.forEach(function (d) {
+            var x = d[0] - k * slant * P, y = d[1] + k * P;
+            line(rain, x, y, x - slant * len, y + len, sheet[2]);
+          });
         });
+        // splashes on the ground and the road
+        var splash = layer('pw-wx-splashes'), spots = kind === 'drizzle' ? 8 : 16;
+        for (i = 0; i < spots; i++) {
+          var sx = 380 + r() * 610, sy = 524 + r() * 70;
+          var sp = document.createElementNS(NS, 'g');
+          sp.setAttribute('class', 'pw-wx-splash');
+          sp.style.transformOrigin = sx.toFixed(1) + 'px ' + sy.toFixed(1) + 'px';
+          sp.style.animationDelay = (-r() * 1.6).toFixed(2) + 's';
+          sp.style.animationDuration = (1.2 + r() * 0.8).toFixed(2) + 's';
+          var ring = document.createElementNS(NS, 'ellipse');
+          ring.setAttribute('cx', sx.toFixed(1)); ring.setAttribute('cy', sy.toFixed(1)); ring.setAttribute('rx', 7); ring.setAttribute('ry', 1.8);
+          sp.appendChild(ring);
+          line(sp, sx - 2, sy - 1, sx - 5, sy - 6, ''); line(sp, sx + 2, sy - 1, sx + 5, sy - 6, '');
+          splash.appendChild(sp);
+        }
       }
       if (kind === 'snow') {
-        var snow = layer('pw-wx-fall pw-wx-snow');
-        snow.style.setProperty('--dx', '0px'); snow.style.setProperty('--dy', P + 'px');
-        var flakes = [];
-        for (i = 0; i < 26; i++) flakes.push([370 + r() * 620, r() * P, 1.6 + r() * 1.6]);
-        for (k = -1; k < 8; k++) flakes.forEach(function (f) {
-          var x = f[0] + Math.sin(k + f[0]) * 6, y = f[1] + k * P, z = f[2];
-          line(snow, x - z, y, x + z, y, 'pw-wx-flake'); line(snow, x, y - z, x, y + z, 'pw-wx-flake');
+        // near flakes are bigger and fall faster; both sheets sway on the air
+        [[30, 0.9, 'pw-wx-sway pw-wx-sway--far'], [24, 1.8, 'pw-wx-sway']].forEach(function (sheet) {
+          var sway = layer(sheet[2]), snow = document.createElementNS(NS, 'g');
+          snow.setAttribute('class', 'pw-wx-fall pw-wx-snow' + (sheet[1] < 1 ? ' pw-wx-snow--far' : ''));
+          sway.appendChild(snow);
+          snow.style.setProperty('--dx', '0px'); snow.style.setProperty('--dy', P + 'px');
+          var flakes = [];
+          for (var i = 0; i < sheet[0]; i++) flakes.push([370 + r() * 620, r() * P, sheet[1] + r() * sheet[1]]);
+          for (var k = -1; k < 8; k++) flakes.forEach(function (f) {
+            var x = f[0] + Math.sin(k + f[0]) * 6, y = f[1] + k * P, z = f[2];
+            line(snow, x - z, y, x + z, y, 'pw-wx-flake'); line(snow, x, y - z, x, y + z, 'pw-wx-flake');
+            if (z > 2) { line(snow, x - z * 0.7, y - z * 0.7, x + z * 0.7, y + z * 0.7, 'pw-wx-flake'); line(snow, x - z * 0.7, y + z * 0.7, x + z * 0.7, y - z * 0.7, 'pw-wx-flake'); }
+          });
         });
       }
       if (kind === 'fog') {
-        var fog = layer('pw-wx-fog');
-        for (i = 0; i < 9; i++) {
-          var fy = 330 + i * 22, fx = 360 + r() * 120;
-          line(fog, fx, fy, fx + 260 + r() * 280, fy + (r() - 0.5) * 3, 'pw-wx-mist');
+        var fog = layer('pw-wx-fog'), fog2 = layer('pw-wx-fog pw-wx-fog--back');
+        for (i = 0; i < 12; i++) {
+          var fy = 300 + i * 20, fx = 340 + r() * 160;
+          line(i % 2 ? fog2 : fog, fx, fy, fx + 240 + r() * 300, fy + (r() - 0.5) * 3, 'pw-wx-mist');
         }
       }
       if (kind === 'storm') {
@@ -498,7 +550,33 @@
         var pl = document.createElementNS(NS, 'polyline');
         pl.setAttribute('points', pts.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '));
         pl.setAttribute('class', 'pw-wx-zap'); bolt.appendChild(pl);
+        // the whole sky lights up with it
+        var fl = document.createElementNS(NS, 'rect');
+        fl.setAttribute('x', 360); fl.setAttribute('y', 0); fl.setAttribute('width', 640); fl.setAttribute('height', 560);
+        fl.setAttribute('class', 'pw-wx-flash'); g.insertBefore(fl, g.firstChild);
+        // a soft glow that fades out at the edges, so the flash has no hard border
+        if (!defs.querySelector('#pw-wx-glow')) {
+          var rg = document.createElementNS(NS, 'radialGradient'); rg.setAttribute('id', 'pw-wx-glow');
+          rg.setAttribute('cx', '0.55'); rg.setAttribute('cy', '0.3'); rg.setAttribute('r', '0.6');
+          [['0', '1'], ['1', '0']].forEach(function (st) {
+            var stop = document.createElementNS(NS, 'stop'); stop.setAttribute('offset', st[0]);
+            stop.setAttribute('class', 'pw-wx-glow-stop'); stop.style.stopOpacity = st[1]; rg.appendChild(stop);
+          });
+          defs.appendChild(rg);
+        }
+        fl.setAttribute('fill', 'url(#pw-wx-glow)');
       }
+      // on a clear night, now and then, a falling star
+      var hr = new Date().getHours();
+      if (kind === 'clear' && (hr < 6 || hr >= 19)) {
+        var met = layer('pw-wx-meteors');
+        [[520, 60, 0], [800, 40, -6.5]].forEach(function (m) {
+          var ml = line(met, m[0], m[1], m[0] + 90, m[1] + 38, 'pw-wx-meteor');
+          ml.setAttribute('pathLength', '1');
+          ml.style.animationDelay = m[2] + 's';
+        });
+      }
+      media.style.setProperty('--pw-wind', Math.min(1, (wx.wind || 0) / 40).toFixed(2));
       if (!note) { note = document.createElement('p'); note.className = 'pw-wxnote'; media.appendChild(note); }
       note.textContent = WX_WORDS[kind] + ' in ' + city + ', where you are';
     }

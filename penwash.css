@@ -1212,7 +1212,6 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 .pw-wx-fall{ animation: pw-fall 1.1s linear infinite; }
 .pw-wx-snow{ animation-duration: 7s; }
 .pw-wx--drizzle .pw-wx-fall{ animation-duration: 1.8s; }
-.pw-wx-clouds{ animation: pw-drift 26s ease-in-out infinite alternate; }
 .pw-wx-fog{ animation: pw-drift 18s ease-in-out infinite alternate; }
 .pw-wx-zap{ animation: pw-zap 7s linear infinite; }
 @keyframes pw-fall{ from{ transform: translate(0, calc(var(--dy) * -1)); } to{ transform: translate(var(--dx), 0); } }
@@ -1229,7 +1228,48 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 @media (max-width: 720px){
   .pw-wxnote{ left: auto; right: 8px; bottom: 32px; font-size: 13px; }
 }
+/* live weather: everything keeps moving a little */
+.pw-wx-drop--far{ stroke-width: .6; opacity: .22; }
+.pw-wx-rain--far{ animation-duration: .8s; }
+.pw-wx--drizzle .pw-wx-rain--far{ animation-duration: 1.4s; }
+.pw-wx-gust{ transform-origin: 680px 0; animation: pw-gust 9s ease-in-out infinite; }
+.pw-wx-splash{ opacity: 0; animation: pw-splash 1.4s ease-out infinite; }
+.pw-wx-splash ellipse{ fill: none; stroke: var(--pw-ink); stroke-width: .7; }
+.pw-wx-splash line{ stroke: var(--pw-ink); stroke-width: .7; }
+.pw-wx-snow--far{ animation-duration: 11s; }
+.pw-wx-flake{ stroke-linecap: round; }
+.pw-wx-snow--far .pw-wx-flake{ opacity: .3; stroke-width: .7; }
+.pw-wx-sway{ animation: pw-sway 5s ease-in-out infinite alternate; }
+.pw-wx-sway--far{ animation-duration: 7s; animation-delay: -3s; }
+.pw-wx-sail{ animation: pw-sail 80s linear infinite; }
+.pw-wx-fog--back{ animation-direction: alternate-reverse; animation-duration: 26s; }
+.pw-wx-glow-stop{ stop-color: rgb(var(--accent-soft-rgb, 204,199,255)); }
+.pw-wx-flash{ opacity: 0; animation: pw-flash 7s linear infinite; }
+.pw-wx-meteor{ stroke: var(--pw-accent); stroke-width: 1.2; stroke-linecap: round; stroke-dasharray: .25 1.5; stroke-dashoffset: .25; opacity: 0; animation: pw-meteor 13s ease-in infinite; }
+/* the sun turns slowly on a clear day; stars twinkle at night */
+.pw-clock__rays{ animation: pw-spin 120s linear infinite; }
+.pw-wx--clear .pw-clock__rays{ animation-duration: 50s; }
+.pw-clock__star{ animation: pw-twinkle 4s ease-in-out infinite; }
+/* birds glide and flap, and go home when the weather turns */
+.pw-bird{ animation: pw-glide 3s ease-in-out infinite alternate, pw-flap 1.2s ease-in-out infinite; transition: opacity 1.2s; }
+.pw-wx--rain .pw-bird, .pw-wx--storm .pw-bird, .pw-wx--snow .pw-bird, .pw-wx--fog .pw-bird, html.pw-night .pw-bird{ opacity: 0; }
+/* the kite tugs on its string, harder in the wind */
+.pw-kite{ --pw-tug: calc(3deg + var(--pw-wind, .2) * 9deg); animation: pw-tug 3.4s ease-in-out infinite alternate; }
+.pw-wx--storm .pw-kite{ animation-duration: 1.3s; }
+@keyframes pw-gust{ 0%, 100%{ transform: skewX(0deg); } 40%{ transform: skewX(-4deg); } 55%{ transform: skewX(2deg); } }
+@keyframes pw-splash{ 0%{ opacity: 0; transform: scale(.2); } 12%{ opacity: .6; } 60%{ opacity: 0; transform: scale(1.15); } 100%{ opacity: 0; transform: scale(1.15); } }
+@keyframes pw-sway{ from{ transform: translateX(-12px); } to{ transform: translateX(12px); } }
+@keyframes pw-sail{ 0%{ transform: translateX(-170px); opacity: 0; } 12%, 88%{ opacity: 1; } 100%{ transform: translateX(170px); opacity: 0; } }
+@keyframes pw-flash{ 0%, 88%, 100%{ opacity: 0; } 89%{ opacity: .7; } 90%{ opacity: .1; } 91.5%{ opacity: .55; } 95%{ opacity: 0; } }
+@keyframes pw-meteor{ 0%, 80%{ opacity: 0; stroke-dashoffset: .25; } 81%{ opacity: .9; } 88%{ opacity: .9; stroke-dashoffset: -1.25; } 89%, 100%{ opacity: 0; stroke-dashoffset: -1.25; } }
+@keyframes pw-spin{ to{ transform: rotate(360deg); } }
+@keyframes pw-twinkle{ 0%, 100%{ opacity: 1; transform: scale(1); } 50%{ opacity: .25; transform: scale(.6); } }
+@keyframes pw-glide{ from{ translate: -3px 2px; } to{ translate: 4px -3px; } }
+@keyframes pw-flap{ 0%, 100%{ transform: scaleY(1); } 50%{ transform: scaleY(.45); } }
+@keyframes pw-tug{ from{ transform: rotate(calc(var(--pw-tug) * -1)); } to{ transform: rotate(var(--pw-tug)); } }
 @media (prefers-reduced-motion: reduce){
   .pw-wx-fall, .pw-wx-clouds, .pw-wx-fog{ animation: none !important; }
+  .pw-wx-gust, .pw-wx-splash, .pw-wx-sway, .pw-wx-sail, .pw-wx-flash, .pw-wx-meteor, .pw-clock__rays, .pw-clock__star, .pw-bird, .pw-kite{ animation: none !important; }
+  .pw-wx-splash, .pw-wx-flash, .pw-wx-meteor{ opacity: 0; }
   .pw-wx-zap{ animation: none !important; opacity: 0; }
 }

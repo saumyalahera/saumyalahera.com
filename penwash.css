@@ -1260,3 +1260,6 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
   .pw-wx-splash, .pw-wx-flash, .pw-wx-meteor{ opacity: 0; }
   .pw-wx-zap{ animation: none !important; opacity: 0; }
 }
+
+/* "More projects" follows right after, so the jump link under Selected Work is not needed */
+.section__foot:has(> a[href="#more-work"]:only-child){ display: none !important; }

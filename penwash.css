@@ -1263,3 +1263,10 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 
 /* "More projects" follows right after, so the jump link under Selected Work is not needed */
 .section__foot:has(> a[href="#more-work"]:only-child){ display: none !important; }
+
+/* About: no tall empty head waiting for the drawing; the photo and words start
+   right under the title, and the first paragraph stops short of the drawing */
+@media (min-width: 721px){
+  .pw-chapter .section__head.pw-lead:has(+ .about .pw-portrait){ min-height: 0 !important; }
+  #about .pw-about__words #about_summary{ max-width: calc(100% - min(196px, 17vw) - 40px); }
+}

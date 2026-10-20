@@ -378,6 +378,142 @@
     if (typeof window.renderPortfolioExtras === 'function') window.renderPortfolioExtras = hook(window.renderPortfolioExtras);
   }
 
+  // ---- weather over the town -----------------------------------------------------
+  // The cover is the visitor's sky: the sun or moon follows their clock, and the
+  // weather is the weather in the city of their time zone (Europe/Madrid -> Madrid),
+  // so no location prompt is needed. Open-Meteo turns the name into a place and reports
+  // what the sky is doing there now; the answer is kept for half an hour. Only the city
+  // name is sent. ?weather=rain (clear, cloudy, fog, drizzle, snow, storm) previews one.
+  var WX_WORDS = { clear: 'Clear skies', cloudy: 'Clouds', overcast: 'Overcast', fog: 'Fog', drizzle: 'Drizzle', rain: 'Raining', snow: 'Snowing', storm: 'Thunderstorms' };
+  function wxKind(code) {
+    if (code === 0) return 'clear';
+    if (code === 1 || code === 2) return 'cloudy';
+    if (code === 3) return 'overcast';
+    if (code === 45 || code === 48) return 'fog';
+    if (code >= 51 && code <= 57) return 'drizzle';
+    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+    if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+    if (code >= 95) return 'storm';
+    return 'clear';
+  }
+  function zoneCity() {
+    try {
+      var z = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (!/\//.test(z) || /^Etc\//.test(z)) return '';
+      return z.split('/').pop().replace(/_/g, ' ');
+    } catch (_) { return ''; }
+  }
+  function fetchWeather(city, done) {
+    var key = 'pw-weather:' + city.toLowerCase();
+    try {
+      var c = JSON.parse(localStorage.getItem(key) || 'null');
+      if (c && Date.now() - c.t < 30 * 60 * 1000) return done(c);
+    } catch (_) {}
+    if (!window.fetch) return;
+    fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=' + encodeURIComponent(city))
+      .then(function (r) { return r.json(); })
+      .then(function (g) {
+        var p = g && g.results && g.results[0];
+        if (!p) throw new Error('no place');
+        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&current=weather_code,wind_speed_10m,is_day');
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (w) {
+        var cur = w && w.current;
+        if (!cur) return;
+        var out = { t: Date.now(), kind: wxKind(cur.weather_code), wind: cur.wind_speed_10m || 0 };
+        try { localStorage.setItem(key, JSON.stringify(out)); } catch (_) {}
+        done(out);
+      })
+      .catch(function () {});
+  }
+  function skyWeather(svg, media) {
+    var shown = '', g = null, note = null;
+    function draw(city, wx) {
+      if (g) g.remove();
+      media.classList.remove('pw-wx--cloudy', 'pw-wx--overcast', 'pw-wx--fog', 'pw-wx--drizzle', 'pw-wx--rain', 'pw-wx--snow', 'pw-wx--storm');
+      g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'pw-weather');
+      // keep the weather in the sky over the town
+      var clipId = 'pw-wx-clip', defs = svg.querySelector('defs') || svg.insertBefore(document.createElementNS(NS, 'defs'), svg.firstChild);
+      if (!defs.querySelector('#' + clipId)) {
+        var cp = document.createElementNS(NS, 'clipPath'); cp.setAttribute('id', clipId);
+        var rc = document.createElementNS(NS, 'rect'); rc.setAttribute('x', 360); rc.setAttribute('y', 0); rc.setAttribute('width', 640); rc.setAttribute('height', 560);
+        cp.appendChild(rc); defs.appendChild(cp);
+      }
+      g.setAttribute('clip-path', 'url(#' + clipId + ')');
+      var after = svg.querySelector('.pw-clock');
+      svg.insertBefore(g, after ? after.nextSibling : svg.firstChild.nextSibling);
+      var r = rng(91), kind = wx.kind;
+      media.classList.add('pw-wx--' + kind);
+      var line = function (parent, x1, y1, x2, y2, cls) {
+        var l = document.createElementNS(NS, 'line');
+        l.setAttribute('x1', x1.toFixed(1)); l.setAttribute('y1', y1.toFixed(1)); l.setAttribute('x2', x2.toFixed(1)); l.setAttribute('y2', y2.toFixed(1));
+        l.setAttribute('class', cls); parent.appendChild(l); return l;
+      };
+      var layer = function (cls) { var e = document.createElementNS(NS, 'g'); e.setAttribute('class', cls); g.appendChild(e); return e; };
+      // clouds: loose scribbles drifting across
+      if (kind !== 'clear') {
+        var n = kind === 'cloudy' ? 2 : 4, cl = layer('pw-wx-clouds');
+        var pen = new Pen(cl, r);
+        for (var i = 0; i < n; i++) {
+          var cx = 430 + (i + r() * 0.6) * (560 / n), cy = 60 + r() * 70, w = 70 + r() * 50;
+          pen.scribble(cx, cy, w, 18 + r() * 8, 2, 4, { cls: 'pw-wx-cloud' });
+          pen.scribble(cx - w * 0.4, cy + 6, w * 0.5, 14, 1, 3, { cls: 'pw-wx-cloud' });
+        }
+      }
+      var P = 90, slant = Math.min(0.55, 0.15 + (wx.wind || 0) / 80);
+      if (kind === 'rain' || kind === 'drizzle' || kind === 'storm') {
+        var dense = kind === 'drizzle' ? 14 : 30, len = kind === 'drizzle' ? 7 : 14;
+        var rain = layer('pw-wx-fall pw-wx-rain');
+        rain.style.setProperty('--dx', (-slant * P).toFixed(1) + 'px');
+        rain.style.setProperty('--dy', P + 'px');
+        var drops = [];
+        for (i = 0; i < dense; i++) drops.push([360 + r() * 700, r() * P]);
+        for (var k = -1; k < 8; k++) drops.forEach(function (d) {
+          var x = d[0] - k * slant * P, y = d[1] + k * P;
+          line(rain, x, y, x - slant * len, y + len, 'pw-wx-drop');
+        });
+      }
+      if (kind === 'snow') {
+        var snow = layer('pw-wx-fall pw-wx-snow');
+        snow.style.setProperty('--dx', '0px'); snow.style.setProperty('--dy', P + 'px');
+        var flakes = [];
+        for (i = 0; i < 26; i++) flakes.push([370 + r() * 620, r() * P, 1.6 + r() * 1.6]);
+        for (k = -1; k < 8; k++) flakes.forEach(function (f) {
+          var x = f[0] + Math.sin(k + f[0]) * 6, y = f[1] + k * P, z = f[2];
+          line(snow, x - z, y, x + z, y, 'pw-wx-flake'); line(snow, x, y - z, x, y + z, 'pw-wx-flake');
+        });
+      }
+      if (kind === 'fog') {
+        var fog = layer('pw-wx-fog');
+        for (i = 0; i < 9; i++) {
+          var fy = 330 + i * 22, fx = 360 + r() * 120;
+          line(fog, fx, fy, fx + 260 + r() * 280, fy + (r() - 0.5) * 3, 'pw-wx-mist');
+        }
+      }
+      if (kind === 'storm') {
+        var bolt = layer('pw-wx-bolt'), bx = 560 + r() * 260, pts = [[bx, 90]];
+        for (i = 1; i < 6; i++) pts.push([bx + (i % 2 ? 18 : -10) + r() * 8, 90 + i * 34]);
+        var pl = document.createElementNS(NS, 'polyline');
+        pl.setAttribute('points', pts.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '));
+        pl.setAttribute('class', 'pw-wx-zap'); bolt.appendChild(pl);
+      }
+      if (!note) { note = document.createElement('p'); note.className = 'pw-wxnote'; media.appendChild(note); }
+      note.textContent = WX_WORDS[kind] + ' in ' + city + ', where you are';
+    }
+    function go(city) {
+      var force = (location.search.match(/[?&]weather=([a-z]+)/) || [])[1];
+      if (force && WX_WORDS[force]) { if (shown !== 'forced') { shown = 'forced'; draw(city || 'your city', { kind: force, wind: 12 }); } return; }
+      if (!city || city === shown) return;
+      shown = city;
+      fetchWeather(city, function (wx) { if (shown === city) draw(city, wx); });
+    }
+    go(zoneCity());
+    // check again now and then, for a page left open
+    setInterval(function () { shown = ''; go(zoneCity()); }, 30 * 60 * 1000);
+  }
+
   function buildCover() {
     var media = document.querySelector('.hero__media');
     if (!media) return;
@@ -411,6 +547,7 @@
     il.appendChild(svg);
     var shadows = coverInk(new Pen(svg, rng(7)));
     skyClock(svg, media);
+    skyWeather(svg, media);
     requestAnimationFrame(function () {
       coverWashes(p.ctx, r, shadows);
       wl.classList.add('pw-dry');

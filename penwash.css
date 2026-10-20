@@ -303,7 +303,6 @@ h2.about__title.pw-h-major{
 
 /* ---- Entries: cards and panels become plain, well-set text --------------- */
 .grid, .split{ gap: 64px 56px !important; margin-top: 10px !important; }
-#selected_work.grid{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 
 .card, .panel, .row{
@@ -347,7 +346,7 @@ h2.about__title.pw-h-major{
   color: var(--pw-ink) !important;
   margin: 8px 0 10px !important;
 }
-.grid:not(#selected_work) .card h3{ font-size: 21px !important; }
+.grid .card h3{ font-size: 21px !important; }
 .card p, .card p.muted, .panel p, .row p, .row p.muted{
   font-family: var(--pw-serif) !important;
   font-size: 18px !important;
@@ -828,12 +827,10 @@ h2.about__title.pw-h-major{
   margin: 26px 0 0 !important;
   padding: 8px 6px 30px;
 }
-#selected_work.pc-deck{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 60px 54px !important; }
 .pc-deck > br{ display: none; }
 /* a little unevenness, like cards pinned by hand */
-.pc-deck:not(#selected_work) > article.card.pc:nth-child(3n+2){ margin-top: 30px; }
-.pc-deck:not(#selected_work) > article.card.pc:nth-child(3n){ margin-top: 12px; }
-#selected_work.pc-deck > article.card.pc:nth-child(even){ margin-top: 36px; }
+.pc-deck > article.card.pc:nth-child(3n+2){ margin-top: 30px; }
+.pc-deck > article.card.pc:nth-child(3n){ margin-top: 12px; }
 article.card.pc{
   --pc-paper: #fffdf8;
   position: relative;
@@ -914,7 +911,6 @@ article.card.pc h3{
   color: var(--pw-ink) !important;
   margin: 6px 0 8px !important;
 }
-#selected_work article.card.pc h3{ font-size: clamp(21px, 2vw, 25px) !important; }
 article.card.pc .card__top p{
   font-family: var(--pw-serif) !important;
   font-style: italic;
@@ -992,8 +988,8 @@ article.card.pc .card__actions{ margin-top: 12px !important; }
 
 @media (max-width: 1100px){
   .pc-deck{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-  .pc-deck:not(#selected_work) > article.card.pc:nth-child(n){ margin-top: 0; }
-  .pc-deck:not(#selected_work) > article.card.pc:nth-child(even){ margin-top: 30px; }
+  .pc-deck > article.card.pc:nth-child(n){ margin-top: 0; }
+  .pc-deck > article.card.pc:nth-child(even){ margin-top: 30px; }
 }
 @media (max-width: 700px){
   .pc-deck, #selected_work.pc-deck{ grid-template-columns: minmax(0, 1fr) !important; gap: 40px !important; padding: 8px 4px 20px; }

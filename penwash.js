@@ -543,7 +543,7 @@
     })(0);
   }
   // The weather code alone often says "overcast" through light rain, so the
-  // rain actually falling (now and in the last half hour) decides too.
+  // rain actually falling (in the last quarter hour) decides too.
   function wxFromCurrent(cur, recent) {
     var kind = wxKind(cur.weather_code), wet = Math.max(+cur.precipitation || 0, recent || 0), snow = +cur.snowfall || 0;
     if ((wet > 0 || snow > 0) && !/^(rain|drizzle|storm|snow)$/.test(kind)) kind = snow > 0 ? 'snow' : wet < 0.3 ? 'drizzle' : 'rain';
@@ -570,7 +570,8 @@
       .then(function (ob) {
         var o = ob && ob.properties || {};
         // only a recent look counts
-        if (!o.timestamp || Date.now() - Date.parse(o.timestamp) > 2 * 60 * 60 * 1000) return done('');
+        // stations report about once an hour, so anything older is out of date
+        if (!o.timestamp || Date.now() - Date.parse(o.timestamp) > 75 * 60 * 1000) return done('');
         done(wxFromStation(o.textDescription), o.textDescription);
       })
       .catch(function () { done(''); });
@@ -589,7 +590,7 @@
         if (!p) throw new Error('no place');
         if (place.lat == null) { place.lat = p.latitude; place.lon = p.longitude; }
         return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude +
-          '&current=weather_code,precipitation,snowfall,wind_speed_10m,is_day&minutely_15=precipitation&past_minutely_15=2&forecast_minutely_15=1');
+          '&current=weather_code,precipitation,snowfall,wind_speed_10m,is_day&minutely_15=precipitation&past_minutely_15=1&forecast_minutely_15=1');
       })
       .then(function (r) { return r.json(); })
       .then(function (w) {
@@ -749,7 +750,7 @@
     }
     findPlace(go);
     // check again now and then, for a page left open
-    setInterval(function () { shown = ''; findPlace(go); }, 30 * 60 * 1000);
+    setInterval(function () { shown = ''; findPlace(go); }, 10 * 60 * 1000);
   }
 
   function buildCover() {

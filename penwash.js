@@ -521,24 +521,39 @@
       if (c && c.city && Date.now() - c.t < 6 * 60 * 60 * 1000) return done(c);
     } catch (_) {}
     if (!window.fetch) return fallback();
+    // two lookups, in case one is blocked by a privacy extension or is down
+    var sources = [
+      ['https://get.geojs.io/v1/ip/geo.json', function (g) { return [g.city, g.latitude, g.longitude]; }],
+      ['https://ipapi.co/json/', function (g) { return [g.city, g.latitude, g.longitude]; }]
+    ];
     var settled = false, finish = function (p) { if (settled) return; settled = true; p ? done(p) : fallback(); };
-    setTimeout(function () { finish(null); }, 4000);
-    fetch('https://get.geojs.io/v1/ip/geo.json')
-      .then(function (r) { return r.json(); })
-      .then(function (g) {
-        var lat = parseFloat(g && g.latitude), lon = parseFloat(g && g.longitude);
-        if (!g || !g.city || isNaN(lat) || isNaN(lon)) return finish(null);
-        var p = { t: Date.now(), city: g.city, lat: lat, lon: lon };
-        try { localStorage.setItem(key, JSON.stringify(p)); } catch (_) {}
-        finish(p);
-      })
-      .catch(function () { finish(null); });
+    setTimeout(function () { finish(null); }, 5000);
+    (function next(k) {
+      if (k >= sources.length) return finish(null);
+      fetch(sources[k][0])
+        .then(function (r) { return r.json(); })
+        .then(function (g) {
+          var v = g ? sources[k][1](g) : [], lat = parseFloat(v[1]), lon = parseFloat(v[2]);
+          if (!v[0] || isNaN(lat) || isNaN(lon)) return next(k + 1);
+          var p = { t: Date.now(), city: v[0], lat: lat, lon: lon };
+          try { localStorage.setItem(key, JSON.stringify(p)); } catch (_) {}
+          finish(p);
+        })
+        .catch(function () { next(k + 1); });
+    })(0);
+  }
+  // The weather code alone often says "overcast" through light rain, so the
+  // rain actually falling decides too.
+  function wxFromCurrent(cur) {
+    var kind = wxKind(cur.weather_code), wet = +cur.precipitation || 0, snow = +cur.snowfall || 0;
+    if ((wet > 0 || snow > 0) && !/^(rain|drizzle|storm|snow)$/.test(kind)) kind = snow > 0 ? 'snow' : wet < 0.3 ? 'drizzle' : 'rain';
+    return kind;
   }
   function fetchWeather(place, done) {
-    var city = place.city, key = 'pw-weather:' + city.toLowerCase();
+    var city = place.city, key = 'pw-weather2:' + city.toLowerCase();
     try {
       var c = JSON.parse(localStorage.getItem(key) || 'null');
-      if (c && Date.now() - c.t < 30 * 60 * 1000) return done(c);
+      if (c && Date.now() - c.t < 10 * 60 * 1000) return done(c);
     } catch (_) {}
     if (!window.fetch) return;
     (place.lat != null ? Promise.resolve({ results: [{ latitude: place.lat, longitude: place.lon }] })
@@ -546,13 +561,15 @@
       .then(function (g) {
         var p = g && g.results && g.results[0];
         if (!p) throw new Error('no place');
-        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&current=weather_code,wind_speed_10m,is_day');
+        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&current=weather_code,precipitation,snowfall,wind_speed_10m,is_day');
       })
       .then(function (r) { return r.json(); })
       .then(function (w) {
         var cur = w && w.current;
         if (!cur) return;
-        var out = { t: Date.now(), kind: wxKind(cur.weather_code), wind: cur.wind_speed_10m || 0 };
+        var out = { t: Date.now(), kind: wxFromCurrent(cur), wind: cur.wind_speed_10m || 0 };
+        // one quiet line for checking what the sky is based on
+        if (window.console && console.info) console.info('[penwash] weather for ' + city + ': code ' + cur.weather_code + ', ' + (cur.precipitation || 0) + ' mm, drawn as ' + out.kind);
         try { localStorage.setItem(key, JSON.stringify(out)); } catch (_) {}
         done(out);
       })

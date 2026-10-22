@@ -543,14 +543,40 @@
     })(0);
   }
   // The weather code alone often says "overcast" through light rain, so the
-  // rain actually falling decides too.
-  function wxFromCurrent(cur) {
-    var kind = wxKind(cur.weather_code), wet = +cur.precipitation || 0, snow = +cur.snowfall || 0;
+  // rain actually falling (now and in the last half hour) decides too.
+  function wxFromCurrent(cur, recent) {
+    var kind = wxKind(cur.weather_code), wet = Math.max(+cur.precipitation || 0, recent || 0), snow = +cur.snowfall || 0;
     if ((wet > 0 || snow > 0) && !/^(rain|drizzle|storm|snow)$/.test(kind)) kind = snow > 0 ? 'snow' : wet < 0.3 ? 'drizzle' : 'rain';
     return kind;
   }
+  // What a weather station near the visitor last saw, in words ("Light Rain").
+  // The US weather service has this for US places; elsewhere this finds nothing.
+  function wxFromStation(text) {
+    text = String(text || '');
+    if (/thunder/i.test(text)) return 'storm';
+    if (/snow|sleet|ice pellets|freezing/i.test(text)) return 'snow';
+    if (/drizzle/i.test(text)) return 'drizzle';
+    if (/rain|shower/i.test(text)) return 'rain';
+    if (/fog|mist/i.test(text)) return 'fog';
+    return '';
+  }
+  function stationSays(place, done) {
+    if (place.lat == null || place.lat < 18 || place.lat > 72 || place.lon > -64 || place.lon < -170) return done('');
+    // plain requests: a custom header would need a preflight the service may refuse
+    var get = function (u) { return fetch(u).then(function (r) { if (!r.ok) throw r; return r.json(); }); };
+    get('https://api.weather.gov/points/' + place.lat.toFixed(4) + ',' + place.lon.toFixed(4))
+      .then(function (pt) { return get(pt.properties.observationStations); })
+      .then(function (st) { return get(st.features[0].id + '/observations/latest'); })
+      .then(function (ob) {
+        var o = ob && ob.properties || {};
+        // only a recent look counts
+        if (!o.timestamp || Date.now() - Date.parse(o.timestamp) > 2 * 60 * 60 * 1000) return done('');
+        done(wxFromStation(o.textDescription), o.textDescription);
+      })
+      .catch(function () { done(''); });
+  }
   function fetchWeather(place, done) {
-    var city = place.city, key = 'pw-weather2:' + city.toLowerCase();
+    var city = place.city, key = 'pw-weather3:' + city.toLowerCase();
     try {
       var c = JSON.parse(localStorage.getItem(key) || 'null');
       if (c && Date.now() - c.t < 10 * 60 * 1000) return done(c);
@@ -561,17 +587,24 @@
       .then(function (g) {
         var p = g && g.results && g.results[0];
         if (!p) throw new Error('no place');
-        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&current=weather_code,precipitation,snowfall,wind_speed_10m,is_day');
+        if (place.lat == null) { place.lat = p.latitude; place.lon = p.longitude; }
+        return fetch('https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude +
+          '&current=weather_code,precipitation,snowfall,wind_speed_10m,is_day&minutely_15=precipitation&past_minutely_15=2&forecast_minutely_15=1');
       })
       .then(function (r) { return r.json(); })
       .then(function (w) {
         var cur = w && w.current;
         if (!cur) return;
-        var out = { t: Date.now(), kind: wxFromCurrent(cur), wind: cur.wind_speed_10m || 0 };
-        // one quiet line for checking what the sky is based on
-        if (window.console && console.info) console.info('[penwash] weather for ' + city + ': code ' + cur.weather_code + ', ' + (cur.precipitation || 0) + ' mm, drawn as ' + out.kind);
-        try { localStorage.setItem(key, JSON.stringify(out)); } catch (_) {}
-        done(out);
+        var recent = Math.max.apply(null, ((w.minutely_15 || {}).precipitation || [0]).map(function (v) { return +v || 0; }));
+        var out = { t: Date.now(), kind: wxFromCurrent(cur, recent), wind: cur.wind_speed_10m || 0 };
+        var save = function () { try { localStorage.setItem(key, JSON.stringify(out)); } catch (_) {} };
+        save(); done(out);
+        // a station that sees rain or snow outranks the model
+        stationSays(place, function (seen, words) {
+          var model = out.kind, take = seen && seen !== model && !(seen === 'fog' && /^(rain|drizzle|storm|snow)$/.test(model));
+          if (take) { out = { t: out.t, kind: seen, wind: out.wind }; save(); done(out); }
+          if (window.console && console.info) console.info('[penwash] weather for ' + city + ': code ' + cur.weather_code + ', ' + recent + ' mm recently' + (words ? ', station sees "' + words + '"' : '') + ', drawn as ' + out.kind);
+        });
       })
       .catch(function () {});
   }

@@ -1345,3 +1345,14 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
 .pw-smark__waves path{ stroke: var(--pw-ink); }
 .pw-stamp-val{ font-size: 11px; opacity: .85; }
 .pc-tape[hidden]{ display: none !important; }
+
+/* a drawing beside every group inside Notes (Talks & Showcases, Volunteering...),
+   sitting level with its title the way each chapter's drawing does */
+.pw-scene--sub{ position: absolute; right: 22px; left: auto; top: auto !important; bottom: auto; margin-top: -6px; }
+.pw-chapter .section__head.pw-subhead{ min-height: min(225px, calc(17vw * 1.15)); }
+.pw-scene--sub .pw-ink{ stroke-width: 1.45; }
+.pw-scene--sub .pw-ink.pw-fine{ stroke-width: .95; }
+@media (max-width: 720px){
+  .pw-scene--sub{ position: relative; right: auto; margin: calc(var(--pw-sky, 0) * min(48vw, 210px) * -1.15) auto -2px; }
+  .pw-chapter .section__head.pw-subhead{ min-height: 0; }
+}

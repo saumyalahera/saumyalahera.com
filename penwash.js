@@ -1956,6 +1956,37 @@
     });
   }
 
+  // One of the postcard places, redrawn at the size of a chapter's drawing.
+  function subScene(kind, seed, i) {
+    var holder = document.createElement('div');
+    holder.className = 'pw-bloom pw-scene pw-scene--sub';
+    holder.dataset.kind = kind;
+    holder.setAttribute('aria-hidden', 'true');
+    var S = 0.8, TX = (400 - 640 * S) / 2, TY = 440 - 330 * S;
+    var r = rng(seed + 11), sh = [];
+    var svg = svgEl('0 0 400 460', 'pw-svg');
+    var g = document.createElementNS(NS, 'g');
+    g.setAttribute('transform', 'translate(' + TX + ' ' + TY + ') scale(' + S + ')');
+    svg.appendChild(g);
+    (VIGNETTE_DRAW[kind] || VIGNETTE_DRAW.town)(new Pen(g, r), r, sh, 330);
+    var kids = g.children, nk = kids.length || 1;
+    for (var k = 0; k < kids.length; k++) kids[k].style.setProperty('--t', (k / nk).toFixed(3));
+    var p = paintCanvas(400, 460, Math.min(1.5, window.devicePixelRatio || 1)), wr = rng(seed + 3);
+    sh.forEach(function (s) {
+      var pts = s.map(function (q) { return [q[0] * S + TX, q[1] * S + TY]; });
+      wash(p.ctx, { pts: box(pts, wr, 0.25), color: GREY.mid, alpha: 0.05, layers: 6, wet: 0.05, spread: 0.04, raw: true }, wr);
+    });
+    wash(p.ctx, { cx: 200, cy: 448, rx: 190, ry: 10, color: GREY.mid, alpha: 0.035, layers: 12, wet: 0.2, spread: 0.1 }, wr);
+    p.c.className = 'pw-canvas';
+    holder.appendChild(p.c);
+    holder.appendChild(svg);
+    holder.classList.add('pw-ready');
+    requestAnimationFrame(function () {
+      try { var bb = svg.getBBox(); holder.style.setProperty('--pw-sky', (Math.max(0, bb.y - 10) / 460).toFixed(3)); } catch (_) {}
+    });
+    return holder;
+  }
+
   // #talks holds several titled groups (Research Assistantship, Talks & Showcases...);
   // each one after the first gets the same pen line, so they read as sections too.
   function subRules() {
@@ -1965,10 +1996,23 @@
     var run = function () {
       talks.querySelectorAll('#other_sections, #other_sections_fallback').forEach(function (box) {
         var heads = box.querySelectorAll(':scope > .section__head');
+        // every group after the first gets a place of its own, never one already on the page
+        var used = {};
+        box.querySelectorAll(':scope > .pw-scene--sub').forEach(function (el) { used[el.dataset.kind] = 1; });
         for (var i = 1; i < heads.length; i++) {
-          var at = heads[i];
-          // sit above any spacer the page put before the title
-          while (at.previousElementSibling && !at.previousElementSibling.matches('.list, .section__head, .pw-rule') && !at.previousElementSibling.children.length) at = at.previousElementSibling;
+          var head = heads[i], before = head.previousElementSibling;
+          if (!(before && before.classList.contains('pw-scene--sub'))) {
+            var title = (head.querySelector('h2, h3') || head).textContent.trim(), seed = 7;
+            for (var c = 0; c < title.length; c++) seed = (seed * 31 + title.charCodeAt(c)) >>> 0;
+            // buildings only; once those run out, another town, drawn from its own title
+            var kind = ['observatory', 'windmill', 'town'].filter(function (q) { return !used[q]; })[0] || 'town';
+            used[kind] = 1;
+            head.classList.add('pw-subhead');
+            box.insertBefore(subScene(kind, seed % 100000, i), head);
+          }
+          var at = head;
+          // sit above the drawing and any spacer the page put before the title
+          while (at.previousElementSibling && (at.previousElementSibling.classList.contains('pw-scene--sub') || !at.previousElementSibling.matches('.list, .section__head, .pw-rule') && !at.previousElementSibling.children.length)) at = at.previousElementSibling;
           if (at.previousElementSibling && at.previousElementSibling.classList.contains('pw-rule')) continue;
           var r = rng(5300 + (k++) * 17);
           var svg = document.createElementNS(NS, 'svg');

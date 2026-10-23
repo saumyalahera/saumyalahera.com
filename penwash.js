@@ -1638,6 +1638,11 @@
       if (n.nodeType === 1 && n.matches('video, .card__previewBtn, .card__previewLayer, .pw-item__n, .pw-item__x, br')) return;
       body.appendChild(n.cloneNode(true));
     });
+    // the link already showing on the row itself isn't repeated underneath
+    var marks = entry.querySelectorAll('.tag, .meta'), copies = body.querySelectorAll('.tag, .meta');
+    for (var t = 0; t < marks.length; t++) {
+      if (getComputedStyle(marks[t]).display !== 'none') { if (copies[t]) copies[t].remove(); break; }
+    }
     body.querySelectorAll('[id]').forEach(function (el) { el.removeAttribute('id'); });
     body.querySelectorAll('.pw-rv').forEach(function (el) { el.classList.remove('pw-rv'); });
     body.addEventListener('click', function (e) {

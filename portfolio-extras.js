@@ -150,10 +150,19 @@
         card.appendChild(ul);
       }
 
-      if (str(p.action_label) && str(p.action_href)) {
+      if (str(p.action_label)) {
         const actions = document.createElement('div');
         actions.className = 'card__actions';
-        actions.appendChild(makeLink('link', str(p.action_href), str(p.action_label)));
+        if (str(p.action_href)) {
+          actions.appendChild(makeLink('link', str(p.action_href), str(p.action_label)));
+        } else {
+          // a label with no link is a status, like "Waiting for review"
+          const note = document.createElement('span');
+          note.className = 'link';
+          note.setAttribute('aria-disabled', 'true');
+          note.textContent = str(p.action_label);
+          actions.appendChild(note);
+        }
         card.appendChild(actions);
       }
       root.appendChild(card);

@@ -1326,7 +1326,6 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
   .mini-card__img{ margin: 9px 9px 6px !important; width: calc(100% - 18px) !important; }
   .mini-card__body{ padding-left: 4px !important; padding-right: 4px !important; }
   .pw-stamp-val{ top: 11px; right: 12px; font-size: 10px; }
-  .pw-smark{ transform: rotate(var(--r, -12deg)) scale(.7); right: 0; top: 36px; }
 }
 
 /* the stamps are drawn in pen now: the paper, perforations and frames come from the svg */
@@ -1390,3 +1389,42 @@ article.card.pc::before{
 .pw-fill.pw-hue-fill.pw-beam{ fill: url(#pw-d12); }
 html.pw-night .pw-fill.pw-hue-fill.pw-beam{ fill: url(#pw-d25); }
 .pw-clock__fill, .pw-clock__fill--moon{ fill: url(#pw-d25); opacity: .7; }
+
+/* ==========================================================================
+   Locations and Languages: pages torn from a sketchbook and taped in,
+   in place of the stamps. Same paper, pen and tape as the postcards.
+   ========================================================================== */
+.mini-card, .mini-card:hover{ filter: none !important; }
+.mini-card{ padding: 10px 10px 14px !important; }
+.pw-snap__paper{ fill: #fffdf8; stroke: none; }
+.pw-snap__shadow{ fill: url(#pw-dink); opacity: .1; }
+.pw-snap__line{ fill: none; stroke: var(--pw-ink); stroke-width: .9; stroke-linecap: round; opacity: .4; }
+.mini-card:hover .pw-snap__shadow{ opacity: .14; }
+.mini-card__img{ margin: 14px 10px 8px !important; width: calc(100% - 20px) !important; outline: .6px solid rgba(43,46,36,.28); outline-offset: 3px; }
+.pw-snap-tape{
+  position: absolute; z-index: 3; left: 50%; top: -8px; width: 54px; height: 17px; margin-left: -27px;
+  background: rgba(232, 228, 214, .8);
+  border-left: 1px dashed rgba(43,46,36,.16); border-right: 1px dashed rgba(43,46,36,.16);
+  transform: rotate(var(--r, -2deg)); pointer-events: none;
+}
+.pw-stamp-val{
+  top: auto !important; bottom: 12px; right: 12px; padding: 0 !important; background: none !important;
+  font-family: var(--pw-serif) !important; font-style: italic; font-weight: 400 !important; font-size: 11px !important;
+  letter-spacing: .02em; color: var(--pw-ink-3) !important; opacity: 1 !important;
+}
+.pw-smark{
+  width: auto !important; height: auto !important; left: 12px !important; right: auto !important; top: auto !important; bottom: 9px; opacity: 1 !important;
+  font-family: var(--pw-hand); font-size: 13px; line-height: 1; color: var(--pw-accent);
+  transform: rotate(var(--r, -6deg)) !important; transform-origin: 0 50%;
+  padding: 0 2px 2px; background: none;
+  border-bottom: 1px solid rgba(var(--accent-ink-rgb, 76,56,240), .45);
+}
+@media (max-width: 520px){
+  .mini-card{ padding: 7px 7px 11px !important; }
+  .mini-card__img{ margin: 11px 7px 6px !important; width: calc(100% - 14px) !important; }
+  .pw-snap-tape{ width: 40px; height: 13px; margin-left: -20px; top: -6px; }
+  .pw-stamp-val{ bottom: 9px; right: 9px; font-size: 10px !important; }
+  .pw-smark{ font-size: 11px; bottom: 7px; left: 8px !important; }
+}
+.mini-card .mini-card__body{ padding-bottom: 22px !important; }
+@media (max-width: 520px){ .mini-card .mini-card__body{ padding-bottom: 16px !important; } }

@@ -16,6 +16,73 @@
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var finePointer = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
 
+  // ---- a touch of dither ---------------------------------------------------------
+  // The washes are printed as fine dots of ink (Atkinson error diffusion),
+  // like a 1-bit illustration, while the pen lines and the paper stay as they are.
+  function atkinson(L, n, m) {
+    var out = new Uint8Array(n * m);
+    for (var y = 0; y < m; y++) {
+      for (var x = 0; x < n; x++) {
+        var i = y * n + x, old = L[i], on = old > 0.5 ? 1 : 0, e = (old - on) / 8;
+        out[i] = on;
+        if (x + 1 < n) L[i + 1] += e;
+        if (x + 2 < n) L[i + 2] += e;
+        if (y + 1 < m) {
+          if (x > 0) L[i + n - 1] += e;
+          L[i + n] += e;
+          if (x + 1 < n) L[i + n + 1] += e;
+        }
+        if (y + 2 < m) L[i + 2 * n] += e;
+      }
+    }
+    return out;
+  }
+
+  function ditherCanvas(c) {
+    requestAnimationFrame(function () {
+      var cw = c.width, ch = c.height;
+      if (!cw || !ch) return;
+      var disp = c.getBoundingClientRect().width || c._w || cw;
+      var n = Math.max(40, Math.round(disp / 0.9)), m = Math.max(1, Math.round(n * ch / cw));
+      var o = document.createElement('canvas'); o.width = n; o.height = m;
+      var x = o.getContext('2d');
+      try {
+        x.drawImage(c, 0, 0, n, m);
+        var d = x.getImageData(0, 0, n, m);
+      } catch (_) { return; }
+      var px = d.data, L = new Float32Array(n * m);
+      for (var i = 0; i < n * m; i++) {
+        var a = px[i * 4 + 3] / 255, lum = (0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]) / 255;
+        L[i] = Math.min(1, a * (1 - lum) * 1.5);
+      }
+      var on = atkinson(L, n, m);
+      for (i = 0; i < n * m; i++) { px[i * 4] = 43; px[i * 4 + 1] = 46; px[i * 4 + 2] = 36; px[i * 4 + 3] = on[i] ? 150 : 0; }
+      x.putImageData(d, 0, 0);
+      var ctx = c.getContext('2d');
+      ctx.save();
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(o, 0, 0, cw, ch);
+      ctx.restore();
+      c.classList.add('pw-dithered');
+    });
+  }
+
+  // dot screens in the day's colour, for the soft fills (a beam, a lit window)
+  function ditherScreens() {
+    var defs = document.createElementNS(NS, 'svg');
+    defs.setAttribute('aria-hidden', 'true');
+    defs.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden';
+    var dot = function (x, y) { return '<rect x="' + x + '" y="' + y + '" width="2" height="2" style="fill:var(--pw-accent)" shape-rendering="crispEdges"/>'; };
+    defs.innerHTML = '<defs>' +
+      '<pattern id="pw-d50" width="4" height="4" patternUnits="userSpaceOnUse">' + dot(0, 0) + dot(2, 2) + '</pattern>' +
+      '<pattern id="pw-d25" width="4" height="4" patternUnits="userSpaceOnUse">' + dot(0, 0) + '</pattern>' +
+      '<pattern id="pw-d12" width="6" height="6" patternUnits="userSpaceOnUse">' + dot(0, 0) + '</pattern>' +
+      '</defs>';
+    document.body.appendChild(defs);
+  }
+
   // ---- randomness ----------------------------------------------------------
   function rng(seed) {
     var s = (seed * 2654435761) >>> 0 || 1;
@@ -214,6 +281,7 @@
     c.width = Math.round(w * scale); c.height = Math.round(h * scale);
     var ctx = c.getContext('2d');
     ctx.scale(scale, scale);
+    c._w = w;
     return { c: c, ctx: ctx };
   }
 
@@ -789,6 +857,7 @@
     skyWeather(svg, media);
     requestAnimationFrame(function () {
       coverWashes(p.ctx, r, shadows);
+      ditherCanvas(p.c);
       wl.classList.add('pw-dry');
     });
 
@@ -1122,6 +1191,7 @@
       granulate(p.ctx, 400, 460, wr, 200);
       p.c.className = 'pw-canvas';
       holder.appendChild(p.c);
+      ditherCanvas(p.c);
       holder.appendChild(svg);
       // how much empty sky sits above the drawing, so phones can trim exactly that
       try { var bb = svg.getBBox(); holder.style.setProperty('--pw-sky', (Math.max(0, bb.y - 10) / 460).toFixed(3)); } catch (_) {}
@@ -1599,6 +1669,7 @@
     });
     p.c.className = 'pw-canvas';
     holder.appendChild(p.c);
+    ditherCanvas(p.c);
     holder.appendChild(svg);
     return holder;
   }
@@ -1979,6 +2050,7 @@
     wash(p.ctx, { cx: 200, cy: 448, rx: 190, ry: 10, color: GREY.mid, alpha: 0.035, layers: 12, wet: 0.2, spread: 0.1 }, wr);
     p.c.className = 'pw-canvas';
     holder.appendChild(p.c);
+    ditherCanvas(p.c);
     holder.appendChild(svg);
     holder.classList.add('pw-ready');
     requestAnimationFrame(function () {
@@ -2088,7 +2160,7 @@
     postcards();
     indexes();
     reveal(blooms);
-    sectionRules(); subRules(); nightfall(); aboutPortrait(); stampCards();
+    sectionRules(); subRules(); nightfall(); aboutPortrait(); stampCards(); ditherScreens();
     root.classList.add('pw-on');
   }
 

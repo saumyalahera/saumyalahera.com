@@ -5,6 +5,8 @@
    Loaded after styles.css; remove the <link> and <script> to go back.
    ========================================================================== */
 
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
 @font-face{
   font-family: 'Cedarville Cursive';
   src: url('assets/fonts/CedarvilleCursive-Regular.ttf') format('truetype');
@@ -18,8 +20,8 @@
   --pw-ink-3: #8a857a;
   --pw-sepia: #6b5a45;
   --pw-blue: #5c6cbe;
-  --pw-sans: 'Alegreya Sans', 'Gill Sans', 'Gill Sans MT', 'Avenir Next', sans-serif;
-  --pw-serif: 'Alegreya', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --pw-sans: 'Cormorant Garamond', 'Cormorant', Garamond, 'Iowan Old Style', serif;
+  --pw-serif: 'EB Garamond', Garamond, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --pw-hand: 'Cedarville Cursive', 'Snell Roundhand', cursive;
   --pw-ease: cubic-bezier(.22,.7,.18,1);
   --bg: var(--pw-paper);
@@ -1356,3 +1358,35 @@ html.pw-night .pw-fill.pw-hue-fill.pw-lamp{ fill: var(--pw-accent); }
   .pw-scene--sub{ position: relative; right: auto; margin: calc(var(--pw-sky, 0) * min(48vw, 210px) * -1.15) auto -2px; }
   .pw-chapter .section__head.pw-subhead{ min-height: 0; }
 }
+
+/* ==========================================================================
+   A touch of 1-bit: ink borders on the cards with a dithered shadow, the
+   washes printed as dots (penwash.js), soft fills as dot screens.
+   ========================================================================== */
+:root{
+  --pw-dots: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%232b2e24'/%3E%3Crect x='1' y='1' width='1' height='1' fill='%232b2e24'/%3E%3C/svg%3E");
+}
+body{ letter-spacing: .008em; }
+h1, h2, h3{ letter-spacing: .01em; }
+
+article.card.pc{
+  border: 1px solid rgba(43,46,36,.42) !important;
+  box-shadow: none !important;
+}
+article.card.pc::before{
+  content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+  transform: translate(4px, 4px); z-index: -1; pointer-events: none;
+  background: var(--pw-dots) 0 0 / 2px 2px; opacity: .22;
+  clip-path: polygon(calc(100% - 4px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 4px), calc(100% - 4px) calc(100% - 4px));
+  transition: transform .7s var(--pw-ease);
+}
+@media (hover: hover){
+  article.card.pc:hover{ box-shadow: none !important; }
+  article.card.pc:hover::before{ transform: translate(6px, 7px); clip-path: polygon(calc(100% - 6px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 7px), calc(100% - 6px) calc(100% - 7px)); }
+}
+.pw-canvas.pw-dithered{ image-rendering: pixelated; }
+
+.pw-fill.pw-hue-fill.pw-soft{ fill: url(#pw-d25); }
+.pw-fill.pw-hue-fill.pw-beam{ fill: url(#pw-d12); }
+html.pw-night .pw-fill.pw-hue-fill.pw-beam{ fill: url(#pw-d25); }
+.pw-clock__fill, .pw-clock__fill--moon{ fill: url(#pw-d25); opacity: .7; }

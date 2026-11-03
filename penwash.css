@@ -1428,3 +1428,5 @@ html.pw-night .pw-fill.pw-hue-fill.pw-beam{ fill: url(#pw-d25); }
 }
 .mini-card .mini-card__body{ padding-bottom: 22px !important; }
 @media (max-width: 520px){ .mini-card .mini-card__body{ padding-bottom: 16px !important; } }
+.pw-snap__fibre{ fill: #f1ece0; stroke: rgba(43,46,36,.18); stroke-width: .5; stroke-linejoin: round; }
+.pw-snap__tear{ fill: none; stroke: var(--pw-ink); stroke-width: .6; stroke-linejoin: round; opacity: .32; }

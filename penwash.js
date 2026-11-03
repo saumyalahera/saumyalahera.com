@@ -341,17 +341,23 @@
       p.setAttribute('d', d); p.setAttribute('class', cls); svg.appendChild(p); return p;
     };
     // a page torn from a sketchbook: three clean edges, the bottom one torn
-    var m = 1.5, pts = [[m, m], [w - m, m], [w - m, h - 6]];
+    var m = 1.5, B = h - 6, tear = [[w - m, B]];
     for (var x = w - m, k = 0; x > m; k++) {
       x = Math.max(m, x - (3 + r() * 5));
-      pts.push([x, h - 6 + (k % 2 ? 1 : -1) * r() * 2.2 + (r() - 0.5) * 2.4]);
+      tear.push([x, B + (k % 2 ? 1 : -1) * r() * 2.2 + (r() - 0.5) * 2.4]);
     }
-    pts.push([m, h - 6], [m, m]);
-    var page = 'M' + pts.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' L') + 'Z';
-    add(page, 'pw-snap__shadow').setAttribute('transform', 'translate(3 3)');
+    tear.push([m, B]);
+    var P = function (q) { return q.map(function (v) { return v[0].toFixed(1) + ' ' + v[1].toFixed(1); }).join(' L'); };
+    var page = 'M' + P([[m, m], [w - m, m]].concat(tear)) + 'Z';
+    // the fibres a tear leaves: a second, paler ragged edge just below the first
+    var fib = tear.map(function (q, j) { return [q[0], q[1] + 1.4 + r() * 2.2 + (j % 3 === 0 ? r() * 1.5 : 0)]; });
+    var fibres = 'M' + P([[m, m], [w - m, m]].concat(fib)) + 'Z';
+    add(fibres, 'pw-snap__shadow').setAttribute('transform', 'translate(3 3)');
+    add(fibres, 'pw-snap__fibre');
     add(page, 'pw-snap__paper');
+    add('M' + P(tear), 'pw-snap__tear');
     // the outline in pen, lifted at the corners
-    var edges = [[[m, m], [w - m, m]], [[w - m, m], [w - m, h - 7]], [[m, h - 7], [m, m]]];
+    var edges = [[[m, m], [w - m, m]], [[w - m, m], [w - m, B - 1]], [[m, B - 1], [m, m]]];
     edges.forEach(function (e) {
       var a = e[0], b = e[1], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), o1 = r() * 3, o2 = r() * 3;
       add(smooth(tremble([[a[0] + dx / L * o1, a[1] + dy / L * o1], [b[0] - dx / L * o2, b[1] - dy / L * o2]], r, 0.35)), 'pw-snap__line');

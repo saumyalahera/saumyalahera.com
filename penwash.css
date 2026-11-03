@@ -1375,14 +1375,14 @@ article.card.pc{
 }
 article.card.pc::before{
   content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-  transform: translate(4px, 4px); z-index: -1; pointer-events: none;
-  background: var(--pw-dots) 0 0 / 2px 2px; opacity: .22;
-  clip-path: polygon(calc(100% - 4px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 4px), calc(100% - 4px) calc(100% - 4px));
+  transform: translate(3px, 3px); z-index: -1; pointer-events: none;
+  background: var(--pw-dots) 0 0 / 2px 2px; opacity: .1;
+  clip-path: polygon(calc(100% - 3px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 3px), calc(100% - 3px) calc(100% - 3px));
   transition: transform .7s var(--pw-ease);
 }
 @media (hover: hover){
   article.card.pc:hover{ box-shadow: none !important; }
-  article.card.pc:hover::before{ transform: translate(6px, 7px); clip-path: polygon(calc(100% - 6px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 7px), calc(100% - 6px) calc(100% - 7px)); }
+  article.card.pc:hover::before{ transform: translate(4px, 5px); opacity: .14; clip-path: polygon(calc(100% - 4px) 0, 100% 0, 100% 100%, 0 100%, 0 calc(100% - 5px), calc(100% - 4px) calc(100% - 5px)); }
 }
 .pw-canvas.pw-dithered{ image-rendering: pixelated; }
 

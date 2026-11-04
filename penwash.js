@@ -819,7 +819,7 @@
 
   function buildCover() {
     var media = document.querySelector('.hero__media');
-    if (!media || root.classList.contains('nb')) return;   // the paper tablet takes its place
+    if (!media) return;   // with the notebook, this sits on the tablet's lock screen
     media.classList.add('pw-cover');
     var stage = document.createElement('div');
     stage.className = 'pw-stage';
@@ -877,6 +877,7 @@
     window.addEventListener('scroll', function () {
       var v = window.scrollY;
       if (v > innerHeight * 1.2) return;
+      if (il.closest('.nb-lock')) return;   // on the tablet's lock screen the drawing stays put
       sy = v; ty += 0.0001; kick();
     }, { passive: true });
   }
@@ -2146,6 +2147,9 @@
     var skills = section.querySelector(':scope > .pillrow__wrap');
     if (skills && skills.querySelector('#featured_skills')) words.appendChild(skills);
   }
+
+  // the notebook borrows the pen for its icons and spot drawings
+  window.pwPen = { Pen: Pen, rng: rng, svgEl: svgEl, vignette: vignette, tower: tower, birds: birds, ring: ring };
 
   function start() {
     strokes();

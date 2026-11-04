@@ -598,7 +598,7 @@ html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.10), 0 1px 1px rgba(43,46,36,.
 .nb-tablet[data-size="l"] .nb-icon__label{ font-size: 11px; }
 .nb-icon[hidden]{ display: none; }
 
-.nb-owner{ display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; padding: 14px 14px; border: 1px solid var(--t-ink); outline: 1px solid var(--t-ink); outline-offset: 3px; }
+.nb-owner{ display: flex; align-items: center; gap: 14px; margin: 4px 4px 18px; padding: 14px 14px; border: 1px solid var(--t-ink); outline: 1px solid var(--t-ink); outline-offset: 3px; }
 .nb-owner__seal{ flex: none; width: 54px; height: 54px; }
 .nb-owner__seal svg{ width: 100%; height: 100%; overflow: visible; }
 .nb-owner__seal .pw-ink{ stroke: var(--t-ink); stroke-dashoffset: 0; }

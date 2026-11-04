@@ -1670,7 +1670,7 @@
     stack = [{ app: key }];
     home.hidden = true;
     appView.hidden = false;
-    if (phone() && !quiet) root.classList.add('nb-full');
+    // on a phone the app opens inside the tablet too, and the page stays where it is
     render(stack[0], false);
   }
 

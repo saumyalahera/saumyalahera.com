@@ -553,6 +553,7 @@
     beverages: '146,100,62', learn: '104,146,62', about: '176,108,142', skills: '110,116,124', contact: '194,82,124'
   };
   var GLYPH = {
+    music: '<path d="M10 46h34v8H10z"/><ellipse cx="27" cy="45" rx="14" ry="2.6"/><path d="M33 44l4-9 6-4"/><path d="M43 31q4-12 13-20M43 31q10 0 15-6"/><path d="M56 11q4 7 2 14"/>',
     projects: '<path d="M15 14L52 11.5 54.5 36"/><path d="M8 20L50 16.5 52.6 44 11 47.6Z"/><path d="M31 24.5L32.7 44.6"/><path d="M38.6 21.6L47.4 20.9 48.2 31.2 39.4 31.9Z"/><path class="h" d="M40.6 23.6l5-.4M40.8 26l5-.4M41 28.4l5-.4"/><path d="M34 34.5q2.5-2 5 0t5 0 5 0M34 37.8q2.5-2 5 0t5 0 5 0"/><path d="M14 30.5l13-1.1M14.3 35l13-1.1M14.6 39.5l9-.8"/><path class="h" d="M52 40l3 3M52.4 36.4l3 3"/>',
     research: '<path d="M13 32L43 18.5 46.6 26.3 16.6 39.8Z"/><path d="M43 18.5L49.5 15.4 53.4 23.4 46.6 26.3"/><path d="M13 32L8.5 34 10.4 38 16.6 39.8"/><path class="h" d="M20 36.8l1.4 2.2M24 35l1.4 2.2M28 33.2l1.4 2.2M32 31.4l1.4 2.2M36 29.6l1.4 2.2"/><path d="M30 33L21 56M30 33L39.5 56M30 33L30.5 56"/><path d="M50 6v4M48 8h4M57 13v3M55.5 14.5h3M41 6.5v2.4M39.8 7.7h2.4"/>',
     notes: '<path d="M7 45Q19 39 32 45Q45 39 57 45L57 22Q45 16 32 22Q19 16 7 22Z"/><path d="M32 22L32 45"/><path d="M11 27Q19 23.5 28 27M11 31Q19 27.5 28 31M11 35Q18 31.5 25 35M36 27Q44 23.5 53 27M36 31Q42 28 47 30.4"/><path d="M42 42C47 28 52 16 59 6C52 11 45 22 42 42Z"/><path class="h" d="M45 31l4-1.6M46.6 26l4-1.8M48.6 21l3.8-2"/><path class="h" d="M7 45l-1 3.5Q19 42.5 32 48.5Q45 42.5 58 48.5L57 45"/>',
@@ -644,6 +645,23 @@
   function star(pen, x, y, s) { pen.line(x - s, y, x + s, y, F); pen.line(x, y - s, x, y + s, F); }
   function ellipse(P, cx, cy, rx, ry, a0, a1) { return P.ring(cx, cy, rx, ry, 24, a0, a1); }
   var PEN_ICON = {
+    blank: function () {},
+    music: function (pen, r, P) {      // a gramophone, its horn open to the sky
+      pen.line(6, 90, 94, 90);
+      pen.rect(16, 68, 52, 20);
+      pen.line(20, 74, 64, 74, F);
+      pen.line(22, 88, 22, 92); pen.line(62, 88, 62, 92);
+      pen.path(P.ring(42, 66, 23, 4.2, 26));
+      pen.path(P.ring(42, 66, 4, 1, 10), F);
+      pen.path([[58, 66], [60, 56], [56, 48]]);
+      pen.path([[54, 50], [60, 42], [66, 32], [70, 18]]);
+      pen.path([[58, 52], [68, 46], [80, 38], [92, 34]]);
+      pen.path(P.ring(82, 25, 11.5, 10.5, 26));
+      pen.line(60, 46, 77, 29, F); pen.line(63, 40, 72, 22, F); pen.line(64, 47, 86, 33, F);
+      pen.line(20, 36, 20, 22); pen.path(P.ring(17.5, 36.5, 3, 2.2, 12)); pen.line(20, 22, 27, 25, F);
+      pen.line(32, 30, 32, 18); pen.line(40, 28, 40, 16); pen.line(32, 18, 40, 16);
+      pen.path(P.ring(29.5, 30.5, 3, 2.2, 12)); pen.path(P.ring(37.5, 28.5, 3, 2.2, 12));
+    },
     projects: function (pen, r, P) {   // a workshop with a smoking chimney
       pen.line(6, 90, 94, 90);
       pen.rect(20, 54, 46, 36);
@@ -808,10 +826,7 @@
     var P = window.pwPen;
     if (!P || inkUp.done) return;
     inkUp.done = true;
-    $$('.nb-icon').forEach(function (b, i) {
-      var ink = penIcon(b.dataset.app, 11 + i * 7), old = $('.nb-icon__art', b);
-      if (ink && old) { ink.setAttribute('class', 'nb-icon__art nb-ink'); b.replaceChild(ink, old); }
-    });
+    $$('.nb-icon').forEach(function (b, i) { inkIcon(b, 11 + i * 7); });
     var seal = $('.nb-seal'), sv = penIcon('seal', 9, '0 0 60 60');
     if (seal && sv) seal.appendChild(sv);
     var cut = $('.nb-cut'), sc = penIcon('research', 5);
@@ -850,60 +865,132 @@
 
   // ---- the tablet's own settings, kept in this browser -------------------------------------
   var THEMES = [['paper', 'Paper'], ['ivory', 'Ivory'], ['night', 'Night'], ['blueprint', 'Blueprint']];
+  var INKS = [['theme', 'As the paper'], ['red', 'Vermilion'], ['blue', 'Ultramarine'], ['green', 'Viridian'], ['gold', 'Ochre']];
   var PREF_KEY = 'nb-tablet-prefs';
-  var prefs = { theme: 'paper', clock: 'numerals', hours: '12', picture: 'castle', autolock: '0' };
+  var DEFAULTS = { theme: 'paper', clock: 'numerals', hours: '12', picture: 'castle', autolock: '0', ink: 'theme', size: 'm', sound: 'off', hidden: '' };
+  var prefs = {};
+  for (var dk in DEFAULTS) prefs[dk] = DEFAULTS[dk];
   try { var saved = JSON.parse(localStorage.getItem(PREF_KEY) || '{}'); for (var pk in saved) if (pk in prefs) prefs[pk] = String(saved[pk]); } catch (_) {}
   if (!/^(paper|ivory|night|blueprint)$/.test(prefs.theme)) prefs.theme = 'paper';
   function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (_) {} }
+  function hiddenApps() { return prefs.hidden ? prefs.hidden.split(',') : []; }
   function applyPrefs() {
     if (!tablet) return;
     tablet.dataset.theme = prefs.theme;
     tablet.dataset.clock = prefs.clock;
     tablet.dataset.picture = prefs.picture;
+    tablet.dataset.ink = prefs.ink;
+    tablet.dataset.size = prefs.size;
     if (tablet._clock) tablet._clock();
+  }
+
+  // the turn of a page, made from a breath of noise; only when the reader asks for sound
+  var audio = null;
+  function rustle() {
+    if (prefs.sound !== 'on') return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      var n = Math.floor(audio.sampleRate * 0.22), buf = audio.createBuffer(1, n, audio.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) { var t = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.2) * (0.6 + 0.4 * Math.sin(t * 40)); }
+      var src = audio.createBufferSource(); src.buffer = buf;
+      var bp = audio.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2600; bp.Q.value = 0.7;
+      var g = audio.createGain(); g.gain.value = 0.16;
+      src.connect(bp); bp.connect(g); g.connect(audio.destination); src.start();
+    } catch (_) {}
   }
 
   function settingsPage() {
     var f = document.createDocumentFragment();
-    var group = function (title, key, options, swatch) {
+    var chapter = function (n, title) {
+      var c = make('p', 'nb-set__ch');
+      c.innerHTML = '<span class="nb-set__n">' + n + '</span>' + title;
+      f.appendChild(c);
+    };
+    var group = function (title, key, options, kind) {
       var g = make('div', 'nb-set');
       var h = make('p', 'nb-set__h', title);
       h.id = 'nb-set-' + key;
       g.appendChild(h);
-      var row = make('div', swatch ? 'nb-swatches' : 'nb-seg');
+      var row = make('div', kind === 'swatch' ? 'nb-swatches' : kind === 'ink' ? 'nb-inks' : 'nb-seg');
       row.setAttribute('role', 'radiogroup');
       row.setAttribute('aria-labelledby', h.id);
       options.forEach(function (o) {
-        var b = make('button', swatch ? 'nb-swatch' : 'nb-seg__b');
+        var b = make('button', kind === 'swatch' ? 'nb-swatch' : kind === 'ink' ? 'nb-inkpot' : 'nb-seg__b');
         b.type = 'button';
         b.setAttribute('role', 'radio');
         b.setAttribute('aria-checked', String(prefs[key] === o[0]));
-        if (swatch) {
+        if (kind === 'swatch') {
           b.dataset.theme = o[0];
           b.innerHTML = '<span class="nb-swatch__case"><span class="nb-swatch__screen"><span class="nb-swatch__ink"></span></span></span><span class="nb-swatch__name">' + o[1] + '</span>';
+        } else if (kind === 'ink') {
+          b.dataset.ink = o[0];
+          b.innerHTML = '<span class="nb-inkpot__blot" aria-hidden="true"></span><span class="nb-inkpot__name">' + o[1] + '</span>';
         } else b.textContent = o[1];
         b.addEventListener('click', function () {
           prefs[key] = o[0];
           savePrefs(); applyPrefs();
           $$('button', row).forEach(function (x) { x.setAttribute('aria-checked', String(x === b)); });
+          if (key === 'sound') rustle();
         });
         row.appendChild(b);
       });
       g.appendChild(row);
-      return g;
+      f.appendChild(g);
     };
-    f.appendChild(group('Theme', 'theme', THEMES, true));
-    f.appendChild(group('Lock-screen clock', 'clock', [['numerals', 'Numerals'], ['dial', 'Dial']]));
-    f.appendChild(group('Hours', 'hours', [['12', '12-hour'], ['24', '24-hour']]));
-    f.appendChild(group('Lock-screen picture', 'picture', [['castle', 'The castle'], ['plain', 'Plain']]));
-    f.appendChild(group('Lock by itself after', 'autolock', [['0', 'Never'], ['1', '1 min'], ['5', '5 min']]));
+
+    // the owner's card at the top, like the plate inside a book's cover
+    var card = make('div', 'nb-owner');
+    card.innerHTML = '<span class="nb-owner__seal" aria-hidden="true"></span>' +
+      '<span class="nb-owner__txt"><span class="nb-owner__k">This almanac belongs to</span>' +
+      '<span class="nb-owner__name">Saumya Lahera</span>' +
+      '<span class="nb-owner__ed">Reader’s edition · ' + new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '</span></span>';
+    var sv = penIcon('seal', 9, '0 0 60 60');
+    if (sv) $('.nb-owner__seal', card).appendChild(sv);
+    f.appendChild(card);
+
+    chapter('I', 'Appearance');
+    group('Paper', 'theme', THEMES, 'swatch');
+    group('Ink', 'ink', INKS, 'ink');
+    group('Type', 'size', [['s', 'Small'], ['m', 'Regular'], ['l', 'Large']]);
+
+    chapter('II', 'Lock screen');
+    group('Clock', 'clock', [['numerals', 'Numerals'], ['dial', 'Dial']]);
+    group('Hours', 'hours', [['12', '12-hour'], ['24', '24-hour']]);
+    group('Picture', 'picture', [['castle', 'The castle'], ['plain', 'Plain']]);
+    group('Lock by itself after', 'autolock', [['0', 'Never'], ['1', '1 min'], ['5', '5 min']]);
+
+    chapter('III', 'Sound');
+    group('A page turns when an app opens', 'sound', [['off', 'Silent'], ['on', 'Rustle']]);
+
+    chapter('IV', 'About this almanac');
+    var about = make('dl', 'nb-about');
+    var upd = txt($('.footer-websiteupdate')).replace(/^last updated:?\s*/i, '').replace(/\s*via the app\s*$/i, '');
+    var um = upd.match(/^([A-Za-z]{3,9})\.?,?\s*(\d{1,2}),?\s+(\d{4})/);
+    if (um) upd = um[2] + ' ' + um[1].charAt(0).toUpperCase() + um[1].slice(1).toLowerCase() + ' ' + um[3];
+    [['Owner', 'Saumya Lahera'], ['Apps', String(APPS.length) + (pager && pager.children.length > 1 ? ', over ' + pager.children.length + ' pages' : '')],
+     ['Paper', NAME_OF(THEMES, prefs.theme)], ['Pages last set', upd || 'Today']].forEach(function (r) {
+      about.appendChild(make('dt', '', r[0]));
+      about.appendChild(make('dd', r[0] === 'Apps' ? 'nb-about__apps' : '', r[1]));
+    });
+    f.appendChild(about);
+
+    var acts = make('div', 'nb-set__acts');
     var lockNow = make('button', 'nb-btn', 'Lock now');
     lockNow.type = 'button';
     lockNow.addEventListener('click', function () { if (tablet._lock) tablet._lock(); });
-    f.appendChild(lockNow);
+    var reset = make('button', 'nb-btn nb-btn--quiet', 'Restore the defaults');
+    reset.type = 'button';
+    reset.addEventListener('click', function () {
+      for (var k in DEFAULTS) prefs[k] = DEFAULTS[k];
+      savePrefs(); applyPrefs();
+      openApp('settings', true);
+    });
+    acts.appendChild(lockNow); acts.appendChild(reset);
+    f.appendChild(acts);
     f.appendChild(make('p', 'nb-intro nb-set__note', 'These settings stay in this browser.'));
     return f;
   }
+  function NAME_OF(list, key) { for (var i = 0; i < list.length; i++) if (list[i][0] === key) return list[i][1]; return key; }
 
   function dialSVG() {
     var t = '';
@@ -928,6 +1015,467 @@
   }
 
   var tablet, screen, home, appView, appTitle, appBody, current = null, stack = [];
+  // ---- apps of my own, and the music shelf, both set from the Leabhar app ---------------------
+  // index.html hands over data.json as window.__PORTFOLIO_DATA__ and a 'portfolio:data' event.
+  var XAPPS = {};          // key -> the app's record from data.json
+  var MUSIC = null;        // the music shelf, when there is one
+  var BUILTIN = APPS.length;
+  function slug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'app'; }
+  function safeURL(u) { u = String(u || '').trim(); return /^(https?:|mailto:|data:image\/|assets\/|\.\/|\/)/i.test(u) || /^[\w.-]+\/[\w./-]+$/.test(u) ? u : ''; }
+  function paras(box, text) {
+    String(text || '').split(/\n\s*\n/).forEach(function (p) { if (p.trim()) box.appendChild(make('p', 'nb-x__p', p.trim())); });
+  }
+  function outLink(label, href, cls) {
+    var a = make('a', cls || 'nb-btn', label);
+    a.href = href; a.target = '_blank'; a.rel = 'noopener';
+    return a;
+  }
+
+  // the icon: my own picture on a hand-drawn tile, or one of the pen drawings
+  function customIcon(key, a, i) {
+    var b = make('button', 'nb-icon nb-icon--x');
+    b.type = 'button';
+    b.dataset.app = key;
+    b.dataset.glyph = PEN_ICON[a.glyph] ? a.glyph : 'notes';
+    b.style.setProperty('--i', i);
+    var pic = safeURL(a.icon);
+    if (pic) b.dataset.pic = pic;
+    b.innerHTML = '<svg class="nb-icon__art" viewBox="0 0 64 64" aria-hidden="true" focusable="false">' +
+      (pic ? '' : '<g class="nb-icon__glyph">' + (GLYPH[b.dataset.glyph] || '') + '</g>') + '</svg>' +
+      '<span class="nb-icon__label"></span>';
+    $('.nb-icon__label', b).textContent = a.name || 'App';
+    if (a.kind === 'link') b.setAttribute('aria-label', (a.name || 'App') + ' (opens in a new tab)');
+    if (pic) placePic(b.firstChild, pic, '0 0 64 64', 7, 7, 50);
+    if (window.pwPen && inkUp.done) inkIcon(b, 11 + i * 7);
+    return b;
+  }
+  function placePic(svg, pic, vb, x, y, s) {
+    var NSs = 'http://www.w3.org/2000/svg', id = 'nbx' + Math.random().toString(36).slice(2, 8);
+    var cp = document.createElementNS(NSs, 'clipPath'); cp.id = id;
+    var rr = document.createElementNS(NSs, 'rect');
+    rr.setAttribute('x', x); rr.setAttribute('y', y); rr.setAttribute('width', s); rr.setAttribute('height', s); rr.setAttribute('rx', s * 0.06);
+    cp.appendChild(rr); svg.appendChild(cp);
+    var im = document.createElementNS(NSs, 'image');
+    im.setAttribute('href', pic);
+    im.setAttribute('x', x); im.setAttribute('y', y); im.setAttribute('width', s); im.setAttribute('height', s);
+    im.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+    im.setAttribute('clip-path', 'url(#' + id + ')');
+    im.setAttribute('class', 'nb-x__pic');
+    svg.appendChild(im);
+  }
+  // swap a placeholder icon for the pen-drawn one
+  function inkIcon(b, seed) {
+    var pic = b.dataset.pic, key = b.dataset.glyph || b.dataset.app;
+    var ink = penIcon(pic ? 'blank' : key, seed), old = $('.nb-icon__art', b);
+    if (!ink || !old) return;
+    if (pic) placePic(ink, pic, '0 0 100 100', 15, 14, 70);
+    ink.setAttribute('class', 'nb-icon__art nb-ink');
+    b.replaceChild(ink, old);
+  }
+
+  function customPage(a) {
+    return function () {
+      var box = make('div', 'nb-x');
+      var pic = safeURL(a.image), link = safeURL(a.link);
+      if (a.kind === 'appstore') {
+        box.classList.add('nb-x--store');
+        var head = make('div', 'nb-x__store');
+        var ic = make('span', 'nb-x__storeicon');
+        if (safeURL(a.icon)) { var im = make('img'); im.alt = ''; im.src = safeURL(a.icon); ic.appendChild(im); }
+        else { var sv = penIcon(PEN_ICON[a.glyph] ? a.glyph : 'notes', 23); if (sv) ic.appendChild(sv); }
+        head.appendChild(ic);
+        var t = make('div', 'nb-x__storetxt');
+        t.appendChild(make('h3', 'nb-x__name', a.name || 'App'));
+        if (a.title) t.appendChild(make('p', 'nb-x__tag', a.title));
+        head.appendChild(t);
+        box.appendChild(head);
+        if (link) box.appendChild(outLink('View on the App Store ↗', link, 'nb-btn nb-x__get'));
+        paras(box, a.text);
+        return box;
+      }
+      if (pic) { var p = make('img', 'nb-x__img'); p.alt = ''; p.loading = 'lazy'; p.onerror = function () { p.remove(); }; p.src = pic; box.appendChild(p); }
+      box.appendChild(make('h3', 'nb-x__title', a.title || a.name || ''));
+      paras(box, a.text);
+      if (link) box.appendChild(outLink((a.link_label || 'Read more') + ' ↗', link));
+      return box;
+    };
+  }
+
+  // ---- the music shelf -------------------------------------------------------------------------
+  function embedOf(u) {
+    var m;
+    u = String(u || '').trim();
+    if ((m = u.match(/^https?:\/\/(?:embed\.)?music\.apple\.com\/(.+)$/i))) return { src: 'https://embed.music.apple.com/' + m[1], h: /[?&]i=|\/song\//.test(u) ? 175 : 450, who: 'Apple Music' };
+    if ((m = u.match(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]+)/i))) return { src: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2], h: m[1] === 'track' ? 152 : 380, who: 'Spotify' };
+    return null;
+  }
+  var player = null, playing = -1;
+  function tracks() { return (MUSIC && MUSIC.tracks || []).filter(function (t) { return safeURL(t.audio); }); }
+  function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
+  function nowPlaying() {
+    var np = $('.nb-np', tablet), list = tracks(), t = list[playing];
+    if (np) {
+      np.hidden = !t;
+      if (t) {
+        $('.nb-np__t', np).textContent = t.title + (t.artist ? ' · ' + t.artist : '');
+        $('.nb-np__b', np).textContent = player && !player.paused ? 'Pause' : 'Play';
+      }
+    }
+    $$('.nb-song', tablet).forEach(function (row) {
+      var on = +row.dataset.i === playing;
+      row.classList.toggle('nb-song--on', on);
+      $('.nb-song__b', row).textContent = on && player && !player.paused ? '❚❚' : '▶';
+      $('.nb-song__b', row).setAttribute('aria-label', (on && player && !player.paused ? 'Pause ' : 'Play ') + row.dataset.title);
+      var bar = $('.nb-song__bar i', row);
+      if (bar) bar.style.width = on && player && player.duration ? (player.currentTime / player.duration * 100).toFixed(2) + '%' : '0';
+      var tm = $('.nb-song__time', row);
+      if (tm) tm.textContent = on && player ? fmt(player.currentTime) + ' / ' + fmt(player.duration) : '';
+    });
+  }
+  function play(i) {
+    var list = tracks();
+    if (!list[i]) return;
+    if (!player) {
+      player = new Audio();
+      player.preload = 'none';
+      ['play', 'pause', 'timeupdate', 'loadedmetadata'].forEach(function (ev) { player.addEventListener(ev, nowPlaying); });
+      player.addEventListener('ended', function () { if (playing + 1 < tracks().length) play(playing + 1); else { playing = -1; nowPlaying(); } });
+      player.addEventListener('error', function () { var r = $('.nb-song[data-i="' + playing + '"]', tablet); if (r) r.classList.add('nb-song--err'); });
+    }
+    if (i === playing) { if (player.paused) player.play().catch(function () {}); else player.pause(); return; }
+    playing = i;
+    player.src = safeURL(list[i].audio);
+    player.play().catch(function () {});
+    nowPlaying();
+  }
+  function musicPage() {
+    var box = make('div', 'nb-music');
+    if (MUSIC.intro) box.appendChild(make('p', 'nb-intro', MUSIC.intro));
+    var pls = (MUSIC.playlists || []).filter(function (p) { return p.url; });
+    if (pls.length) {
+      box.appendChild(make('p', 'nb-set__ch', 'Playlists'));
+      var ol = make('ol', 'nb-list nb-pl');
+      pls.forEach(function (p, i) {
+        var li = make('li'), e = embedOf(p.url);
+        var row = make('button', 'nb-row');
+        row.type = 'button';
+        row.setAttribute('aria-expanded', 'false');
+        row.appendChild(make('span', 'nb-row__n', (i < 9 ? '0' : '') + (i + 1)));
+        var t = make('span', 'nb-row__t', p.title || 'Playlist');
+        t.appendChild(make('span', 'nb-row__s', p.note || (e ? e.who : 'Opens in a new tab')));
+        row.appendChild(t);
+        row.appendChild(make('span', 'nb-row__go', e ? '+' : '↗'));
+        li.appendChild(row);
+        row.addEventListener('click', function () {
+          if (!e) { window.open(p.url, '_blank', 'noopener'); return; }
+          var open = row.getAttribute('aria-expanded') === 'true', fr = $('iframe', li);
+          row.setAttribute('aria-expanded', String(!open));
+          $('.nb-row__go', row).textContent = open ? '+' : '−';
+          if (open) { if (fr) fr.remove(); return; }
+          fr = make('iframe', 'nb-embed');
+          fr.src = e.src; fr.height = e.h; fr.loading = 'lazy'; fr.title = (p.title || 'Playlist') + ' on ' + e.who;
+          fr.setAttribute('allow', 'autoplay *; encrypted-media *; fullscreen *; clipboard-write');
+          fr.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation');
+          if (player && !player.paused) player.pause();
+          li.appendChild(fr);
+        });
+        ol.appendChild(li);
+      });
+      box.appendChild(ol);
+      box.appendChild(make('p', 'nb-x__fine', 'Previews play for everyone; whole songs when you’re signed in to Apple Music or Spotify.'));
+    }
+    var list = tracks();
+    if (list.length) {
+      box.appendChild(make('p', 'nb-set__ch', 'My songs'));
+      var songs = make('ol', 'nb-songs');
+      list.forEach(function (t, i) {
+        var li = make('li', 'nb-song');
+        li.dataset.i = i; li.dataset.title = t.title || 'Untitled';
+        var b = make('button', 'nb-song__b', '▶');
+        b.type = 'button';
+        b.addEventListener('click', function () { play(i); });
+        li.appendChild(b);
+        var tx = make('span', 'nb-song__txt');
+        tx.appendChild(make('span', 'nb-song__t', t.title || 'Untitled'));
+        if (t.artist) tx.appendChild(make('span', 'nb-song__a', t.artist));
+        var bar = make('span', 'nb-song__bar'); bar.appendChild(make('i'));
+        bar.addEventListener('click', function (ev) {
+          if (playing !== i || !player || !player.duration) return;
+          var r = bar.getBoundingClientRect();
+          player.currentTime = (ev.clientX - r.left) / r.width * player.duration;
+        });
+        tx.appendChild(bar);
+        li.appendChild(tx);
+        li.appendChild(make('span', 'nb-song__time'));
+        if (safeURL(t.link)) li.appendChild(outLink('↗', safeURL(t.link), 'nb-song__out'));
+        songs.appendChild(li);
+      });
+      box.appendChild(songs);
+    }
+    if (!pls.length && !list.length) box.appendChild(make('p', 'nb-intro', 'Nothing on the shelf yet.'));
+    setTimeout(nowPlaying, 0);
+    return box;
+  }
+
+  function takeData(d) {
+    if (!d || !tablet) return;
+    homeIcons.filter(function (b) { return b.classList.contains('nb-icon--x'); }).forEach(function (b) { if (b.parentNode) b.parentNode.removeChild(b); });
+    homeIcons = homeIcons.filter(function (b) { return !b.classList.contains('nb-icon--x'); });
+    APPS.length = BUILTIN;
+    XAPPS = {};
+    var seen = {};
+    var add = function (key, name, a) {
+      APPS.push([key, name]);
+      NAME[key] = name;
+      homeIcons.push(customIcon(key, a, APPS.length - 1));
+    };
+    MUSIC = d.music && d.music.enabled !== false && ((d.music.playlists || []).length || (d.music.tracks || []).length) ? d.music : null;
+    if (MUSIC) {
+      DATA.music = function () { return { page: musicPage }; };
+      add('music', 'Music', { name: 'Music', glyph: 'music' });
+    }
+    (Array.isArray(d.tablet_apps) ? d.tablet_apps : []).forEach(function (a) {
+      if (!a || !a.name) return;
+      var key = 'x-' + slug(a.name);
+      while (seen[key] || NAME[key] && !/^x-/.test(key)) key += '-';
+      seen[key] = 1;
+      XAPPS[key] = a;
+      if (a.kind !== 'link') DATA[key] = (function (f) { return function () { return { page: f }; }; })(customPage(a));
+      add(key, a.name, a);
+    });
+    layoutPages(true);
+    spotIndex = null;
+    applyPrefs();
+    if (current === 'settings') openApp('settings', true);
+  }
+
+
+  // ---- the home screen in pages, swiped left and right ------------------------------------------
+  var homeIcons = [], pager = null, dots = null, perPage = 0, recent = [];
+  function pageW() { return pager ? pager.clientWidth || 1 : 1; }
+  function pageNow() { return pager ? Math.round(pager.scrollLeft / pageW()) : 0; }
+  function goPage(i, instant) {
+    if (!pager) return;
+    var n = pager.children.length;
+    i = Math.max(0, Math.min(n - 1, i));
+    pager.scrollTo({ left: i * pageW(), behavior: instant || reduceMotion ? 'auto' : 'smooth' });
+  }
+  function paintDots() {
+    if (!dots) return;
+    var n = pager.children.length, at = pageNow();
+    if (dots.children.length !== n) {
+      dots.innerHTML = '';
+      for (var k = 0; k < n; k++) {
+        var d = make('button', 'nb-dot');
+        d.type = 'button';
+        d.setAttribute('aria-label', 'Page ' + (k + 1) + ' of ' + n);
+        d.addEventListener('click', (function (j) { return function () { goPage(j); }; })(k));
+        dots.appendChild(d);
+      }
+    }
+    dots.hidden = n < 2;
+    $$('.nb-dot', dots).forEach(function (d, k) { d.setAttribute('aria-current', String(k === at)); });
+  }
+  function layoutPages(force) {
+    if (!pager) return;
+    var h = pager.clientHeight, probe = homeIcons[0];
+    var rowH = probe && probe.offsetHeight ? probe.offsetHeight + 16 : 112;
+    var rows = h ? Math.max(2, Math.min(5, Math.floor((h - 12 + 16) / rowH))) : 4;
+    var per = rows * 3;
+    if (!force && per === perPage && pager._count === homeIcons.length) return;
+    var at = pageNow();
+    perPage = per; pager._count = homeIcons.length;
+    var pages = Math.max(1, Math.ceil(homeIcons.length / per));
+    var keep = [];
+    for (var p = 0; p < pages; p++) {
+      var g = pager.children[p] || make('div', 'nb-grid nb-page');
+      g.setAttribute('role', 'group');
+      g.setAttribute('aria-label', 'Apps, page ' + (p + 1) + ' of ' + pages);
+      homeIcons.slice(p * per, (p + 1) * per).forEach(function (b, i) { b.style.setProperty('--i', i); g.appendChild(b); });
+      keep.push(g);
+    }
+    while (pager.children.length > pages) pager.removeChild(pager.lastChild);
+    keep.forEach(function (g) { if (!g.parentNode) pager.appendChild(g); });
+    goPage(Math.min(at, pages - 1), true);
+    paintDots();
+  }
+  function wirePager() {
+    var raf = 0;
+    pager.addEventListener('scroll', function () { cancelAnimationFrame(raf); raf = requestAnimationFrame(paintDots); }, { passive: true });
+    if (window.ResizeObserver) new ResizeObserver(function () { layoutPages(); goPage(pageNow(), true); }).observe(pager);
+    // a mouse can drag the pages too, the way a finger does
+    var x0 = 0, s0 = 0, dragging = false, down = false, eaten = false;
+    pager.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; dragging = false; x0 = e.clientX; s0 = pager.scrollLeft;
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - x0;
+      if (!dragging && Math.abs(dx) > 6) { dragging = true; pager.classList.add('nb-dragging'); }
+      if (dragging) pager.scrollLeft = s0 - dx;
+    });
+    window.addEventListener('pointerup', function (e) {
+      if (!down) return;
+      down = false;
+      if (!dragging) return;
+      var dx = e.clientX - x0, from = Math.round(s0 / pageW());
+      eaten = true; setTimeout(function () { eaten = false; }, 0);
+      pager.classList.remove('nb-dragging');
+      goPage(dx < -pageW() * 0.12 ? from + 1 : dx > pageW() * 0.12 ? from - 1 : from);
+    });
+    pager.addEventListener('click', function (e) { if (eaten) { e.stopPropagation(); e.preventDefault(); } }, true);
+    home.addEventListener('keydown', function (e) {
+      if (!e.target.closest || !e.target.closest('.nb-pager')) return;
+      if (e.key === 'PageDown') { e.preventDefault(); goPage(pageNow() + 1); }
+      if (e.key === 'PageUp') { e.preventDefault(); goPage(pageNow() - 1); }
+    });
+  }
+
+  // ---- spotlight: pull down on the home screen, or tap Search ------------------------------------
+  var spotEl = null, spotIn = null, spotRes = null, spotIndex = null;
+  function buildIndex() {
+    var out = [];
+    APPS.forEach(function (a) {
+      var key = a[0];
+      if (MUSIC && key === 'music') {
+        (MUSIC.playlists || []).forEach(function (p) { if (p.title) out.push({ key: key, title: p.title, sub: p.note || 'Playlist' }); });
+        tracks().forEach(function (t, i) { out.push({ key: key, title: t.title || 'Untitled', sub: t.artist || 'Song', act: function () { play(i); } }); });
+        return;
+      }
+      if (XAPPS[key]) {
+        var x = XAPPS[key];
+        if (x.title && x.kind !== 'link') out.push({ key: key, title: x.title, sub: x.kind === 'appstore' ? 'App Store' : '' });
+        return;
+      }
+      if (!DATA[key]) return;
+      var d;
+      try { d = DATA[key](); } catch (_) { return; }
+      if (!d || !d.groups) return;
+      d.groups.forEach(function (g) {
+        (g.items || []).forEach(function (it) {
+          if (it.title) out.push({ key: key, title: it.title, sub: it.sub || g.title || '', item: it.page ? it : null });
+        });
+      });
+    });
+    return out;
+  }
+  function marked(cls, text, q) {
+    var el = make('span', cls), i = q ? text.toLowerCase().indexOf(q) : -1;
+    if (i < 0) { el.textContent = text; return el; }
+    el.appendChild(document.createTextNode(text.slice(0, i)));
+    el.appendChild(make('mark', null, text.slice(i, i + q.length)));
+    el.appendChild(document.createTextNode(text.slice(i + q.length)));
+    return el;
+  }
+  function miniApp(key, q) {
+    var b = make('button', 'nb-sp__app');
+    b.type = 'button';
+    var src = homeIcons.filter(function (x) { return x.dataset.app === key; })[0];
+    var art = src && $('.nb-icon__art', src);
+    if (art) { var c = art.cloneNode(true); c.removeAttribute('id'); b.appendChild(c); }
+    b.appendChild(marked('nb-sp__appname', NAME[key] || key, q));
+    b.addEventListener('click', function () { closeSpot(); launch(key); });
+    return b;
+  }
+  function launch(key, it) {
+    var x = XAPPS[key];
+    if (x && x.kind === 'link') { var u = safeURL(x.link); if (u) window.open(u, '_blank', 'noopener'); return; }
+    openApp(key);
+    if (it && it.item && current === key) { stack.push({ app: key, item: it.item }); render(stack[stack.length - 1], false); }
+    if (it && it.act) it.act();
+  }
+  function spotSearch() {
+    var q = spotIn.value.trim().toLowerCase();
+    spotRes.innerHTML = '';
+    var head = function (t) { spotRes.appendChild(make('p', 'nb-sp__h', t)); };
+    var apps;
+    if (!q) {
+      apps = recent.concat(APPS.map(function (a) { return a[0]; })).filter(function (k, i, arr) { return arr.indexOf(k) === i; }).slice(0, 4);
+      head('Suggestions');
+    } else {
+      apps = APPS.filter(function (a) { return a[1].toLowerCase().indexOf(q) >= 0; }).map(function (a) { return a[0]; });
+      if (apps.length) head('Apps');
+    }
+    if (apps.length) {
+      var row = make('div', 'nb-sp__apps');
+      apps.slice(0, 8).forEach(function (k) { row.appendChild(miniApp(k, q)); });
+      spotRes.appendChild(row);
+    }
+    if (!q) return;
+    spotIndex = spotIndex || buildIndex();
+    var hits = spotIndex.filter(function (r) { return (r.title + ' ' + r.sub).toLowerCase().indexOf(q) >= 0; })
+      .sort(function (a, b) { return (b.title.toLowerCase().indexOf(q) === 0) - (a.title.toLowerCase().indexOf(q) === 0); })
+      .slice(0, 30);
+    if (hits.length) {
+      head('In the almanac');
+      var ol = make('ol', 'nb-sp__list');
+      hits.forEach(function (r) {
+        var li = make('li'), b = make('button', 'nb-sp__hit');
+        b.type = 'button';
+        var t = make('span', 'nb-sp__txt');
+        t.appendChild(marked('nb-sp__t', r.title, q));
+        if (r.sub && r.sub !== r.title) t.appendChild(marked('nb-sp__s', r.sub, q));
+        b.appendChild(t);
+        b.appendChild(make('span', 'nb-sp__in', NAME[r.key] || ''));
+        b.addEventListener('click', function () { closeSpot(); launch(r.key, r); });
+        li.appendChild(b); ol.appendChild(li);
+      });
+      spotRes.appendChild(ol);
+    }
+    if (!apps.length && !hits.length) spotRes.appendChild(make('p', 'nb-sp__none', 'Nothing called “' + spotIn.value.trim() + '” in the almanac.'));
+  }
+  function openSpot() {
+    if (!spotEl || current || tablet.classList.contains('nb-locked')) return;
+    spotIndex = null;
+    spotEl.hidden = false;
+    tablet.classList.add('nb-spot-open');
+    spotIn.value = '';
+    spotSearch();
+    setTimeout(function () { spotIn.focus({ preventScroll: true }); }, 30);
+  }
+  function closeSpot() {
+    if (!spotEl || spotEl.hidden) return;
+    spotEl.hidden = true;
+    tablet.classList.remove('nb-spot-open');
+  }
+  function buildSpot(views) {
+    spotEl = make('div', 'nb-spotlight');
+    spotEl.hidden = true;
+    spotEl.setAttribute('role', 'dialog');
+    spotEl.setAttribute('aria-label', 'Search the almanac');
+    spotEl.innerHTML = '<div class="nb-sp__bar"><label class="nb-sp__field"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.6"/><path d="M10.2 10.2L14 14"/></svg>' +
+      '<input type="search" placeholder="Search" aria-label="Search the almanac" autocomplete="off" spellcheck="false" enterkeyhint="go"></label>' +
+      '<button type="button" class="nb-sp__cancel">Cancel</button></div><div class="nb-sp__res"></div>';
+    spotIn = $('input', spotEl); spotRes = $('.nb-sp__res', spotEl);
+    spotIn.addEventListener('input', spotSearch);
+    spotIn.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeSpot(); var f = $('.nb-find', home); if (f) f.focus({ preventScroll: true }); }
+      if (e.key === 'Enter') { var first = $('button', spotRes); if (first) { e.preventDefault(); first.click(); } }
+      if (e.key === 'ArrowDown') { var f2 = $('button', spotRes); if (f2) { e.preventDefault(); f2.focus(); } }
+    });
+    spotEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); closeSpot(); } });
+    $('.nb-sp__cancel', spotEl).addEventListener('click', closeSpot);
+    views.appendChild(spotEl);
+    // pull down on the home screen, like on a phone
+    var y0 = null, x0 = 0;
+    home.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, { passive: true });
+    home.addEventListener('touchmove', function (e) {
+      if (y0 == null) return;
+      var dy = e.touches[0].clientY - y0, dx = Math.abs(e.touches[0].clientX - x0);
+      if (dy > 46 && dy > dx * 1.5) { y0 = null; openSpot(); }
+    }, { passive: true });
+    home.addEventListener('touchend', function () { y0 = null; }, { passive: true });
+    // and "/" opens it from the keyboard while the tablet is in hand
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
+      var a = document.activeElement;
+      if (a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return;
+      if (!(tablet.contains(a) || tablet.matches(':hover'))) return;
+      if (current || tablet.classList.contains('nb-locked')) return;
+      e.preventDefault(); openSpot();
+    });
+  }
 
   function buildTablet() {
     tablet = make('aside', 'nb-tablet');
@@ -951,10 +1499,24 @@
     greet.appendChild(make('p', 'nb-greet__hi'));
     greet.insertAdjacentHTML('beforeend', '<svg class="nb-greet__rule" viewBox="0 0 200 10" preserveAspectRatio="none" aria-hidden="true"><path d="M0 5H86M114 5H200"/><path d="M100 0.8L104.2 5 100 9.2 95.8 5Z"/><path d="M90 5h2M108 5h2"/></svg>');
     home.appendChild(greet);
-    var grid = make('div', 'nb-grid');
-    APPS.forEach(function (a, i) { grid.appendChild(icon(a[0], a[1], i)); });
-    home.appendChild(grid);
+    var np = make('p', 'nb-np');
+    np.hidden = true;
+    np.innerHTML = '<span class="nb-np__k">Now playing</span><button type="button" class="nb-np__t"></button><button type="button" class="nb-np__b">Pause</button>';
+    $('.nb-np__t', np).addEventListener('click', function () { openApp('music'); });
+    $('.nb-np__b', np).addEventListener('click', function () { if (player) { if (player.paused) player.play().catch(function () {}); else player.pause(); } });
+    home.appendChild(np);
+    pager = make('div', 'nb-pager');
+    APPS.forEach(function (a, i) { homeIcons.push(icon(a[0], a[1], i)); });
+    home.appendChild(pager);
+    var hfoot = make('div', 'nb-hfoot');
+    hfoot.innerHTML = '<button type="button" class="nb-find"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.6"/><path d="M10.2 10.2L14 14"/></svg><span>Search</span></button><span class="nb-dots"></span>';
+    dots = $('.nb-dots', hfoot);
+    $('.nb-find', hfoot).addEventListener('click', openSpot);
+    home.appendChild(hfoot);
     views.appendChild(home);
+    layoutPages(true);
+    wirePager();
+    var grid = pager;
 
     appView = make('section', 'nb-app');
     appView.hidden = true;
@@ -969,6 +1531,7 @@
     appBody = make('div', 'nb-app__body');
     appView.appendChild(appBody);
     views.appendChild(appView);
+    buildSpot(views);
 
     // the lock screen: the castle, under today's sky
     var lock = make('div', 'nb-lock');
@@ -985,10 +1548,12 @@
       if (!tablet.classList.contains('nb-locked')) return;
       tablet.classList.remove('nb-locked');
       tablet.classList.add('nb-unlocking');
+      layoutPages();
       touched = Date.now();
       setTimeout(function () { tablet.classList.remove('nb-unlocking'); }, 900);
     };
     var lockIt = function () {
+      closeSpot();
       if (current) goHome();
       root.classList.remove('nb-full');
       tablet.classList.add('nb-locked');
@@ -1020,7 +1585,10 @@
 
     grid.addEventListener('click', function (e) {
       var b = e.target.closest('.nb-icon');
-      if (b) openApp(b.dataset.app);
+      if (!b) return;
+      var x = XAPPS[b.dataset.app];
+      if (x && x.kind === 'link') { var u = safeURL(x.link); if (u) window.open(u, '_blank', 'noopener'); return; }
+      openApp(b.dataset.app);
     });
     back.addEventListener('click', function () { if (stack.length > 1) { stack.pop(); render(stack[stack.length - 1], true); } else goHome(); });
     close.addEventListener('click', goHome);
@@ -1062,6 +1630,7 @@
   }
 
   function turn(el, backwards) {
+    rustle();
     if (reduceMotion) return;
     el.classList.remove('nb-turn', 'nb-turn--back');
     void el.offsetWidth;
@@ -1085,6 +1654,8 @@
     if (key === 'beverages') { var t = $('#coffee-trigger'); if (t && !quiet) t.click(); else if (t && quiet) { /* the page already went there */ } return; }
     if (!DATA[key]) return;
     if (tablet._unlock) tablet._unlock();
+    closeSpot();
+    if (key !== 'settings') { recent = [key].concat(recent.filter(function (k) { return k !== key; })).slice(0, 4); }
     current = key;
     tablet.dataset.last = key;
     stack = [{ app: key }];
@@ -1248,6 +1819,8 @@
     hero.insertBefore(letter, hero.firstChild);
     var paperEl = $('.nb-letter__paper', letter);
     hero.appendChild(buildTablet());
+    if (window.__PORTFOLIO_DATA__) takeData(window.__PORTFOLIO_DATA__);
+    window.addEventListener('portfolio:data', function (e) { takeData(e.detail); });
     paintSwipes();
     if (window.MutationObserver) new MutationObserver(paintSwipes).observe(root, { attributes: true, attributeFilter: ['style', 'class'] });
     setInterval(paintSwipes, 60000);

@@ -830,6 +830,9 @@
           const r = await fetch(portfolioUrl, { cache: 'no-store' });
           if (!r.ok) return;
           const d = await r.json();
+          // The tablet (notebook.js) reads its own apps and the music shelf from here.
+          window.__PORTFOLIO_DATA__ = d;
+          try { window.dispatchEvent(new CustomEvent('portfolio:data', { detail: d })); } catch (_) {}
           // Footer date (from JSON)
           // Expects d.updatedAt like: "2025-12-23T12:52:59.793Z"
           const footerDateEl = document.getElementById('footer-updated-date');

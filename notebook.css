@@ -755,6 +755,8 @@ html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.10), 0 1px 1px rgba(43,46,36,.
 .nb-sp__res mark{ background: none; color: var(--t-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .nb-sp__none{ margin: 18px 0; font-family: var(--f-news); font-style: italic; font-size: 14px; color: var(--t-mute); }
 
+a.nb-icon{ text-decoration: none; }
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }

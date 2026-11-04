@@ -967,7 +967,7 @@
     var upd = txt($('.footer-websiteupdate')).replace(/^last updated:?\s*/i, '').replace(/\s*via the app\s*$/i, '');
     var um = upd.match(/^([A-Za-z]{3,9})\.?,?\s*(\d{1,2}),?\s+(\d{4})/);
     if (um) upd = um[2] + ' ' + um[1].charAt(0).toUpperCase() + um[1].slice(1).toLowerCase() + ' ' + um[3];
-    [['Owner', 'Saumya Lahera'], ['Apps', String(APPS.length) + (pager && pager.children.length > 1 ? ', over ' + pager.children.length + ' pages' : '')],
+    [['Owner', 'Saumya Lahera'], ['Apps', String(shownApps().length) + (pager && pager.children.length > 1 ? ', over ' + pager.children.length + ' pages' : '')],
      ['Paper', NAME_OF(THEMES, prefs.theme)], ['Pages last set', upd || 'Today']].forEach(function (r) {
       about.appendChild(make('dt', '', r[0]));
       about.appendChild(make('dd', r[0] === 'Apps' ? 'nb-about__apps' : '', r[1]));
@@ -1033,8 +1033,9 @@
 
   // the icon: my own picture on a hand-drawn tile, or one of the pen drawings
   function customIcon(key, a, i) {
-    var b = make('button', 'nb-icon nb-icon--x');
-    b.type = 'button';
+    var href = a.kind === 'link' ? safeURL(a.link) : '';
+    var b = make(href ? 'a' : 'button', 'nb-icon nb-icon--x');
+    if (href) { b.href = href; b.target = '_blank'; b.rel = 'noopener'; } else b.type = 'button';
     b.dataset.app = key;
     b.dataset.glyph = PEN_ICON[a.glyph] ? a.glyph : 'notes';
     b.style.setProperty('--i', i);
@@ -1234,8 +1235,10 @@
       DATA.music = function () { return { page: musicPage }; };
       add('music', 'Music', { name: 'Music', glyph: 'music' });
     }
+    HIDDEN = {};
+    (Array.isArray(d.tablet_hidden) ? d.tablet_hidden : []).forEach(function (k) { if (k) HIDDEN[String(k)] = 1; });
     (Array.isArray(d.tablet_apps) ? d.tablet_apps : []).forEach(function (a) {
-      if (!a || !a.name) return;
+      if (!a || !a.name || a.hidden === true) return;
       var key = 'x-' + slug(a.name);
       while (seen[key] || NAME[key] && !/^x-/.test(key)) key += '-';
       seen[key] = 1;
@@ -1251,7 +1254,9 @@
 
 
   // ---- the home screen in pages, swiped left and right ------------------------------------------
-  var homeIcons = [], pager = null, dots = null, perPage = 0, recent = [];
+  var homeIcons = [], pager = null, dots = null, perPage = 0, recent = [], HIDDEN = {};
+  function shown(key) { return !HIDDEN[key]; }
+  function shownApps() { return APPS.filter(function (a) { return shown(a[0]); }); }
   function pageW() { return pager ? pager.clientWidth || 1 : 1; }
   function pageNow() { return pager ? Math.round(pager.scrollLeft / pageW()) : 0; }
   function goPage(i, instant) {
@@ -1278,20 +1283,21 @@
   }
   function layoutPages(force) {
     if (!pager) return;
-    var h = pager.clientHeight, probe = homeIcons[0];
+    var vis = homeIcons.filter(function (b) { if (shown(b.dataset.app)) return true; if (b.parentNode) b.parentNode.removeChild(b); return false; });
+    var h = pager.clientHeight, probe = vis[0];
     var rowH = probe && probe.offsetHeight ? probe.offsetHeight + 16 : 112;
     var rows = h ? Math.max(2, Math.min(5, Math.floor((h - 12 + 16) / rowH))) : 4;
     var per = rows * 3;
-    if (!force && per === perPage && pager._count === homeIcons.length) return;
+    if (!force && per === perPage && pager._count === vis.length) return;
     var at = pageNow();
-    perPage = per; pager._count = homeIcons.length;
-    var pages = Math.max(1, Math.ceil(homeIcons.length / per));
+    perPage = per; pager._count = vis.length;
+    var pages = Math.max(1, Math.ceil(vis.length / per));
     var keep = [];
     for (var p = 0; p < pages; p++) {
       var g = pager.children[p] || make('div', 'nb-grid nb-page');
       g.setAttribute('role', 'group');
       g.setAttribute('aria-label', 'Apps, page ' + (p + 1) + ' of ' + pages);
-      homeIcons.slice(p * per, (p + 1) * per).forEach(function (b, i) { b.style.setProperty('--i', i); g.appendChild(b); });
+      vis.slice(p * per, (p + 1) * per).forEach(function (b, i) { b.style.setProperty('--i', i); g.appendChild(b); });
       keep.push(g);
     }
     while (pager.children.length > pages) pager.removeChild(pager.lastChild);
@@ -1336,7 +1342,7 @@
   var spotEl = null, spotIn = null, spotRes = null, spotIndex = null;
   function buildIndex() {
     var out = [];
-    APPS.forEach(function (a) {
+    shownApps().forEach(function (a) {
       var key = a[0];
       if (MUSIC && key === 'music') {
         (MUSIC.playlists || []).forEach(function (p) { if (p.title) out.push({ key: key, title: p.title, sub: p.note || 'Playlist' }); });
@@ -1380,7 +1386,11 @@
   }
   function launch(key, it) {
     var x = XAPPS[key];
-    if (x && x.kind === 'link') { var u = safeURL(x.link); if (u) window.open(u, '_blank', 'noopener'); return; }
+    if (x && x.kind === 'link') {
+      var a = homeIcons.filter(function (b) { return b.dataset.app === key; })[0];
+      if (a && a.tagName === 'A') a.click(); else if (safeURL(x.link)) window.open(safeURL(x.link), '_blank');
+      return;
+    }
     openApp(key);
     if (it && it.item && current === key) { stack.push({ app: key, item: it.item }); render(stack[stack.length - 1], false); }
     if (it && it.act) it.act();
@@ -1391,10 +1401,10 @@
     var head = function (t) { spotRes.appendChild(make('p', 'nb-sp__h', t)); };
     var apps;
     if (!q) {
-      apps = recent.concat(APPS.map(function (a) { return a[0]; })).filter(function (k, i, arr) { return arr.indexOf(k) === i; }).slice(0, 4);
+      apps = recent.concat(shownApps().map(function (a) { return a[0]; })).filter(function (k, i, arr) { return shown(k) && arr.indexOf(k) === i; }).slice(0, 4);
       head('Suggestions');
     } else {
-      apps = APPS.filter(function (a) { return a[1].toLowerCase().indexOf(q) >= 0; }).map(function (a) { return a[0]; });
+      apps = shownApps().filter(function (a) { return a[1].toLowerCase().indexOf(q) >= 0; }).map(function (a) { return a[0]; });
       if (apps.length) head('Apps');
     }
     if (apps.length) {
@@ -1586,8 +1596,7 @@
     grid.addEventListener('click', function (e) {
       var b = e.target.closest('.nb-icon');
       if (!b) return;
-      var x = XAPPS[b.dataset.app];
-      if (x && x.kind === 'link') { var u = safeURL(x.link); if (u) window.open(u, '_blank', 'noopener'); return; }
+      if (b.tagName === 'A') return;   // a website: the link itself opens it in a new tab
       openApp(b.dataset.app);
     });
     back.addEventListener('click', function () { if (stack.length > 1) { stack.pop(); render(stack[stack.length - 1], true); } else goHome(); });

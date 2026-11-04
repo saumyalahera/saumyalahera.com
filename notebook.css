@@ -757,6 +757,17 @@ html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.10), 0 1px 1px rgba(43,46,36,.
 
 a.nb-icon{ text-decoration: none; }
 
+/* no highlighter: each phrase is boxed by hand in ink */
+.nb-hl{
+  padding: .06em .26em .08em; margin: 0 .04em;
+  background-image: var(--nb-box, none);
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 100% 100%;
+}
+html.nb-ready .nb-hl{ background-size: 100% 100%; }
+.nb-hl:hover, .nb-hl:focus-visible{ color: #6b6b66; }
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }

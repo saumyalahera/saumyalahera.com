@@ -68,6 +68,24 @@
   // ---- the highlighter ----------------------------------------------------------------------
   // One rough swipe per word, in today's ink colour. Drawn as SVG and set as a
   // background, so it follows the words across a line break.
+  // a box drawn by hand around a highlighted phrase: four strokes that wobble a little,
+  // overshoot at a corner or two, and never quite meet
+  function boxURL(seed) {
+    var r = rng(seed), W = 200, H = 40, j = function (n) { return (r() - 0.5) * n; };
+    var x0 = 3 + j(2), x1 = W - 3 + j(2), y0 = 3 + j(2.4), y1 = H - 3 + j(2.4);
+    var side = function (ax, ay, bx, by, o1, o2) {
+      var dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+      var sx = ax - ux * o1, sy = ay - uy * o1, ex = bx + ux * o2, ey = by + uy * o2;
+      var mx = (sx + ex) / 2 - uy * j(2.6), my = (sy + ey) / 2 + ux * j(2.6);
+      return 'M' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' ' + ex.toFixed(1) + ' ' + ey.toFixed(1);
+    };
+    var o = function () { return r() < 0.45 ? 1 + r() * 2.6 : -r() * 1.2; };
+    var d = side(x0, y0 + j(1.5), x1, y0 + j(1.5), o(), o()) + side(x1 + j(1.2), y0, x1 + j(1.2), y1, o(), o()) +
+      side(x1, y1 + j(1.5), x0, y1 + j(1.5), o(), o()) + side(x0 + j(1.2), y1, x0 + j(1.2), y0, o(), o());
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none">' +
+      '<path d="' + d + '" fill="none" stroke="rgba(26,26,24,.86)" stroke-width="1.15" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+    return 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+  }
   function swipeURL(seed, rgb, a) {
     var r = rng(seed), W = 200, H = 40, top = [], bot = [];
     var y0 = 7 + r() * 4, y1 = 35 + r() * 3, tilt = (r() - 0.5) * 4;
@@ -99,9 +117,10 @@
     lastInk = 'done';
     // each part of the site has its own colour of highlighter
     $$('.nb-hl').forEach(function (m, i) {
-      var c = COLOR[m.dataset.go] || COLOR[m.dataset.app] || inkRGB();
-      m.style.setProperty('--c', c);
-      m.style.setProperty('--nb-swipe', swipeURL(hash(m.textContent) + i * 13, c, 0.3));
+      // one fluorescent green highlighter for the whole page
+      var c = '57,255,20';
+      m.style.setProperty('--nb-swipe', swipeURL(hash(m.textContent) + i * 13, c, 0.34));
+      m.style.setProperty('--nb-box', boxURL(hash(m.textContent) * 3 + i * 29));
     });
   }
 

@@ -369,6 +369,8 @@
     }
   }
 
+  window.pwStamp = penStamp;   // the notebook tears its own pages with it
+
   // Locations and Duolingo cards are pages torn from a sketchbook and taped in: a number in the corner, and the places
   // left behind get a cancellation mark. Duolingo cards are drawn later, so watch.
   function stampCards() {
@@ -817,7 +819,7 @@
 
   function buildCover() {
     var media = document.querySelector('.hero__media');
-    if (!media) return;
+    if (!media || root.classList.contains('nb')) return;   // the paper tablet takes its place
     media.classList.add('pw-cover');
     var stage = document.createElement('div');
     stage.className = 'pw-stage';
@@ -1743,7 +1745,7 @@
   }
 
   function indexify(box) {
-    if (box.closest('[role="dialog"]') || box.matches(DECKS)) return;
+    if (box.closest('[role="dialog"]') || box.closest('[data-nb-pages]') || box.matches(DECKS)) return;
     var items = Array.prototype.filter.call(box.children, function (c) { return c.matches(ENTRY); });
     if (!items.length) return;
     box.classList.add('pw-index');

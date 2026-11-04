@@ -1126,11 +1126,19 @@
     var m;
     u = String(u || '').trim();
     if ((m = u.match(/^https?:\/\/(?:embed\.)?music\.apple\.com\/(.+)$/i))) return { src: 'https://embed.music.apple.com/' + m[1], h: /[?&]i=|\/song\//.test(u) ? 175 : 450, who: 'Apple Music' };
+    if ((m = u.match(/^https?:\/\/(?:www\.|m\.|music\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/i))) return { src: 'https://www.youtube-nocookie.com/embed/' + m[1], h: 210, who: 'YouTube' };
     if ((m = u.match(/^https?:\/\/open\.spotify\.com\/(?:intl-[a-z-]+\/)?(?:embed\/)?(playlist|album|track|artist|show|episode)\/([A-Za-z0-9]+)/i))) return { src: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2], h: m[1] === 'track' ? 152 : 380, who: 'Spotify' };
     return null;
   }
   var player = null, playing = -1;
-  function tracks() { return (MUSIC && MUSIC.tracks || []).filter(function (t) { return safeURL(t.audio); }); }
+  function tracks() { return (MUSIC && MUSIC.tracks || []).filter(function (t) { return t && (safeURL(t.audio) || safeURL(t.link)); }); }
+  function howOf(t) {
+    var link = safeURL(t.link);
+    if (t.open === 'link' && link) return 'link';
+    if (safeURL(t.audio)) return 'audio';
+    if (embedOf(link)) return 'embed';
+    return link ? 'link' : 'audio';
+  }
   function fmt(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); }
   function nowPlaying() {
     var np = $('.nb-np', tablet), list = tracks(), t = list[playing];
@@ -1141,7 +1149,7 @@
         $('.nb-np__b', np).textContent = player && !player.paused ? 'Pause' : 'Play';
       }
     }
-    $$('.nb-song', tablet).forEach(function (row) {
+    $$('.nb-song[data-how="audio"]', tablet).forEach(function (row) {
       var on = +row.dataset.i === playing;
       row.classList.toggle('nb-song--on', on);
       $('.nb-song__b', row).textContent = on && player && !player.paused ? '❚❚' : '▶';
@@ -1154,12 +1162,16 @@
   }
   function play(i) {
     var list = tracks();
-    if (!list[i]) return;
+    if (!list[i] || howOf(list[i]) !== 'audio') return;
     if (!player) {
       player = new Audio();
       player.preload = 'none';
       ['play', 'pause', 'timeupdate', 'loadedmetadata'].forEach(function (ev) { player.addEventListener(ev, nowPlaying); });
-      player.addEventListener('ended', function () { if (playing + 1 < tracks().length) play(playing + 1); else { playing = -1; nowPlaying(); } });
+      player.addEventListener('ended', function () {
+        var all = tracks();
+        for (var k = playing + 1; k < all.length; k++) if (howOf(all[k]) === 'audio') { play(k); return; }
+        playing = -1; nowPlaying();
+      });
       player.addEventListener('error', function () { var r = $('.nb-song[data-i="' + playing + '"]', tablet); if (r) r.classList.add('nb-song--err'); });
     }
     if (i === playing) { if (player.paused) player.play().catch(function () {}); else player.pause(); return; }
@@ -1206,14 +1218,23 @@
     }
     var list = tracks();
     if (list.length) {
-      box.appendChild(make('p', 'nb-set__ch', 'My songs'));
+      box.appendChild(make('p', 'nb-set__ch', 'Songs'));
       var songs = make('ol', 'nb-songs');
       list.forEach(function (t, i) {
+        var how = howOf(t), link = safeURL(t.link);
         var li = make('li', 'nb-song');
-        li.dataset.i = i; li.dataset.title = t.title || 'Untitled';
-        var b = make('button', 'nb-song__b', '▶');
-        b.type = 'button';
-        b.addEventListener('click', function () { play(i); });
+        li.dataset.i = i; li.dataset.title = t.title || 'Untitled'; li.dataset.how = how;
+        var b;
+        if (how === 'link') {
+          b = outLink('↗', link, 'nb-song__b nb-song__b--out');
+          b.setAttribute('aria-label', 'Open ' + (t.title || 'the song') + ' (new tab)');
+        } else {
+          b = make('button', 'nb-song__b', '▶');
+          b.type = 'button';
+          b.setAttribute('aria-label', 'Play ' + (t.title || 'the song'));
+          if (how === 'audio') b.addEventListener('click', function () { play(i); });
+          else b.addEventListener('click', function () { toggleEmbed(li, b, embedOf(link), t.title); });
+        }
         li.appendChild(b);
         var tx = make('span', 'nb-song__txt');
         tx.appendChild(make('span', 'nb-song__t', t.title || 'Untitled'));
@@ -1227,12 +1248,28 @@
         tx.appendChild(bar);
         li.appendChild(tx);
         li.appendChild(make('span', 'nb-song__time'));
-        if (safeURL(t.link)) li.appendChild(outLink('↗', safeURL(t.link), 'nb-song__out'));
+        if (how === 'embed') tx.appendChild(make('span', 'nb-song__via', 'on ' + embedOf(link).who));
+        if (how === 'link') tx.appendChild(make('span', 'nb-song__via', 'opens ' + (link.replace(/^https?:\/\/(www\.)?/, '').split('/')[0])));
+        if (how === 'audio' && link) li.appendChild(outLink('↗', link, 'nb-song__out'));
         songs.appendChild(li);
       });
       box.appendChild(songs);
     }
     if (!pls.length && !list.length) box.appendChild(make('p', 'nb-intro', 'Nothing on the shelf yet.'));
+    function toggleEmbed(li, b, e, title) {
+      var fr = $('iframe', li);
+      if (fr) { fr.remove(); b.textContent = '▶'; li.classList.remove('nb-song--on'); return; }
+      $$('.nb-song iframe', box).forEach(function (f) { var r = f.closest('.nb-song'); f.remove(); r.classList.remove('nb-song--on'); $('.nb-song__b', r).textContent = '▶'; });
+      if (player && !player.paused) player.pause();
+      fr = make('iframe', 'nb-embed nb-embed--song');
+      fr.src = e.src + (e.who === 'YouTube' ? '?autoplay=1' : ''); fr.height = e.h; fr.title = (title || 'Song') + ' on ' + e.who;
+      fr.setAttribute('allow', 'autoplay *; encrypted-media *; fullscreen *; clipboard-write');
+      if (e.who !== 'YouTube') fr.setAttribute('sandbox', 'allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation');
+      else fr.setAttribute('allowfullscreen', '');
+      li.appendChild(fr);
+      li.classList.add('nb-song--on');
+      b.textContent = '■';
+    }
     setTimeout(nowPlaying, 0);
     return box;
   }
@@ -1365,7 +1402,10 @@
       var key = a[0];
       if (MUSIC && key === 'music') {
         (MUSIC.playlists || []).forEach(function (p) { if (p.title) out.push({ key: key, title: p.title, sub: p.note || 'Playlist' }); });
-        tracks().forEach(function (t, i) { out.push({ key: key, title: t.title || 'Untitled', sub: t.artist || 'Song', act: function () { play(i); } }); });
+        tracks().forEach(function (t, i) {
+          var how = howOf(t);
+          out.push({ key: key, title: t.title || 'Untitled', sub: t.artist || 'Song', act: how === 'audio' ? function () { play(i); } : how === 'link' ? function () { window.open(safeURL(t.link), '_blank'); } : null });
+        });
         return;
       }
       if (XAPPS[key]) {

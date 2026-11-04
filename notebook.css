@@ -693,6 +693,12 @@ html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.10), 0 1px 1px rgba(43,46,36,.
 .nb-song__out{ flex: none; color: var(--t-mute); text-decoration: none; font-size: 13px; }
 .nb-song--err .nb-song__a::after{ content: ' · could not be played'; color: var(--t-accent); }
 
+/* songs that play somewhere else, or open a link */
+.nb-song{ flex-wrap: wrap; }
+.nb-song .nb-embed--song{ flex: 0 0 100%; margin: 8px 0 2px; }
+a.nb-song__b{ text-decoration: none; font-size: 13px; }
+.nb-song__via{ font-family: var(--f-deco); font-weight: 600; font-size: 8.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--t-mute); }
+
 /* ---- the home screen in pages ------------------------------------------------------------- */
 .nb-pager{
   flex: 1; min-height: 0; display: flex; margin: 0 -18px;

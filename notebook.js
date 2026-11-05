@@ -947,6 +947,32 @@
     halo.setAttribute('class', 'nb-halo');
     halo.setAttribute('aria-hidden', 'true');
     svg.insertBefore(halo, g);
+    var NS2 = 'http://www.w3.org/2000/svg', hl = document.createElementNS(NS2, 'g'), hr = P.rng(seed * 31 + 7);
+    var J = function (m) { return (hr() - 0.5) * m; };
+    hl.setAttribute('class', 'nb-hlx');
+    hl.setAttribute('aria-hidden', 'true');
+    var curve = function (pts) {
+      var d = 'M' + pts[0][0].toFixed(1) + ' ' + pts[0][1].toFixed(1);
+      for (var i = 1; i < pts.length - 1; i++) {
+        var mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+        d += ' Q' + pts[i][0].toFixed(1) + ' ' + pts[i][1].toFixed(1) + ' ' + mx.toFixed(1) + ' ' + my.toFixed(1);
+      }
+      var e = pts[pts.length - 1];
+      return d + ' L' + e[0].toFixed(1) + ' ' + e[1].toFixed(1);
+    };
+    var y0 = 60 + J(8), slope = J(10), x0 = 3 + J(5), x1 = 96 + J(5), pass1 = [];
+    for (var q = 0; q <= 6; q++) { var xx = x0 + (x1 - x0) * q / 6; pass1.push([xx, y0 + slope * q / 6 + J(3.2) + Math.sin(q * 1.3 + seed) * 1.2]); }
+    var back = 0.45 + hr() * 0.35, y2 = y0 + slope + 7 + J(3), pass2 = [[x1 - 2 + J(2), y2 - 1]];
+    for (q = 1; q <= 4; q++) pass2.push([x1 - (x1 - x0) * back * q / 4 + J(2), y2 - slope * back * q / 4 + J(3)]);
+    [[pass1, 12 + J(2), 0], [pass2, 9 + J(2), 1]].forEach(function (ps) {
+      var pa = document.createElementNS(NS2, 'path');
+      pa.setAttribute('d', curve(ps[0]));
+      pa.setAttribute('pathLength', '1');
+      pa.setAttribute('class', 'nb-hlx__s nb-hlx__s--' + ps[2]);
+      pa.style.strokeWidth = ps[1].toFixed(1);
+      hl.appendChild(pa);
+    });
+    svg.insertBefore(hl, g);
     return svg;
   }
   // a spot drawing from the site's own sketchbook, scaled into whatever space is left;
@@ -975,7 +1001,6 @@
 
   function icon(key, label, i) {
     var b = make('button', 'nb-icon');
-    b.title = label;
     b.type = 'button';
     b.dataset.app = key;
     b.style.setProperty('--i', i);
@@ -1208,7 +1233,6 @@
       (pic ? '' : '<g class="nb-icon__glyph">' + (GLYPH[b.dataset.glyph] || '') + '</g>') + '</svg>' +
       '<span class="nb-icon__label"></span>';
     $('.nb-icon__label', b).textContent = a.name || 'App';
-    b.title = a.name || 'App';
     if (a.kind === 'link') b.setAttribute('aria-label', (a.name || 'App') + ' (opens in a new tab)');
     if (pic) placePic(b.firstChild, pic, '0 0 64 64', 7, 7, 50);
     if (window.pwPen && inkUp.done) inkIcon(b, 11 + i * 7);

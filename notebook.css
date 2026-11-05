@@ -800,6 +800,17 @@ html.nb-ready .nb-hl{ background-size: 100% 100%; }
   .nb-cred__list{ gap: 2px; }
 }
 
+/* phones: a flat page turn (no 3D), so iPhone Safari aims every tap where it lands,
+   and the tablet always fits above Safari's toolbar */
+.nb-views{ perspective: none; }
+@keyframes nb-turn{ from{ opacity: 0; transform: translateX(14px); } }
+@keyframes nb-turn-back{ from{ opacity: 0; transform: translateX(-10px); } }
+.nb-turn, .nb-turn--back{ animation-fill-mode: backwards; }
+.nb-tablet{ touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 819px){
+  .nb-tablet{ height: min(640px, max(520px, calc(100svh - 110px))); }
+}
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }
@@ -852,7 +863,7 @@ html.nb-ready .nb-hl{ background-size: 100% 100%; }
   .nb-tall{ flex: none; height: 300px; }
   .nb-spot{ flex: none; height: 170px; }
 
-  .nb-tablet{ height: 640px; }
+  .nb-tablet{ height: min(640px, max(520px, calc(100svh - 110px))); }
 
   .nb-icon__art{ width: 56px; height: 56px; }
   html.nb-full, html.nb-full body{ overflow: hidden; }

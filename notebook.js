@@ -1736,6 +1736,9 @@
     el.classList.remove('nb-turn', 'nb-turn--back');
     void el.offsetWidth;
     el.classList.add(backwards ? 'nb-turn--back' : 'nb-turn');
+    // once the page has turned, drop the animation, so iPhone Safari has no leftover layer to mis-aim taps at
+    var done = function () { el.classList.remove('nb-turn', 'nb-turn--back'); el.removeEventListener('animationend', done); };
+    el.addEventListener('animationend', done);
   }
 
   function goHome() {

@@ -811,6 +811,11 @@ html.nb-ready .nb-hl{ background-size: 100% 100%; }
   .nb-tablet{ height: min(640px, max(520px, calc(100svh - 110px))); }
 }
 
+/* phones: a scroll that reaches the end of an app carries on down the page */
+@media (max-width: 819px){
+  .nb-app__body, .nb-sp__res{ overscroll-behavior: auto; }
+}
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }

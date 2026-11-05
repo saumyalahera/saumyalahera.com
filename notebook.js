@@ -1534,7 +1534,7 @@
     tablet.classList.add('nb-spot-open');
     spotIn.value = '';
     spotSearch();
-    setTimeout(function () { spotIn.focus({ preventScroll: true }); }, 30);
+    if (!phone()) setTimeout(function () { spotIn.focus({ preventScroll: true }); }, 30);
   }
   function closeSpot() {
     if (!spotEl || spotEl.hidden) return;
@@ -1559,15 +1559,6 @@
     spotEl.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); closeSpot(); } });
     $('.nb-sp__cancel', spotEl).addEventListener('click', closeSpot);
     views.appendChild(spotEl);
-    // pull down on the home screen, like on a phone
-    var y0 = null, x0 = 0;
-    home.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, { passive: true });
-    home.addEventListener('touchmove', function (e) {
-      if (y0 == null) return;
-      var dy = e.touches[0].clientY - y0, dx = Math.abs(e.touches[0].clientX - x0);
-      if (dy > 46 && dy > dx * 1.5) { y0 = null; openSpot(); }
-    }, { passive: true });
-    home.addEventListener('touchend', function () { y0 = null; }, { passive: true });
     // and "/" opens it from the keyboard while the tablet is in hand
     document.addEventListener('keydown', function (e) {
       if (e.key !== '/' || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -1664,9 +1655,6 @@
     tablet._lock = lockIt;
     lock.addEventListener('click', unlock);
     lock.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); unlock(); } });
-    var y0 = null;
-    lock.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; }, { passive: true });
-    lock.addEventListener('touchmove', function (e) { if (y0 != null && y0 - e.touches[0].clientY > 30) { y0 = null; unlock(); } }, { passive: true });
 
     // the dock: lock, home, settings
     var dock = make('nav', 'nb-dock');

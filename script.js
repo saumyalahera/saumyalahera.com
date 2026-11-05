@@ -301,8 +301,9 @@ function resize(){
   const rect = canvas.getBoundingClientRect();
   const dpr = Math.min(2, window.devicePixelRatio || 1);
 
-  canvas.width = Math.floor(rect.width * dpr);
-  canvas.height = Math.floor(rect.height * dpr);
+  const cw = Math.floor(rect.width * dpr), ch = Math.floor(rect.height * dpr);
+  if (canvas.width !== cw) canvas.width = cw;
+  if (canvas.height !== ch) canvas.height = ch;
 
   // 2D scale
   if (ctx) {

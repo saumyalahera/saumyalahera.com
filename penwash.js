@@ -1749,7 +1749,7 @@
     if (box.closest('[role="dialog"]') || box.closest('[data-nb-pages]') || box.matches(DECKS)) return;
     var items = Array.prototype.filter.call(box.children, function (c) { return c.matches(ENTRY); });
     if (!items.length) return;
-    box.classList.add('pw-index');
+    if (!box.classList.contains('pw-index')) box.classList.add('pw-index');
     var pane = box.querySelector(':scope > .pw-pv');
     if (!pane) {
       pane = document.createElement('div');
@@ -1769,7 +1769,8 @@
         x.setAttribute('aria-hidden', 'true');
         it.appendChild(x);
       }
-      n.textContent = (k + 1 < 10 ? '0' : '') + (k + 1);
+      var num = (k + 1 < 10 ? '0' : '') + (k + 1);
+      if (n.textContent !== num) n.textContent = num;
       if (it.dataset.pwItem) return;
       it.dataset.pwItem = '1';
       it.classList.add('pw-item');
@@ -1953,12 +1954,12 @@
         if (deck.closest('[role="dialog"]')) return;
         var cards = Array.prototype.filter.call(deck.children, function (c) { return c.matches('article.card'); });
         if (!cards.length) return;
-        deck.classList.add('pc-deck');
+        if (!deck.classList.contains('pc-deck')) deck.classList.add('pc-deck');
         var seen = {}, n = 0, kinds = {};
         cards.forEach(function (c) { if (c.dataset.pcKind) kinds[c.dataset.pcKind] = 1; });
         cards.forEach(function (c) {
           var t = ((c.querySelector('h3') || {}).textContent || '').trim();
-          if (t && seen[t]) { c.dataset.pc = 'dup'; return; }
+          if (t && seen[t]) { if (c.dataset.pc !== 'dup') c.dataset.pc = 'dup'; return; }
           seen[t] = 1;
           if (!c.dataset.pcKind) {
             c.dataset.pcKind = sceneKind(t, kinds, hashStr(t) % 997 + 11);

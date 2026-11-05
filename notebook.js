@@ -269,8 +269,12 @@
     });
     c1.appendChild(sig);
 
+    var credSig = null;
     var fillCred = function () {
       var pills = $$('#hero_pills .pill');
+      var sig = pills.map(function (pl) { var im = $('img', pl); return txt(pl) + '|' + (im ? im.getAttribute('src') : ''); }).join('\n') + '#' + txt($('[data-field="hero.pills_title"]'));
+      if (sig === credSig) return;
+      credSig = sig;
       if (!pills.length) { cred.hidden = true; return; }
       cred.hidden = false;
       var groups = { studied: [], worked: [] };
@@ -305,19 +309,27 @@
     };
     var fill = function () {
       var full = txt($('.hero-name')) || 'Saumya Lahera';
-      nm.textContent = full;
+      var set = function (el, v) { if (el.textContent !== v) el.textContent = v; };
+      set(nm, full);
       var pr = txt($('.hero__copy .accent')).replace(/^\(|\)\.?$/g, '');
-      say.textContent = pr ? 'It’s said “' + pr + '”' : '';
-      nat.textContent = txt($('.hero-native2'));
+      set(say, pr ? 'It’s said “' + pr + '”' : '');
+      set(nat, txt($('.hero-native2')));
       fillCred();
       var place = currentPlace() || 'Palo Alto', d = new Date();
-      folio.innerHTML = '<span class="nb-folio__name">' + full + '</span><span class="nb-folio__mid">' + place + ' · ' +
+      var fh = '<span class="nb-folio__name">' + full + '</span><span class="nb-folio__mid">' + place + ' · ' +
         d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + '</span><span class="nb-folio__n">' + d.getDate() + '</span>';
+      if (folio._h !== fh) { folio._h = fh; folio.innerHTML = fh; }
     };
     fill();
     if (window.MutationObserver) {
       var q = null;
-      var mo = new MutationObserver(function () { clearTimeout(q); q = setTimeout(fill, 80); });
+      var mo = new MutationObserver(function (list) {
+        var real = list.some(function (m) {
+          var t = m.target.nodeType === 1 ? m.target : m.target.parentNode;
+          return !(t && t.closest && t.closest('.nb-letter, .nb-tablet'));
+        });
+        if (real) { clearTimeout(q); q = setTimeout(fill, 80); }
+      });
       mo.observe(hero, { childList: true, subtree: true, characterData: true });
       var misc = $('#miscellaneous'); if (misc) mo.observe(misc, { childList: true, subtree: true });
     }

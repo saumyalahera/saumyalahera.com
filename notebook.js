@@ -201,12 +201,10 @@
     nat.lang = 'gu';
     c1.appendChild(nat);
     c1.appendChild(prose('nb-copy', "Hi, I'm Saumya. I build [[graphics tools|projects]] for GPUs, and my [[research|research]] is on programming languages that make them faster and more predictable.", 'lead'));
-    c1.appendChild(prose('nb-copy', "I've made iOS and macOS apps at [[Apple, Walmart and PayPal|experience]], and if you'd like to learn, I [[teach for free|learn]]. Or just [[say hello|contact]]."));
-    var rc = make('div', 'nb-recipe');
-    rc.innerHTML = '<p class="nb-recipe__by"><b>A recipe from my notebook</b></p>' +
-      '<p class="nb-recipe__t">“Tile-Local” Pass Fusion</p>' +
-      '<p class="nb-recipe__x">Keep each pass in tile memory; fuse the ones that share a tile; drop the transient textures. Serves sixty frames a second.</p>';
-    c1.appendChild(rc);
+    c1.appendChild(prose('nb-copy', "If you'd like to learn, I [[teach for free|learn]]. Or just [[say hello|contact]]."));
+    // education and experience, set as a small boxed notice
+    var cred = make('div', 'nb-cred');
+    c1.appendChild(cred);
     var sig = make('p', 'nb-sig');
     sig.innerHTML = '<span class="nb-sig__s">Saumya</span><span class="nb-sig__t">Engineer</span>';
     cols.appendChild(c1);
@@ -271,12 +269,47 @@
     });
     c1.appendChild(sig);
 
+    var fillCred = function () {
+      var pills = $$('#hero_pills .pill');
+      if (!pills.length) { cred.hidden = true; return; }
+      cred.hidden = false;
+      var groups = { studied: [], worked: [] };
+      pills.forEach(function (pl) {
+        var parts = txt(pl).split(/,\s*/), img = $('img', pl);
+        var school = /universit|college|school|polytechnic|institute/i.test(parts[0]);
+        groups[school ? 'studied' : 'worked'].push({ name: parts[0], sub: parts.slice(1).join(', '), logo: img ? img.getAttribute('src') : '' });
+      });
+      cred.innerHTML = '';
+      var head = make('a', 'nb-cred__h', txt($('[data-field="hero.pills_title"]')) || 'Education & Experience');
+      head.href = '#experience'; head.dataset.go = 'experience'; head.dataset.app = 'experience';
+      cred.appendChild(head);
+      var grid = make('div', 'nb-cred__cols');
+      [['studied', 'Studied'], ['worked', 'Worked']].forEach(function (g) {
+        if (!groups[g[0]].length) return;
+        var col = make('div', 'nb-cred__col');
+        col.appendChild(make('p', 'nb-cred__k', g[1]));
+        var ul = make('ul', 'nb-cred__list');
+        groups[g[0]].forEach(function (it) {
+          var li = make('li');
+          if (it.logo) { var im = make('img', 'nb-cred__logo'); im.alt = ''; im.onerror = function () { im.remove(); }; im.src = it.logo; li.appendChild(im); }
+          var t = make('span', 'nb-cred__t');
+          t.appendChild(make('span', 'nb-cred__n', it.name));
+          if (it.sub) t.appendChild(make('span', 'nb-cred__s', it.sub.replace(/\bMACOS\b/, 'macOS')));
+          li.appendChild(t);
+          ul.appendChild(li);
+        });
+        col.appendChild(ul);
+        grid.appendChild(col);
+      });
+      cred.appendChild(grid);
+    };
     var fill = function () {
       var full = txt($('.hero-name')) || 'Saumya Lahera';
       nm.textContent = full;
       var pr = txt($('.hero__copy .accent')).replace(/^\(|\)\.?$/g, '');
       say.textContent = pr ? 'It’s said “' + pr + '”' : '';
       nat.textContent = txt($('.hero-native2'));
+      fillCred();
       var place = currentPlace() || 'Palo Alto', d = new Date();
       folio.innerHTML = '<span class="nb-folio__name">' + full + '</span><span class="nb-folio__mid">' + place + ' · ' +
         d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + '</span><span class="nb-folio__n">' + d.getDate() + '</span>';

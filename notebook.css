@@ -821,6 +821,121 @@ html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.42), 0 1px 1px rgba(43,46,36,.
 article.card.pc{ border-color: rgba(43,46,36,.72) !important; }
 .pc-pic__frame{ border-color: rgba(43,46,36,.5); }
 
+/* ---- the tablet in one ink: pen drawings on paper, a dithered ground, a sheet of paper for a case */
+/* every drawing in the one ink, no coloured flags or windows */
+.nb-ink .pw-ink.pw-hue{ stroke: var(--t-ink); }
+.nb-ink .pw-fill.pw-hue-fill, .nb-ink .pw-fill.pw-win{ fill: var(--t-ink); }
+.nb-ink .pw-ink{ opacity: 1; }
+.nb-icon:hover .nb-ink .pw-ink, .nb-icon:focus-visible .nb-ink .pw-ink, .nb-icon--called .nb-ink .pw-ink, .nb-icon:hover .nb-ink .pw-ink.pw-fine, .nb-icon--called .nb-ink .pw-ink.pw-fine{ stroke: var(--t-ink); }
+.nb-icon:hover .nb-ink .pw-fill, .nb-icon:focus-visible .nb-ink .pw-fill, .nb-icon--called .nb-ink .pw-fill{ fill: var(--t-ink); }
+.nb-icon:hover .nb-icon__label, .nb-icon--called .nb-icon__label, .nb-icon:focus-visible .nb-icon__label{ color: var(--t-ink); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.nb-icon__paper{ fill: var(--t-screen); stroke: none; }
+.nb-ink .pw-ink.pw-paper{ opacity: 1; }
+
+/* the printed tone under each drawing, and a paper halo around its lines */
+.nb-ink .nb-tone{ fill: var(--t-ink); opacity: .18; }
+.nb-ink .nb-halo .pw-ink, .nb-ink .nb-halo .pw-ink.pw-fine{ stroke: var(--t-screen); stroke-width: 3.2; opacity: 1; stroke-dasharray: none; stroke-dashoffset: 0; animation: none; transition: none; }
+.nb-ink .nb-halo .pw-fill{ fill: var(--t-screen); stroke: var(--t-screen); stroke-width: 2.4; opacity: 1; }
+.nb-icon:hover .nb-ink .nb-halo .pw-ink, .nb-icon--called .nb-ink .nb-halo .pw-ink, .nb-icon:focus-visible .nb-ink .nb-halo .pw-ink{ stroke: var(--t-screen); }
+.nb-icon:hover .nb-ink .nb-halo .pw-fill, .nb-icon--called .nb-ink .nb-halo .pw-fill, .nb-icon:focus-visible .nb-ink .nb-halo .pw-fill{ fill: var(--t-screen); }
+
+/* the case: a sheet of paper with a softly torn edge, lifted off the page */
+.nb-tablet{ --nb-deckle: none; }
+.nb-bezel{ position: relative; }
+.nb-screen{ clip-path: var(--nb-deckle); box-shadow: none; }
+.nb-bezel::before{
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  clip-path: var(--nb-deckle); background: rgba(43,40,32,.22); transform: translate(1.5px, 2.5px);
+}
+
+/* a thin ink border that follows the torn edge of the sheet */
+.nb-bezel{ isolation: isolate; }
+.nb-bezel::after{
+  content: ''; position: absolute; inset: -1.1px; z-index: -1; pointer-events: none;
+  clip-path: var(--nb-deckle); background: var(--t-ink); opacity: .78;
+}
+/* the byline under the headline: the one quiet place the name is printed */
+.nb-mag__col--ad .nb-thin--m{ font-style: italic; white-space: pre-line; }
+
+/* ---- the header: today's almanac entry ------------------------------------------------------- */
+.nb-entry{ padding-top: 2px; }
+.nb-entry .nb-greet__day{ font-size: 9px; letter-spacing: .28em; white-space: pre; }
+.nb-entry__moon{ display: flex; align-items: center; justify-content: center; gap: 9px; margin: 7px 0 0; }
+.nb-moon{ flex: none; width: 24px; height: 24px; overflow: visible; }
+.nb-moon pattern circle{ fill: var(--t-ink); }
+.nb-moon__dark{ fill: url(#nb-moon-dots); }
+.nb-moon__lit{ fill: var(--t-screen); }
+.nb-moon__rim{ fill: none; stroke: var(--t-ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.nb-entry .nb-greet__hi{ margin: 0; font-family: var(--f-news); font-style: italic; font-weight: 400; font-size: 18px; line-height: 1.2; letter-spacing: .005em; text-transform: none; color: var(--t-ink); }
+
+/* ---- the foot: page dots, then a ruled dock lettered like the icons --------------------------- */
+.nb-hfoot{ padding: 0 0 6px; }
+.nb-dock{ gap: 0; justify-content: space-between; align-items: center; margin: 0 22px; padding: 6px 6px 12px; border-top: 1px solid var(--t-rule); }
+.nb-dock__b{ display: flex; flex-direction: column; align-items: center; gap: 4px; width: 72px; padding: 6px 0 2px; font-family: var(--f-deco); font-style: normal; font-weight: 600; font-size: 8.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--t-ink); }
+.nb-dock__b--search, .nb-dock__b--settings{ width: 72px; justify-content: center; }
+.nb-dock__t{ padding-left: .24em; background: none !important; }
+.nb-dock__g{ width: 21px; height: 21px; fill: none; stroke: var(--t-ink); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; transition: transform .3s var(--pw-ease); }
+.nb-dock__g circle{ fill: var(--t-screen); }
+.nb-dock__fine{ stroke-width: .9; opacity: .6; }
+.nb-dock__b:hover, .nb-dock__b:focus-visible{ color: var(--t-ink); }
+.nb-dock__b:hover .nb-dock__g, .nb-dock__b:focus-visible .nb-dock__g{ stroke: var(--t-ink); transform: translateY(-1px) rotate(-6deg); }
+.nb-dock__b:hover .nb-dock__t, .nb-dock__b:focus-visible .nb-dock__t{ text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.nb-dock__b--home .nb-seal{ width: 46px; height: 46px; }
+.nb-entry .nb-greet__day{ font-size: 8px; letter-spacing: .26em; }
+.nb-entry__moon{ gap: 7px; margin-top: 5px; }
+.nb-moon{ width: 17px; height: 17px; }
+.nb-entry .nb-greet__hi{ font-size: 13.5px; }
+
+/* room between the day's entry and the icons, and between each drawing and its name */
+.nb-entry{ padding-bottom: 30px; }
+.nb-home .nb-icon{ gap: 9px; }
+
+/* ---- a little of the site's ink colour in each drawing, and the scenes come alive on hover -------- */
+.nb-tablet .nb-ink > g:not(.nb-halo) .pw-ink.pw-hue{ stroke: var(--pw-accent); }
+.nb-tablet .nb-ink > g:not(.nb-halo) .pw-fill:is(.pw-hue-fill, .pw-win, .nb-tint){ fill: var(--pw-accent); opacity: .62; }
+.nb-tablet .nb-ink > g:not(.nb-halo) .pw-fill.nb-tint--soft{ opacity: .2; }
+.nb-tablet .nb-ink > g:not(.nb-halo) :is(.nb-mv--twinkle, .nb-mv--twinkle2, .nb-mv--steam) .pw-ink{ stroke: var(--pw-accent); }
+
+.nb-mv{ transform-box: fill-box; transform-origin: 50% 50%; transition: transform .5s var(--pw-ease), opacity .5s ease; }
+.nb-mv--sway, .nb-mv--write{ transform-origin: 50% 100%; }
+.nb-mv--tilt{ transform-origin: 0% 100%; }
+.nb-mv--wave{ transform-origin: 0% 50%; }
+.nb-mv--rock, .nb-mv--bell{ transform-origin: 50% 0%; }
+.nb-mv--swingA{ transform-origin: 70% 50%; }
+.nb-mv--swingB{ transform-origin: 30% 50%; }
+.nb-mv--steam, .nb-mv--smoke{ transform-origin: 50% 100%; }
+
+@keyframes nb-float{ 0%{ transform: translate(0, 0); } 50%{ transform: translate(2px, -5px) rotate(-4deg); } 100%{ transform: translate(-1px, -8px) rotate(3deg); } }
+@keyframes nb-smoke{ from{ transform: translate(0, 0) scale(1); opacity: 1; } to{ transform: translate(5px, -6px) scale(1.18); opacity: .55; } }
+@keyframes nb-sway{ from{ transform: rotate(-4deg); } to{ transform: rotate(4deg); } }
+@keyframes nb-tilt{ from{ transform: rotate(4deg); } to{ transform: rotate(-9deg); } }
+@keyframes nb-twinkle{ 0%, 100%{ opacity: 1; transform: scale(1); } 50%{ opacity: .25; transform: scale(.6); } }
+@keyframes nb-write{ 0%{ transform: translate(0, 0) rotate(0); } 25%{ transform: translate(-3px, 1px) rotate(-3deg); } 50%{ transform: translate(-6px, 0) rotate(1deg); } 75%{ transform: translate(-9px, 1px) rotate(-3deg); } 100%{ transform: translate(0, 0) rotate(0); } }
+@keyframes nb-wave{ from{ transform: scaleX(1) skewY(0); } to{ transform: scaleX(.78) skewY(9deg); } }
+@keyframes nb-bob{ from{ transform: translateY(2px); } to{ transform: translateY(-7px); } }
+@keyframes nb-drift{ 0%{ transform: translate(0, 0) scaleY(1); } 50%{ transform: translate(4px, -3px) scaleY(.6); } 100%{ transform: translate(8px, -1px) scaleY(1); } }
+@keyframes nb-swing{ from{ transform: rotate(-3deg); } to{ transform: rotate(3deg); } }
+@keyframes nb-steam{ from{ transform: translateY(0) scaleY(1); opacity: 1; } to{ transform: translateY(-5px) scaleY(1.12); opacity: .4; } }
+@keyframes nb-bell{ from{ transform: rotate(-14deg); } to{ transform: rotate(14deg); } }
+
+@media (prefers-reduced-motion: no-preference){
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv{ animation: 1.6s ease-in-out infinite alternate both; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--float{ animation-name: nb-float; animation-duration: 1.4s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--smoke{ animation-name: nb-smoke; animation-duration: 1.8s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--sway{ animation-name: nb-sway; animation-duration: 1.3s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--tilt{ animation-name: nb-tilt; animation-duration: 2.2s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--twinkle{ animation-name: nb-twinkle; animation-duration: 1.1s; animation-direction: normal; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--twinkle2{ animation-name: nb-twinkle; animation-duration: 1.1s; animation-direction: normal; animation-delay: .55s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--write{ animation-name: nb-write; animation-duration: .9s; animation-direction: normal; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--wave{ animation-name: nb-wave; animation-duration: .45s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--bob{ animation-name: nb-bob; animation-duration: 1.5s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--drift{ animation-name: nb-drift; animation-duration: .8s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) :is(.nb-mv--swingA, .nb-mv--swingB, .nb-mv--rock){ animation-name: nb-swing; animation-duration: 1.2s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--swingB{ animation-direction: alternate-reverse; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--steam{ animation-name: nb-steam; animation-duration: 1.2s; }
+  :is(.nb-icon:hover, .nb-icon:focus-visible, .nb-sp__app:hover, .nb-sp__app:focus-visible) .nb-mv--bell{ animation-name: nb-bell; animation-duration: .5s; }
+}
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }

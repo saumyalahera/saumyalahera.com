@@ -192,8 +192,8 @@
     c1.appendChild(make('p', 'nb-thin nb-thin--s', 'This Distinguished Little Portfolio Is'));
     var h1 = make('h1', 'nb-letter__name nb-big');
     var nm = make('span', 'nb-big__name');
-    h1.appendChild(make('span', 'nb-big__pre', 'The work of '));
-    h1.appendChild(nm);
+    h1.appendChild(make('span', 'nb-big__pre', 'An Engineer’s '));
+    h1.appendChild(make('span', 'nb-big__name', 'Almanac'));
     c1.appendChild(h1);
     var say = make('p', 'nb-thin nb-thin--m');
     c1.appendChild(say);
@@ -310,13 +310,13 @@
     var fill = function () {
       var full = txt($('.hero-name')) || 'Saumya Lahera';
       var set = function (el, v) { if (el.textContent !== v) el.textContent = v; };
-      set(nm, full);
       var pr = txt($('.hero__copy .accent')).replace(/^\(|\)\.?$/g, '');
-      set(say, pr ? 'It’s said “' + pr + '”' : '');
+      // the name appears once, quietly, as a byline
+      set(say, 'Kept by ' + full + (pr ? '\nsaid “' + pr + '”' : ''));
       set(nat, txt($('.hero-native2')));
       fillCred();
       var place = currentPlace() || 'Palo Alto', d = new Date();
-      var fh = '<span class="nb-folio__name">' + full + '</span><span class="nb-folio__mid">' + place + ' · ' +
+      var fh = '<span class="nb-folio__name">' + place + '</span><span class="nb-folio__mid">' +
         d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + '</span><span class="nb-folio__n">' + d.getDate() + '</span>';
       if (folio._h !== fh) { folio._h = fh; folio.innerHTML = fh; }
     };
@@ -708,6 +708,12 @@
   var F = { cls: 'pw-ink pw-fine' };
   function star(pen, x, y, s) { pen.line(x - s, y, x + s, y, F); pen.line(x, y - s, x, y + s, F); }
   function ellipse(P, cx, cy, rx, ry, a0, a1) { return P.ring(cx, cy, rx, ry, 24, a0, a1); }
+  function part(pen, kind, fn) {
+    var g = document.createElementNS('http://www.w3.org/2000/svg', 'g'), keep = pen.svg;
+    g.setAttribute('class', 'nb-mv nb-mv--' + kind);
+    keep.appendChild(g); pen.svg = g; fn(); pen.svg = keep;
+  }
+  var TINT = { cls: 'nb-tint', tremor: 0.1 }, SOFT = { cls: 'nb-tint nb-tint--soft', tremor: 0.1 };
   var PEN_ICON = {
     blank: function () {},
     music: function (pen, r, P) {      // a gramophone, its horn open to the sky
@@ -720,11 +726,15 @@
       pen.path([[58, 66], [60, 56], [56, 48]]);
       pen.path([[54, 50], [60, 42], [66, 32], [70, 18]]);
       pen.path([[58, 52], [68, 46], [80, 38], [92, 34]]);
+      pen.fill(P.ring(82, 25, 11.5, 10.5, 26), SOFT);
       pen.path(P.ring(82, 25, 11.5, 10.5, 26));
       pen.line(60, 46, 77, 29, F); pen.line(63, 40, 72, 22, F); pen.line(64, 47, 86, 33, F);
-      pen.line(20, 36, 20, 22); pen.path(P.ring(17.5, 36.5, 3, 2.2, 12)); pen.line(20, 22, 27, 25, F);
-      pen.line(32, 30, 32, 18); pen.line(40, 28, 40, 16); pen.line(32, 18, 40, 16);
-      pen.path(P.ring(29.5, 30.5, 3, 2.2, 12)); pen.path(P.ring(37.5, 28.5, 3, 2.2, 12));
+      part(pen, 'float', function () {
+        pen.fill(P.ring(17.5, 36.5, 3, 2.2, 12), TINT); pen.fill(P.ring(29.5, 30.5, 3, 2.2, 12), TINT); pen.fill(P.ring(37.5, 28.5, 3, 2.2, 12), TINT);
+        pen.line(20, 36, 20, 22); pen.path(P.ring(17.5, 36.5, 3, 2.2, 12)); pen.line(20, 22, 27, 25, F);
+        pen.line(32, 30, 32, 18); pen.line(40, 28, 40, 16); pen.line(32, 18, 40, 16);
+        pen.path(P.ring(29.5, 30.5, 3, 2.2, 12)); pen.path(P.ring(37.5, 28.5, 3, 2.2, 12));
+      });
     },
     projects: function (pen, r, P) {   // a workshop with a smoking chimney
       pen.line(6, 90, 94, 90);
@@ -732,10 +742,10 @@
       pen.stones(20, 54, 46, 36, 8);
       pen.gable(20, 54, 46, 22);
       pen.rect(54, 30, 7, 16);
-      pen.scribble(66, 18, 9, 5, 2, 1.4);
+      part(pen, 'smoke', function () { pen.scribble(66, 18, 9, 5, 2, 1.4); });
       pen.window(27, 62, 9, 11, 'square');
       pen.rect(44, 70, 10, 20, F);
-      pen.tree(82, 90, 44);
+      part(pen, 'sway', function () { pen.tree(82, 90, 44); });
     },
     research: function (pen, r, P) {   // an observatory under the stars
       pen.line(6, 90, 94, 90);
@@ -743,9 +753,10 @@
       pen.bricks(28, 58, 44, 32);
       pen.path(ellipse(P, 50, 58, 23, 22, Math.PI, Math.PI * 2), { tremor: 0.2 });
       pen.line(46, 37, 50, 58, F); pen.line(54, 37, 52, 58, F);
-      pen.path([[50, 46], [80, 22], [83, 26], [53, 50]], { tremor: 0.15 });
+      part(pen, 'tilt', function () { pen.path([[50, 46], [80, 22], [83, 26], [53, 50]], { tremor: 0.15 }); });
       pen.window(44, 72, 10, 18, 'arch');
-      star(pen, 16, 22, 4); star(pen, 88, 10, 3); star(pen, 70, 8, 2);
+      part(pen, 'twinkle', function () { star(pen, 16, 22, 4); star(pen, 70, 8, 2); });
+      part(pen, 'twinkle2', function () { star(pen, 88, 10, 3); });
     },
     notes: function (pen, r, P) {      // an open notebook and a quill
       pen.path([[8, 80], [28, 72], [50, 78]], { tremor: 0.2 });
@@ -753,9 +764,12 @@
       pen.path([[8, 80], [8, 44], [28, 38], [50, 44], [72, 38], [92, 44], [92, 80]], { tremor: 0.3 });
       pen.line(50, 44, 50, 78);
       for (var y = 50; y < 72; y += 5) { pen.line(14, y + 1, 44, y - 1, F); if (y < 62) pen.line(56, y - 1, 86, y + 1, F); }
-      pen.path([[64, 70], [74, 46], [86, 16]], { tremor: 0.2 });
-      pen.path([[74, 46], [70, 34], [80, 14], [86, 16], [84, 32], [74, 46]], { tremor: 0.25 });
-      for (var t = 0; t < 6; t++) pen.line(75 + t * 1.6, 42 - t * 4.5, 81 + t * 0.6, 40 - t * 4.5, F);
+      part(pen, 'write', function () {
+        pen.fill([[74, 46], [70, 34], [80, 14], [86, 16], [84, 32]], SOFT);
+        pen.path([[64, 70], [74, 46], [86, 16]], { tremor: 0.2 });
+        pen.path([[74, 46], [70, 34], [80, 14], [86, 16], [84, 32], [74, 46]], { tremor: 0.25 });
+        for (var t = 0; t < 6; t++) pen.line(75 + t * 1.6, 42 - t * 4.5, 81 + t * 0.6, 40 - t * 4.5, F);
+      });
     },
     experience: function (pen, r, P) { // a hall of columns on its steps
       pen.line(6, 90, 94, 90); pen.line(12, 85, 88, 85); pen.line(16, 80, 84, 80);
@@ -767,25 +781,25 @@
       }
       pen.rect(16, 38, 68, 8);
       pen.gable(16, 38, 68, 18);
-      pen.flag(50, 20, 10, 1);
+      part(pen, 'wave', function () { pen.flag(50, 20, 10, 1); });
     },
     places: function (pen, r, P) {     // a balloon over the hills
-      pen.path(ellipse(P, 50, 34, 24, 26, Math.PI * 0.82, Math.PI * 2.18), { tremor: 0.2 });
-      pen.path([[30, 49], [44, 70]], { tremor: 0.1 }); pen.path([[70, 49], [56, 70]], { tremor: 0.1 });
-      pen.path([[50, 8], [40, 30], [44, 70]], F); pen.path([[50, 8], [60, 30], [56, 70]], F);
-      pen.path(ellipse(P, 50, 36, 24, 4, 0, Math.PI), F);
-      pen.rect(43, 70, 14, 9); pen.planks(43, 70, 14, 9, 3.5, false);
+      part(pen, 'bob', function () {
+        pen.fill([[50, 8], [40, 30], [44, 49], [56, 49], [60, 30]], SOFT);
+        pen.path(ellipse(P, 50, 34, 24, 26, Math.PI * 0.82, Math.PI * 2.18), { tremor: 0.2 });
+        pen.path([[30, 49], [44, 70]], { tremor: 0.1 }); pen.path([[70, 49], [56, 70]], { tremor: 0.1 });
+        pen.path([[50, 8], [40, 30], [44, 70]], F); pen.path([[50, 8], [60, 30], [56, 70]], F);
+        pen.path(ellipse(P, 50, 36, 24, 4, 0, Math.PI), F);
+        pen.rect(43, 70, 14, 9); pen.planks(43, 70, 14, 9, 3.5, false);
+      });
       pen.path([[4, 92], [20, 84], [36, 88], [56, 80], [76, 86], [96, 82]], { tremor: 0.3 });
-      pen.bird(84, 22, 4); pen.bird(14, 30, 3.5);
+      part(pen, 'drift', function () { pen.bird(84, 22, 4); pen.bird(14, 30, 3.5); });
     },
     languages: function (pen, r, P) {  // a signpost pointing three ways
       pen.line(48, 92, 48, 14); pen.line(53, 92, 53, 16);
-      pen.path([[18, 22], [62, 22], [70, 28], [62, 34], [18, 34], [18, 22]], { tremor: 0.15 });
-      pen.path([[86, 42], [36, 42], [28, 48], [36, 54], [86, 54], [86, 42]], { tremor: 0.15 });
-      pen.path([[22, 62], [66, 62], [74, 68], [66, 74], [22, 74], [22, 62]], { tremor: 0.15 });
-      pen.path([[24, 29], [30, 26], [34, 30], [40, 26], [46, 29], [54, 27]], F);
-      pen.path([[40, 49], [48, 46], [54, 50], [62, 46], [72, 49], [80, 47]], F);
-      pen.path([[28, 69], [36, 66], [42, 70], [50, 66], [58, 69]], F);
+      part(pen, 'swingA', function () { pen.fill([[18, 22], [62, 22], [70, 28], [62, 34], [18, 34]], SOFT); pen.path([[18, 22], [62, 22], [70, 28], [62, 34], [18, 34], [18, 22]], { tremor: 0.15 }); pen.path([[24, 29], [30, 26], [34, 30], [40, 26], [46, 29], [54, 27]], F); });
+      part(pen, 'swingB', function () { pen.path([[86, 42], [36, 42], [28, 48], [36, 54], [86, 54], [86, 42]], { tremor: 0.15 }); pen.path([[40, 49], [48, 46], [54, 50], [62, 46], [72, 49], [80, 47]], F); });
+      part(pen, 'swingA', function () { pen.path([[22, 62], [66, 62], [74, 68], [66, 74], [22, 74], [22, 62]], { tremor: 0.15 }); pen.path([[28, 69], [36, 66], [42, 70], [50, 66], [58, 69]], F); });
       pen.path([[30, 92], [70, 92]], { tremor: 0.3 });
       for (var g = 0; g < 7; g++) pen.line(36 + g * 5, 92, 34 + g * 5 + r() * 3, 86 + r() * 2, F);
     },
@@ -797,20 +811,23 @@
       pen.rect(28, 30, 44, 10);
       pen.path([[28, 30], [28, 18], [36, 18], [36, 24], [46, 24], [46, 18], [54, 18], [54, 24], [64, 24], [64, 18], [72, 18], [72, 30]], { tremor: 0.15 });
       pen.window(46, 52, 8, 14, 'arch');
-      pen.flag(50, 18, 12, 1);
+      part(pen, 'wave', function () { pen.flag(50, 18, 12, 1); });
     },
     beverages: function (pen, r, P) {  // a teacup, steaming
       pen.path(ellipse(P, 50, 84, 36, 6), { tremor: 0.15 });
       pen.path(ellipse(P, 50, 84, 16, 2.5), F);
+      pen.fill(ellipse(P, 50, 52.5, 22, 3.6), SOFT);
       pen.path(ellipse(P, 50, 52, 26, 5), { tremor: 0.15 });
       pen.path([[24, 52], [28, 70], [40, 80], [60, 80], [72, 70], [76, 52]], { tremor: 0.2 });
       pen.path(ellipse(P, 80, 62, 8, 9, -Math.PI * 0.6, Math.PI * 0.6), { tremor: 0.15 });
       pen.hatch(60, 56, 12, 20, 3, 0.8);
-      for (var s = 0; s < 3; s++) {
-        var x = 38 + s * 12, pts = [];
-        for (var k = 0; k <= 6; k++) pts.push([x + Math.sin(k * 1.2 + s) * 3, 44 - k * 5]);
-        pen.path(pts, F);
-      }
+      part(pen, 'steam', function () {
+        for (var s = 0; s < 3; s++) {
+          var x = 38 + s * 12, pts = [];
+          for (var k = 0; k <= 6; k++) pts.push([x + Math.sin(k * 1.2 + s) * 3, 44 - k * 5]);
+          pen.path(pts, F);
+        }
+      });
     },
     learn: function (pen, r, P) {      // a schoolhouse with its bell tower
       pen.line(6, 90, 94, 90);
@@ -818,28 +835,33 @@
       pen.planks(14, 58, 72, 32, 5, true);
       pen.gable(14, 58, 72, 16);
       pen.rect(42, 28, 16, 16);
-      pen.window(46, 31, 8, 10, 'arch');
+      part(pen, 'bell', function () { pen.window(46, 31, 8, 10, 'arch'); });
       pen.cone(40, 28, 20, 18, 1);
       pen.window(20, 64, 9, 11, 'square'); pen.window(71, 64, 9, 11, 'square');
       pen.rect(45, 72, 10, 18, F);
     },
     about: function (pen, r, P) {      // a portrait hung on a nail
       pen.line(50, 8, 32, 22, F); pen.line(50, 8, 68, 22, F);
-      pen.path(ellipse(P, 50, 54, 30, 38), { tremor: 0.2 });
-      pen.path(ellipse(P, 50, 54, 25, 33), F);
-      pen.path(ellipse(P, 50, 46, 9, 11), { tremor: 0.2 });
-      pen.path([[30, 82], [36, 66], [50, 60], [64, 66], [70, 82]], { tremor: 0.2 });
-      pen.hatch(28, 26, 12, 40, 3.2, 0.9);
-      pen.hatch(60, 26, 12, 40, 3.2, 0.9);
+      part(pen, 'rock', function () {
+        pen.fill(ellipse(P, 50, 54, 25, 33), SOFT);
+        pen.path(ellipse(P, 50, 54, 30, 38), { tremor: 0.2 });
+        pen.path(ellipse(P, 50, 54, 25, 33), F);
+        pen.path(ellipse(P, 50, 46, 9, 11), { tremor: 0.2 });
+        pen.path([[30, 82], [36, 66], [50, 60], [64, 66], [70, 82]], { tremor: 0.2 });
+        pen.hatch(28, 26, 12, 40, 3.2, 0.9);
+        pen.hatch(60, 26, 12, 40, 3.2, 0.9);
+      });
     },
     skills: function (pen, r, P) {     // a jar of brushes and pens
       pen.path([[30, 50], [30, 86], [34, 90], [66, 90], [70, 86], [70, 50]], { tremor: 0.2 });
       pen.path(ellipse(P, 50, 50, 20, 4), { tremor: 0.15 });
       pen.hatch(56, 56, 12, 32, 3, 0.8);
-      pen.line(40, 50, 30, 14); pen.fill([[30, 14], [27, 6], [33, 12]]);
-      pen.line(50, 50, 52, 10); pen.path([[52, 10], [49, 4], [55, 4], [52, 10]], { tremor: 0.1 });
-      pen.line(58, 50, 74, 18); pen.fill([[74, 18], [79, 10], [76, 20]]);
-      pen.line(46, 50, 42, 22, F);
+      part(pen, 'sway', function () {
+        pen.line(40, 50, 30, 14); pen.fill([[30, 14], [27, 6], [33, 12]], TINT);
+        pen.line(50, 50, 52, 10); pen.fill([[52, 10], [49, 4], [55, 4]], SOFT); pen.path([[52, 10], [49, 4], [55, 4], [52, 10]], { tremor: 0.1 });
+        pen.line(58, 50, 74, 18); pen.fill([[74, 18], [79, 10], [76, 20]]);
+        pen.line(46, 50, 42, 22, F);
+      });
     },
     contact: function (pen, r, P) {    // a letter, sealed, and a bird to carry it
       pen.rect(12, 44, 76, 46);
@@ -847,7 +869,7 @@
       pen.line(12, 90, 40, 66, F); pen.line(88, 90, 60, 66, F);
       pen.rect(70, 50, 12, 14, F);
       pen.fill(P.ring(50, 72, 5, 5, 10), { cls: 'pw-hue-fill' });
-      pen.bird(30, 22, 6); pen.bird(48, 14, 4);
+      part(pen, 'drift', function () { pen.bird(30, 22, 6); pen.bird(48, 14, 4); });
     }
   };
   // the home button: a round seal with a small castle on it
@@ -861,6 +883,34 @@
     pen.rect(17, 31, 7, 11, F); pen.cone(16, 31, 9, 7, 0);
     pen.rect(36, 31, 7, 11, F); pen.cone(35, 31, 9, 7, 0);
   };
+  // the tone under each icon, made once per light: round ink dots on a 45 degree screen,
+  // each as large as the tile is dark there (a mask, so the dots take the tablet's own ink)
+  function toneMask(v) {
+    toneMask.c = toneMask.c || {};
+    if (toneMask.c[v] !== undefined) return toneMask.c[v];
+    toneMask.c[v] = null;
+    try {
+      var N = 240, k = N / 100, cv = document.createElement('canvas'); cv.width = cv.height = N;
+      var x = cv.getContext('2d');
+      x.fillStyle = '#000'; x.fillRect(0, 0, N, N);
+      x.fillStyle = '#fff';
+      var lx = [0.85, 0.15, 0.7][v], cell = 4.6, a = Math.PI / 4, ca = Math.cos(a), sa = Math.sin(a), Rr = 150;
+      for (var u = -Rr; u < Rr; u += cell) for (var w = -Rr; w < Rr; w += cell) {
+        var px = 50 + u * ca - w * sa, py = 50 + u * sa + w * ca;
+        if (px < -3 || py < -3 || px > 103 || py > 103) continue;
+        // falls off away from the light, and pools in a soft shadow on the ground
+        var dl = Math.hypot(px / 100 - lx, py / 100 - 0.05);
+        var t = 0.015 + 0.16 * Math.pow(Math.min(1, dl / 1.15), 1.4);
+        var gx = (px - 50) / 34, gy = (py - 84) / 8, gd = gx * gx + gy * gy;
+        if (gd < 1) t = Math.max(t, 0.5 * (1 - gd) + t * gd);
+        var rad = cell * Math.sqrt(t / Math.PI);
+        if (rad < 0.25) continue;
+        x.beginPath(); x.arc(px * k, py * k, rad * k, 0, Math.PI * 2); x.fill();
+      }
+      toneMask.c[v] = cv.toDataURL('image/png');
+    } catch (_) {}
+    return toneMask.c[v];
+  }
   function penIcon(key, seed, vb) {
     var P = window.pwPen;
     if (!P || !PEN_ICON[key]) return null;
@@ -868,6 +918,23 @@
     if (vb) { PEN_ICON[key](new P.Pen(svg, r), r, P); return svg; }
     var tile = new P.Pen(svg, r), j = function () { return (r() - 0.5) * 3.2; };
     var c = [[4 + j(), 5 + j()], [96 + j(), 4 + j()], [95 + j(), 96 + j()], [5 + j(), 95 + j()]];
+    var pap = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pap.setAttribute('d', 'M' + c.map(function (q) { return q[0].toFixed(1) + ' ' + q[1].toFixed(1); }).join(' L') + ' Z');
+    pap.setAttribute('class', 'nb-icon__paper');
+    svg.appendChild(pap);
+    var tone = toneMask(seed % 3);
+    if (tone) {
+      var NSV = 'http://www.w3.org/2000/svg', id = 'nbt' + (penIcon.n = (penIcon.n || 0) + 1);
+      var defs = document.createElementNS(NSV, 'defs');
+      defs.innerHTML = '<mask id="' + id + '" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><image href="' + tone + '" x="0" y="0" width="100" height="100" preserveAspectRatio="none"/></mask>' +
+        '<clipPath id="' + id + 'c"><path d="' + pap.getAttribute('d') + '"/></clipPath>';
+      svg.appendChild(defs);
+      var dots = document.createElementNS(NSV, 'rect');
+      dots.setAttribute('width', '100'); dots.setAttribute('height', '100');
+      dots.setAttribute('mask', 'url(#' + id + ')'); dots.setAttribute('clip-path', 'url(#' + id + 'c)');
+      dots.setAttribute('class', 'nb-tone');
+      svg.appendChild(dots);
+    }
     for (var k = 0; k < 4; k++) tile.line(c[k][0], c[k][1], c[(k + 1) % 4][0], c[(k + 1) % 4][1], { tremor: 0.7 });
     tile.line(c[0][0] + 4, c[0][1] + 4.5, c[1][0] - 4, c[1][1] + 4, { cls: 'pw-ink pw-fine', tremor: 0.5 });
     var g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -876,6 +943,10 @@
     var pen = new P.Pen(g, r);
     pen.n = tile.n;
     PEN_ICON[key](pen, r, P);
+    var halo = g.cloneNode(true);
+    halo.setAttribute('class', 'nb-halo');
+    halo.setAttribute('aria-hidden', 'true');
+    svg.insertBefore(halo, g);
     return svg;
   }
   // a spot drawing from the site's own sketchbook, scaled into whatever space is left;
@@ -904,6 +975,7 @@
 
   function icon(key, label, i) {
     var b = make('button', 'nb-icon');
+    b.title = label;
     b.type = 'button';
     b.dataset.app = key;
     b.style.setProperty('--i', i);
@@ -938,6 +1010,33 @@
   if (!/^(paper|ivory|night|blueprint)$/.test(prefs.theme)) prefs.theme = 'paper';
   function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (_) {} }
   function hiddenApps() { return prefs.hidden ? prefs.hidden.split(',') : []; }
+  // the screen cut like a sheet of paper: a slightly deckled edge, made once per size
+  function deckle(el) {
+    if (!el) return;
+    var r = P_RNG(7), pts = [], N = 34, k;
+    var off = function (m) { return (0.3 + r() * m).toFixed(2) + 'px'; };
+    for (k = 0; k <= N; k++) pts.push('calc(' + (k / N * 100).toFixed(2) + '% + 0px) ' + off(2.2));
+    for (k = 1; k <= N; k++) pts.push('calc(100% - ' + off(2.2) + ') ' + (k / N * 100).toFixed(2) + '%');
+    for (k = N - 1; k >= 0; k--) pts.push((k / N * 100).toFixed(2) + '% calc(100% - ' + off(2.2) + ')');
+    for (k = N - 1; k >= 1; k--) pts.push(off(2.2) + ' ' + (k / N * 100).toFixed(2) + '%');
+    el.style.setProperty('--nb-deckle', 'polygon(' + pts.join(', ') + ')');
+  }
+  function P_RNG(seed) { var t = seed >>> 0; return function () { t += 0x6D2B79F5; var z = t; z = Math.imul(z ^ z >>> 15, z | 1); z ^= z + Math.imul(z ^ z >>> 7, z | 61); return ((z ^ z >>> 14) >>> 0) / 4294967296; }; }
+
+  // the moon tonight, from the mean synodic month (good to within a few hours)
+  function moonOf(d) {
+    var syn = 29.530588853, ref = Date.UTC(2000, 0, 6, 18, 14);
+    var ph = (((d - ref) / 864e5) % syn + syn) % syn / syn, th = ph * Math.PI * 2;
+    var lit = (1 - Math.cos(th)) / 2;
+    var names = [[0.03, 'New moon'], [0.22, 'Waxing crescent'], [0.28, 'First quarter'], [0.47, 'Waxing gibbous'], [0.53, 'Full moon'], [0.72, 'Waning gibbous'], [0.78, 'Last quarter'], [0.97, 'Waning crescent'], [1.01, 'New moon']];
+    var name = names.filter(function (n) { return ph < n[0]; })[0][1];
+    var r = 10, rx = Math.abs(Math.cos(th)) * r, gib = lit > 0.5, wax = ph < 0.5;
+    // the lit limb from top to bottom, then back up along the terminator
+    var path = 'M0 -10 A10 10 0 0 ' + (wax ? 1 : 0) + ' 0 10 A' + rx.toFixed(2) + ' 10 0 0 ' + (wax === gib ? 1 : 0) + ' 0 -10Z';
+    if (lit < 0.02) path = '';
+    return { name: name, lit: lit, path: path };
+  }
+
   function applyPrefs() {
     if (!tablet) return;
     tablet.dataset.theme = prefs.theme;
@@ -1109,6 +1208,7 @@
       (pic ? '' : '<g class="nb-icon__glyph">' + (GLYPH[b.dataset.glyph] || '') + '</g>') + '</svg>' +
       '<span class="nb-icon__label"></span>';
     $('.nb-icon__label', b).textContent = a.name || 'App';
+    b.title = a.name || 'App';
     if (a.kind === 'link') b.setAttribute('aria-label', (a.name || 'App') + ' (opens in a new tab)');
     if (pic) placePic(b.firstChild, pic, '0 0 64 64', 7, 7, 50);
     if (window.pwPen && inkUp.done) inkIcon(b, 11 + i * 7);
@@ -1587,11 +1687,12 @@
     tablet.setAttribute('aria-label', 'Tablet: one app for each part of the page');
     var bezel = make('div', 'nb-bezel');
     tablet.appendChild(bezel);
+    deckle(tablet);
     screen = make('div', 'nb-screen');
     bezel.appendChild(screen);
 
     var bar = make('div', 'nb-status');
-    bar.innerHTML = '<span class="nb-status__who"><i>The</i> Lahera Almanac</span><span class="nb-status__right" hidden><span class="nb-status__time"></span>' +
+    bar.innerHTML = '<span class="nb-status__who"><i>The</i> Almanac</span><span class="nb-status__right" hidden><span class="nb-status__time"></span>' +
       '<svg class="nb-status__bat" viewBox="0 0 26 12" aria-hidden="true"><path d="M1.5 2.2h20.6v7.8H1.6z"/><path d="M23.4 4.6v3"/><path d="M3.6 4.2h12v3.8h-12z" class="nb-status__charge"/></svg></span>';
     screen.appendChild(bar);
 
@@ -1599,9 +1700,12 @@
     screen.appendChild(views);
 
     home = make('div', 'nb-home');
-    var greet = make('div', 'nb-greet');
+    var greet = make('div', 'nb-greet nb-entry');
     greet.appendChild(make('p', 'nb-greet__day'));
-    greet.appendChild(make('p', 'nb-greet__hi'));
+    var moonRow = make('p', 'nb-entry__moon');
+    moonRow.innerHTML = '<svg class="nb-moon" viewBox="-12 -12 24 24" aria-hidden="true" focusable="false"><defs><pattern id="nb-moon-dots" width="1.7" height="1.7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx=".85" cy=".85" r=".52"/></pattern></defs>' +
+      '<circle class="nb-moon__dark" r="10"/><path class="nb-moon__lit"/><circle class="nb-moon__rim" r="10"/></svg><span class="nb-greet__hi"></span>';
+    greet.appendChild(moonRow);
     greet.insertAdjacentHTML('beforeend', '<svg class="nb-greet__rule" viewBox="0 0 200 10" preserveAspectRatio="none" aria-hidden="true"><path d="M0 5H86M114 5H200"/><path d="M100 0.8L104.2 5 100 9.2 95.8 5Z"/><path d="M90 5h2M108 5h2"/></svg>');
     home.appendChild(greet);
     var np = make('p', 'nb-np');
@@ -1614,9 +1718,8 @@
     APPS.forEach(function (a, i) { homeIcons.push(icon(a[0], a[1], i)); });
     home.appendChild(pager);
     var hfoot = make('div', 'nb-hfoot');
-    hfoot.innerHTML = '<button type="button" class="nb-find"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.8" cy="6.8" r="4.6"/><path d="M10.2 10.2L14 14"/></svg><span>Search</span></button><span class="nb-dots"></span>';
+    hfoot.innerHTML = '<span class="nb-dots"></span>';
     dots = $('.nb-dots', hfoot);
-    $('.nb-find', hfoot).addEventListener('click', openSpot);
     home.appendChild(hfoot);
     views.appendChild(home);
     layoutPages(true);
@@ -1668,17 +1771,22 @@
     lock.addEventListener('click', unlock);
     lock.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); unlock(); } });
 
-    // the dock: lock, home, settings
+    // the dock: search, home, settings (locking lives in Settings, and on its own timer)
     var dock = make('nav', 'nb-dock');
     dock.setAttribute('aria-label', 'Tablet');
-    [['lock', 'Lock'], ['home', 'Home'], ['settings', 'Settings']].forEach(function (d) {
+    var GLYPH = {
+      search: '<svg class="nb-dock__g" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 4.2c3.7-.2 6.4 2.5 6.3 6-.1 3.4-2.8 6.1-6.2 6-3.5-.1-6.1-2.8-6-6.2.1-3.2 2.6-5.6 5.9-5.8z"/><path d="M15.4 15.2l4.6 4.7"/><path d="M8 8.4c.7-.9 1.7-1.4 2.8-1.4" class="nb-dock__fine"/></svg>',
+      settings: '<svg class="nb-dock__g" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.1h16M4.2 12h15.7M4 16.9h16"/><circle cx="9" cy="7.1" r="1.9"/><circle cx="15.4" cy="12" r="1.9"/><circle cx="7.4" cy="16.9" r="1.9"/></svg>'
+    };
+    [['search', 'Search'], ['home', 'Home'], ['settings', 'Settings']].forEach(function (d) {
       var b = make('button', 'nb-dock__b nb-dock__b--' + d[0]);
       b.type = 'button';
-      b.innerHTML = d[0] === 'home' ? '<span class="nb-seal" aria-hidden="true"></span><span class="nb-sr">Home</span>' : '<span>' + d[1] + '</span>';
-      if (d[0] === 'home') b.setAttribute('aria-label', 'Home');
+      b.innerHTML = d[0] === 'home' ? '<span class="nb-seal" aria-hidden="true"></span><span class="nb-sr">Home</span>' : GLYPH[d[0]] + '<span class="nb-dock__t">' + d[1] + '</span>';
+      if (d[0] === 'home') { b.setAttribute('aria-label', 'Home, or lock from the home screen'); b.title = 'Home · press on the home screen to lock'; }
       b.addEventListener('click', function () {
-        if (d[0] === 'lock') lockIt();
-        else if (d[0] === 'home') { if (tablet.classList.contains('nb-locked')) unlock(); else goHome(); }
+        if (d[0] === 'search') { if (tablet.classList.contains('nb-locked')) unlock(); goHome(); openSpot(); }
+        // the seal is the tablet's one button: it wakes it, brings you home, and on the home screen locks it
+        else if (d[0] === 'home') { if (tablet.classList.contains('nb-locked')) unlock(); else if (current || $('.nb-spotlight:not([hidden])', tablet)) { closeSpot(); goHome(); } else lockIt(); }
         else openApp('settings');
       });
       dock.appendChild(b);
@@ -1715,8 +1823,16 @@
       $('.nb-status__time', bar).textContent = t;
       $('.nb-lock__time', screen).textContent = t.replace(/\s?[AP]M$/i, '');
       $('.nb-lock__date', screen).textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-      $('.nb-greet__hi', greet).textContent = h < 5 ? 'Up Late' : h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : h < 22 ? 'Good Evening' : 'Good Night';
-      $('.nb-greet__day', greet).textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+      var dayKey = d.toDateString() + d.getHours();
+      if (greet._k !== dayKey) {
+        greet._k = dayKey;
+        var doy = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 864e5);
+        $('.nb-greet__day', greet).textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + '  ·  Day ' + doy;
+        var mo = moonOf(d);
+        $('.nb-greet__hi', greet).textContent = mo.name + ', ' + Math.round(mo.lit * 100) + '% lit';
+        $('.nb-moon__lit', greet).setAttribute('d', mo.path);
+        $('.nb-entry__moon', greet).setAttribute('aria-label', 'Tonight: a ' + mo.name.toLowerCase());
+      }
       $('.nb-status__charge', bar).setAttribute('d', 'M3.6 4.2h' + (4 + (24 - h) / 24 * 14).toFixed(1) + 'v3.8h-' + (4 + (24 - h) / 24 * 14).toFixed(1) + 'z');
       var s = d.getSeconds(), m = d.getMinutes() + s / 60, hh = (h % 12) + m / 60;
       dialH.setAttribute('transform', 'rotate(' + (hh * 30).toFixed(2) + ' 100 100)');

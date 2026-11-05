@@ -816,6 +816,11 @@ html.nb-ready .nb-hl{ background-size: 100% 100%; }
   .nb-app__body, .nb-sp__res{ overscroll-behavior: auto; }
 }
 
+/* ---- trial: darker edges on the page, the tablet and the project grid ------------------- */
+html.nb{ --sheet-shadow: 0 0 0 1px rgba(43,46,36,.42), 0 1px 1px rgba(43,46,36,.08), 0 12px 26px -10px rgba(43,46,36,.26), 0 2px 6px -3px rgba(43,46,36,.12); }
+article.card.pc{ border-color: rgba(43,46,36,.72) !important; }
+.pc-pic__frame{ border-color: rgba(43,46,36,.5); }
+
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }
 .nb-swatch[aria-checked="true"]{ border-color: var(--t-label); }

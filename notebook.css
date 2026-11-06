@@ -945,6 +945,7 @@ article.card.pc{ border-color: rgba(43,46,36,.72) !important; }
 @media (prefers-reduced-motion: reduce){ .nb-hlx__s{ transition: opacity .2s !important; } }
 /* the label stays as it is on hover */
 .nb-home .nb-icon:hover .nb-icon__label, .nb-home .nb-icon--called .nb-icon__label, .nb-home .nb-icon:focus-visible .nb-icon__label{ text-decoration: none; }
+.nb-hlx--over{ mix-blend-mode: multiply; }
 
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }

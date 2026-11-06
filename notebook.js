@@ -964,7 +964,7 @@
     for (var q = 0; q <= 6; q++) { var xx = x0 + (x1 - x0) * q / 6; pass1.push([xx, y0 + slope * q / 6 + J(3.2) + Math.sin(q * 1.3 + seed) * 1.2]); }
     var back = 0.45 + hr() * 0.35, y2 = y0 + slope + 7 + J(3), pass2 = [[x1 - 2 + J(2), y2 - 1]];
     for (q = 1; q <= 4; q++) pass2.push([x1 - (x1 - x0) * back * q / 4 + J(2), y2 - slope * back * q / 4 + J(3)]);
-    [[pass1, 12 + J(2), 0], [pass2, 9 + J(2), 1]].forEach(function (ps) {
+    [[pass1, 19 + J(3), 0], [pass2, 15 + J(2), 1]].forEach(function (ps) {
       var pa = document.createElementNS(NS2, 'path');
       pa.setAttribute('d', curve(ps[0]));
       pa.setAttribute('pathLength', '1');
@@ -1257,7 +1257,11 @@
     var pic = b.dataset.pic, key = b.dataset.glyph || b.dataset.app;
     var ink = penIcon(pic ? 'blank' : key, seed), old = $('.nb-icon__art', b);
     if (!ink || !old) return;
-    if (pic) placePic(ink, pic, '0 0 100 100', 15, 14, 70);
+    if (pic) {
+      placePic(ink, pic, '0 0 100 100', 15, 14, 70);
+      var over = $('.nb-hlx', ink);
+      if (over) { over.setAttribute('class', 'nb-hlx nb-hlx--over'); ink.appendChild(over); }
+    }
     ink.setAttribute('class', 'nb-icon__art nb-ink');
     b.replaceChild(ink, old);
   }
@@ -1471,6 +1475,12 @@
       if (a.kind !== 'link') DATA[key] = (function (f) { return function () { return { page: f }; }; })(customPage(a));
       add(key, a.name, a);
     });
+    var ORD = Array.isArray(d.tablet_order) ? d.tablet_order : [], pos = {};
+    ORD.forEach(function (k, i) { k = String(k); if (!(k in pos)) pos[k] = i; });
+    var natural = {};
+    APPS.forEach(function (a, i) { natural[a[0]] = i; });
+    var rank = function (b) { var k = b.dataset.app; return k in pos ? pos[k] : 1e6 + (k in natural ? natural[k] : 0); };
+    homeIcons.sort(function (x, y) { return rank(x) - rank(y); });
     layoutPages(true);
     spotIndex = null;
     applyPrefs();

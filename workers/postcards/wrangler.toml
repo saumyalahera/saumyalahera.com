@@ -1,0 +1,9 @@
+name = "postcards"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "POSTCARDS"
+# Paste the id that `npx wrangler kv namespace create POSTCARDS` prints.
+id = "34feaf7e9c02434cbbba3a2b4baa5ca9"

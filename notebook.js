@@ -2056,6 +2056,122 @@
     });
   }
 
+  // ---- postcards from visitors -----------------------------------------------------------
+  // Visitors write a note on a postcard; it waits at the post office (a small Cloudflare worker)
+  // until it is pinned from Leabhar. The section stays hidden until the post office answers.
+  var POST_URL = 'https://postcards.laherasaumya.workers.dev';
+  var POST_GLYPHS = ['places', 'beverages', 'music', 'notes', 'research', 'languages', 'learn', 'games'];
+  function postStamp(seed) {
+    var corner = make('div', 'nb-post__corner');
+    corner.setAttribute('aria-hidden', 'true');
+    var stamp = make('div', 'pc-stamp'), inner = make('div', 'pc-stamp__in');
+    inner.dataset.seed = seed;
+    var art = penIcon(POST_GLYPHS[seed % POST_GLYPHS.length], seed + 3);
+    if (art) inner.appendChild(art);
+    stamp.appendChild(inner);
+    corner.appendChild(stamp);
+    return corner;
+  }
+  function postMark(text) {
+    var m = make('div', 'pc-mark nb-post__mark');
+    m.setAttribute('aria-hidden', 'true');
+    var ring = make('span', 'pc-mark__ring'), sp = make('span', null, text);
+    ring.appendChild(sp); m.appendChild(ring);
+    return m;
+  }
+  function postcard(c, i) {
+    var seed = hash((c.id || '') + (c.name || '')) % 997;
+    var card = make('article', 'nb-post__card nb-post__card--pinned');
+    var msg = make('div', 'nb-post__msg');
+    msg.appendChild(make('p', 'nb-post__text', c.text || ''));
+    var addr = make('div', 'nb-post__addr');
+    addr.appendChild(postStamp(seed));
+    var d = new Date(c.at);
+    addr.appendChild(postMark(isNaN(d) ? 'Posted' : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' + d.getFullYear()));
+    addr.appendChild(make('p', 'nb-post__from', c.name || 'A visitor'));
+    if (c.place) addr.appendChild(make('p', 'nb-post__place', c.place));
+    card.appendChild(msg); card.appendChild(addr);
+    card.style.setProperty('--tilt', ((i % 2 ? 1 : -1) * (0.4 + (seed % 5) * 0.25)).toFixed(2) + 'deg');
+    var tape = make('span', 'pw-snap-tape');
+    tape.setAttribute('aria-hidden', 'true');
+    tape.style.setProperty('--r', ((seed % 9) - 4) + 'deg');
+    card.appendChild(tape);
+    return card;
+  }
+  function buildPostcards() {
+    var main = $('main');
+    if (!main || !window.fetch) return;
+    var sec = make('section', 'section nb-sec nb-post');
+    sec.id = 'postcards';
+    sec.hidden = true;
+    var head = make('div', 'section__head');
+    head.appendChild(make('h2', null, 'Postcards'));
+    head.appendChild(make('p', 'muted', 'Write me a note. I read every one, and pin a few of them here.'));
+    sec.appendChild(head);
+    var wall = make('div', 'nb-post__wall');
+    sec.appendChild(wall);
+
+    // the blank postcard to write on
+    var form = make('form', 'nb-post__card nb-post__write nb-post--shut');
+    form.noValidate = true;
+    form.innerHTML =
+      '<div class="nb-post__msg"><label class="nb-sr" for="nb-post-text">Your note</label>' +
+      '<textarea id="nb-post-text" name="text" maxlength="280" rows="5" placeholder="Dear Saumya,"></textarea>' +
+      '<span class="nb-post__count" aria-hidden="true">280</span></div>' +
+      '<div class="nb-post__addr">' +
+      '<label class="nb-post__line"><span>From</span><input name="name" maxlength="40" autocomplete="name"></label>' +
+      '<label class="nb-post__line"><span>Writing from</span><input name="place" maxlength="40" placeholder="City, country"></label>' +
+      '<label class="nb-post__hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>' +
+      '<button type="button" class="nb-btn nb-post__open">Write a postcard</button>' +
+      '<button type="submit" class="nb-btn nb-post__send">Post it</button>' +
+      '<p class="nb-post__say" role="status" aria-live="polite"></p></div>';
+    $('.nb-post__addr', form).insertBefore(postStamp(5), $('.nb-post__addr', form).firstChild);
+    form.style.setProperty('--tilt', '-.6deg');
+    wall.appendChild(form);
+    var ta = $('textarea', form), fName = $('[name=name]', form), fPlace = $('[name=place]', form), fHp = $('[name=website]', form), count = $('.nb-post__count', form), say = $('.nb-post__say', form);
+    ta.addEventListener('input', function () { count.textContent = 280 - ta.value.length; });
+    // the blank card stays folded small until someone starts to write
+    var open = function () { if (form.classList.contains('nb-post--shut')) { form.classList.remove('nb-post--shut'); say.textContent = ''; } };
+    ta.addEventListener('focus', open);
+    $('.nb-post__open', form).addEventListener('click', function () { open(); ta.focus(); });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var body = { text: ta.value.trim(), name: fName.value.trim(), place: fPlace.value.trim(), website: fHp.value };
+      if (body.text.length < 2) { say.textContent = 'Write a few words first.'; ta.focus(); return; }
+      if (!body.name) { say.textContent = 'And sign it with your name.'; fName.focus(); return; }
+      var btn = $('.nb-post__send', form);
+      btn.disabled = true; say.textContent = 'Posting…';
+      fetch(POST_URL + '/notes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          btn.disabled = false;
+          if (!res.ok) { say.textContent = (res.j && res.j.error) || 'It didn’t go through. Try again in a minute.'; return; }
+          form.classList.remove('nb-post--sent'); void form.offsetWidth; form.classList.add('nb-post--sent');
+          ta.value = ''; count.textContent = '280';
+          form.classList.add('nb-post--shut');
+          say.textContent = 'Posted. Thank you, it’ll be pinned here once I’ve read it.';
+        })
+        .catch(function () { btn.disabled = false; say.textContent = 'It didn’t go through. Try again in a minute.'; });
+    });
+
+    var about = $('#about');
+    if (about && about.parentNode) about.parentNode.insertBefore(sec, about.nextSibling);
+    else main.appendChild(sec);
+    fetch(POST_URL + '/notes', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (list) {
+        (Array.isArray(list) ? list : []).slice(0, 24).forEach(function (c, i) { if (c && c.text) wall.appendChild(postcard(c, i)); });
+        sec.hidden = false;
+        // the pen arrives after this file; draw any stamp that was made before it
+        $$('.pc-stamp__in', sec).forEach(function (inner) {
+          if ($('svg', inner)) return;
+          var k = +inner.dataset.seed || 0, art = penIcon(POST_GLYPHS[k % POST_GLYPHS.length], k + 3);
+          if (art) inner.appendChild(art);
+        });
+      })
+      .catch(function () {});
+  }
+
   // ---- put it together ---------------------------------------------------------------------
   function start() {
     var hero = $('.hero');
@@ -2069,6 +2185,7 @@
     var rp = $('#research_panels');
     if (rp) { rp.setAttribute('data-nb-pages', ''); rp.classList.add('nb-pages'); }
     buildExperience();
+    buildPostcards();
     var letter = buildLetter(hero);
     hero.insertBefore(letter, hero.firstChild);
     var paperEl = $('.nb-letter__paper', letter);

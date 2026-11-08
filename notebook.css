@@ -946,6 +946,9 @@ article.card.pc{ border-color: rgba(43,46,36,.72) !important; }
 /* the label stays as it is on hover */
 .nb-home .nb-icon:hover .nb-icon__label, .nb-home .nb-icon--called .nb-icon__label, .nb-home .nb-icon:focus-visible .nb-icon__label{ text-decoration: none; }
 .nb-hlx--over{ mix-blend-mode: multiply; }
+/* the Focus / Outcome notes on the research cards: room inside the tinted box */
+#research_panels.nb-pages > .panel .callout{ padding: 12px 16px 13px 15px !important; margin-top: 6px !important; line-height: 1.55 !important; }
+#research_panels.nb-pages > .panel .callout strong{ margin-right: .3em; }
 
 /* swatch labels keep the tablet's own ink, not the swatch's */
 .nb-tablet{ --t-label: var(--t-ink); }

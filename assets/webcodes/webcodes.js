@@ -43,6 +43,11 @@
     }
     svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
     const dashed = el.classList.contains("dashed");
+    if (el.classList.contains("shot")) {
+      // Screenshots get one fine, light line so the frame doesn't outweigh the screen.
+      svg.innerHTML = `<path d="${wobblyRect(w, h, seed, 0.5)}" stroke-width=".7" opacity=".4"/>`;
+      return;
+    }
     svg.innerHTML =
       `<path d="${wobblyRect(w, h, seed, 0.9)}" stroke-width="1.1"${dashed ? ' stroke-dasharray="3 5"' : ""}/>` +
       (dashed ? "" : `<path d="${wobblyRect(w, h, seed + 7, 1.4)}" stroke-width=".5" opacity=".5"/>`);

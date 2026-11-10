@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web Codes: Learn HTML &amp; CSS</title>
+<meta name="description" content="Web Codes teaches HTML, CSS and JavaScript in short, hand-drawn Books for iPhone and iPad. See how a real page is made, then build your own.">
+<meta name="apple-itunes-app" content="app-id=922003912">
+<meta property="og:title" content="Web Codes: Learn HTML &amp; CSS">
+<meta property="og:description" content="Build web pages step by step, one idea at a time.">
+<meta property="og:image" content="https://saumyalahera.com/assets/webcodes/og.jpg">
+<meta property="og:url" content="https://saumyalahera.com/webcodes">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel&family=Cormorant+Garamond:ital,wght@1,300&family=DM+Mono&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/webcodes/webcodes.css">
+<style>
+  /* ---------- hero ---------- */
+  .hero { padding: 80px 0 40px; display: grid; grid-template-columns: 1fr 1.05fr; gap: 48px; align-items: center; }
+  .hero h1 { font-size: 64px; line-height: 1.04; margin: 20px 0 22px; }
+  .hero .note { font-size: 28px; margin-bottom: 34px; }
+  .hero .actions { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .hero .actions .meta a { text-decoration: none; }
+  .stack { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: center; }
+  .stack .pencil:nth-child(2) { transform: translateY(-26px); }
+  .stack .pencil:nth-child(1), .stack .pencil:nth-child(3) { transform: translateY(26px); }
+
+  .shot { padding: 8px; }
+  .shot img { width: 100%; height: auto; }
+
+  /* ---------- the numbers ---------- */
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 64px; }
+  .fact { padding: 26px 20px; border-left: 1px solid var(--line); }
+  .fact:first-child { border-left: 0; padding-left: 0; }
+  .fact b { display: block; font: 400 40px/1 var(--display); margin-bottom: 10px; }
+
+  /* ---------- the four parts ---------- */
+  .contents { margin-top: 110px; }
+  .contents > header { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line-strong); }
+  .contents > header h2 { font-size: 30px; letter-spacing: .08em; }
+  .part { display: grid; grid-template-columns: 280px 1fr; gap: 72px; align-items: center; padding: 64px 0; border-bottom: 1px solid var(--line); }
+  .part:nth-of-type(even) { grid-template-columns: 1fr 280px; }
+  .part:nth-of-type(even) .shot { order: 2; }
+  .part h3 { font-size: 38px; margin: 14px 0 10px; }
+  .part .note { margin-bottom: 20px; }
+  .part ul { list-style: none; padding: 0; margin: 18px 0 0; max-width: 520px; }
+  .part li { padding: 10px 0 10px 26px; position: relative; border-top: 1px solid var(--line); color: var(--ink-2); }
+  .part li::before { content: "—"; position: absolute; left: 0; color: var(--ink-3); }
+
+  /* ---------- iPad ---------- */
+  .ipad { margin-top: 110px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 64px; align-items: center; }
+  .ipad h2 { font-size: 38px; margin: 14px 0 12px; }
+  .ipad .shot { padding: 10px; }
+
+  /* ---------- closing ---------- */
+  .closing { margin-top: 110px; padding: 64px 48px; text-align: center; }
+  .closing h2 { font-size: 44px; margin: 16px 0 12px; }
+  .closing .note { margin-bottom: 30px; }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding-top: 48px; gap: 56px; }
+    .hero h1 { font-size: 46px; }
+    .hero .note { font-size: 23px; }
+    .facts { grid-template-columns: repeat(2, 1fr); }
+    .fact:nth-child(3) { border-left: 0; padding-left: 0; }
+    .fact:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .part, .part:nth-of-type(even) { grid-template-columns: 1fr; gap: 32px; padding: 48px 0; }
+    .part:nth-of-type(even) .shot { order: 0; }
+    .part .shot { max-width: 260px; }
+    .part h3 { font-size: 32px; }
+    .ipad { grid-template-columns: 1fr; gap: 32px; }
+    .closing { padding: 48px 20px; }
+    .closing h2 { font-size: 34px; }
+    .contents, .ipad, .closing { margin-top: 80px; }
+  }
+  @media (max-width: 480px) {
+    .stack { gap: 10px; }
+    .stack .pencil:nth-child(2) { transform: translateY(-14px); }
+    .stack .pencil:nth-child(1), .stack .pencil:nth-child(3) { transform: translateY(14px); }
+    .shot { padding: 5px; }
+    .fact { padding: 20px 12px; }
+    .fact b { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="wrap">
+    <a class="mark" href="webcodes.html"><span class="tag">&lt;/&gt;</span>WEB CODES</a>
+    <nav class="nav" aria-label="Web Codes">
+      <a href="webcodes-support.html">Support</a>
+      <a href="webcodes-privacy.html">Privacy</a>
+      <a class="hide-sm" href="https://apps.apple.com/app/id922003912">App Store</a>
+    </nav>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div>
+      <div class="meta">For iPhone &amp; iPad · Free</div>
+      <h1>Learn to build the web</h1>
+      <p class="note">Short chapters, real pages, one idea at a time.</p>
+      <div class="actions">
+        <a class="button solid" href="https://apps.apple.com/app/id922003912">Download on the App Store <span class="arrow">→</span></a>
+        <span class="meta">HTML · CSS · JavaScript</span>
+      </div>
+    </div>
+    <div class="stack" aria-label="Screens from the app">
+      <div class="pencil shot" data-seed="3"><img src="assets/webcodes/iphone-learn.jpg" width="720" height="1565" alt="The Learn tab, with a hand-drawn web page and a shelf of Books"></div>
+      <div class="pencil shot" data-seed="5"><img src="assets/webcodes/iphone-works.jpg" width="720" height="1565" alt="The Works tab, with six websites to build from a brief"></div>
+      <div class="pencil shot" data-seed="8"><img src="assets/webcodes/iphone-you.jpg" width="720" height="1565" alt="The You tab, with your portfolio and seals"></div>
+    </div>
+  </section>
+
+  <section class="facts" aria-label="What's inside">
+    <div class="fact"><b>11</b><span class="meta">Books</span></div>
+    <div class="fact"><b>42</b><span class="meta">Chapters</span></div>
+    <div class="fact"><b>6</b><span class="meta">Works to build</span></div>
+    <div class="fact"><b>0</b><span class="meta">Ads or accounts</span></div>
+  </section>
+
+  <section class="contents" aria-labelledby="contents-title">
+    <header>
+      <h2 id="contents-title">Contents</h2>
+      <span class="meta">Four parts</span>
+    </header>
+
+    <article class="part">
+      <div class="pencil shot" data-seed="11"><img src="assets/webcodes/iphone-learn.jpg" width="720" height="1565" alt="A Book open in Learn, showing a page broken into its layers" loading="lazy"></div>
+      <div>
+        <span class="numeral">I</span>
+        <h3>Learn</h3>
+        <p class="note">See how a page is made.</p>
+        <p>Each Book opens on a real web page, drawn by hand. Break it down and the page lifts apart into its layers in 3D: header, nav, article, footer. Tap any layer to see the tag that makes it.</p>
+        <ul>
+          <li>11 Books and 42 chapters across HTML, CSS and JavaScript</li>
+          <li>One idea at a time, about six minutes each</li>
+          <li>Hands-on challenges that check your code as you go</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <div class="pencil shot" data-seed="14"><img src="assets/webcodes/iphone-works.jpg" width="720" height="1565" alt="The Works, six commissions from the city" loading="lazy"></div>
+      <div>
+        <span class="numeral">II</span>
+        <h3>Works</h3>
+        <p class="note">Build whole websites from a brief.</p>
+        <p>The Works are six commissions from the city, each with a brief and goals to meet. Put what you learned together and make something that works from top to bottom.</p>
+        <ul>
+          <li>A star atlas, a music box and a riddle gate</li>
+          <li>A district guide, a timeline of the web and a memory game</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <div class="pencil shot" data-seed="17"><img src="assets/webcodes/iphone-workshop.jpg" width="720" height="1565" alt="The Workshop, with your projects and a scratch pad" loading="lazy"></div>
+      <div>
+        <span class="numeral">III</span>
+        <h3>Workshop</h3>
+        <p class="note">Make your own.</p>
+        <p>Start a project with its own HTML, CSS and JavaScript files and run it instantly in the built-in browser. A scratch pad is always open for quick tries.</p>
+        <ul>
+          <li>A code editor that highlights your code and suggests tags</li>
+          <li>A keyboard bar for the symbols you type most</li>
+          <li>Everything runs on your device, even offline</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="part">
+      <div class="pencil shot" data-seed="20"><img src="assets/webcodes/iphone-you.jpg" width="720" height="1565" alt="Your portfolio card and the seals you've earned" loading="lazy"></div>
+      <div>
+        <span class="numeral">IV</span>
+        <h3>You</h3>
+        <p class="note">Share what you've learned.</p>
+        <p>Your progress becomes a one-page portfolio website. Pick one of four designs, add your skills and links, and share it as a picture or as a real web page.</p>
+        <ul>
+          <li>Four portfolio designs</li>
+          <li>Seals to earn as you finish Books</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <section class="ipad">
+    <div>
+      <span class="meta">On iPad</span>
+      <h2>Room to read and build</h2>
+      <p>On iPad the page drawing and the lesson sit side by side, with the shelf of Books below, so you can follow along with everything in view.</p>
+    </div>
+    <div class="pencil shot" data-seed="23"><img src="assets/webcodes/ipad-learn.jpg" width="1200" height="1600" alt="Web Codes on iPad, with the lesson beside the page drawing" loading="lazy"></div>
+  </section>
+
+  <section class="closing pencil dashed" data-seed="29">
+    <span class="numeral">FINIS</span>
+    <h2>Start your first page</h2>
+    <p class="note">Free on iPhone and iPad. No ads, no account.</p>
+    <a class="button solid" href="https://apps.apple.com/app/id922003912">Download on the App Store <span class="arrow">→</span></a>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="meta">© 2026 Saumya Lahera</span>
+    <span class="meta links">
+      <a href="webcodes-support.html">Support</a>
+      <a href="webcodes-privacy.html">Privacy</a>
+      <a href="index.html">saumyalahera.com</a>
+    </span>
+  </div>
+</footer>
+
+<script src="assets/webcodes/webcodes.js"></script>
+</body>
+</html>
